@@ -1,0 +1,13 @@
+{
+  "tabs": { "home": "Inicio", "workout": "Entreno", "routines": "Rutinas", "exercises": "Ejercicios", "stats": "Estadísticas", "profile": "Perfil" },
+  "placeholder": "Disponible en un hito posterior.",
+  "profile": {
+    "language": "Idioma",
+    "units": "Unidades",
+    "persist": "Almacenamiento persistente",
+    "persistGranted": "Concedido",
+    "persistDenied": "No concedido",
+    "updateAvailable": "Actualización disponible",
+    "reload": "Recargar"
+  }
+}

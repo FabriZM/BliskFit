@@ -1,0 +1,13 @@
+{
+  "tabs": { "home": "Home", "workout": "Workout", "routines": "Routines", "exercises": "Exercises", "stats": "Stats", "profile": "Profile" },
+  "placeholder": "Coming in a later milestone.",
+  "profile": {
+    "language": "Language",
+    "units": "Units",
+    "persist": "Persistent storage",
+    "persistGranted": "Granted",
+    "persistDenied": "Not granted",
+    "updateAvailable": "Update available",
+    "reload": "Reload"
+  }
+}
