@@ -91,3 +91,7 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 
 .ex-row { display: flex; align-items: center; } .ex-row a { flex: 1; min-width: 0; } .star { background: transparent; font-size: 1.5rem; padding: 6px 10px; color: var(--muted); } .star.on { color: #fbbf24; }
 .link-card { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: var(--fg); } .row.head h2 { margin: 0; }
+
+.inprogress { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: #064e3b; color: var(--fg); text-decoration: none; border-top: 1px solid var(--accent); font-size: .9rem; }
+.inprogress strong { font-variant-numeric: tabular-nums; font-size: 1.05rem; } .inprogress .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; } .inprogress .dot.paused { background: #fbbf24; animation: none; }
+@keyframes pulse { 50% { opacity: .35; } }

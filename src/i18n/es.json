@@ -262,7 +262,8 @@
     "notifyRest": "Avisarme al terminar el descanso (pantalla apagada)",
     "swapShort": "Cambiar",
     "skipShort": "Saltar",
-    "routines": "Rutinas"
+    "routines": "Rutinas",
+    "inProgress": "Entreno en curso"
   },
   "summary": {
     "title": "Entreno completado",

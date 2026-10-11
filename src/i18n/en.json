@@ -262,7 +262,8 @@
     "notifyRest": "Notify me when rest ends (screen off)",
     "swapShort": "Swap",
     "skipShort": "Skip",
-    "routines": "Routines"
+    "routines": "Routines",
+    "inProgress": "Workout in progress"
   },
   "summary": {
     "title": "Workout complete",
