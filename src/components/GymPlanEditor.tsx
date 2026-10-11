@@ -11,15 +11,14 @@ export default function GymPlanEditor({ gym }: { gym: Gym }) {
   const a = gym.allowance
   const [visits, setVisits] = useState<number | undefined>(a?.visits)
   const [startDay, setStartDay] = useState(a?.startDay ?? 1)
-  const [rollover, setRollover] = useState(a?.rollover ?? false)
 
   const save = () => visits && db.gyms.update(gym.id, {
     // `since` stays when you adjust an existing plan; a new plan starts counting from today's period.
-    allowance: { visits, startDay, rollover, since: a?.since ?? dateKey(new Date()) },
+    allowance: { visits, startDay, since: a?.since ?? dateKey(new Date()) },
   })
   const remove = async () => {
     await db.gyms.update(gym.id, { allowance: undefined }) // history is untouched; only the plan goes
-    setVisits(undefined); setStartDay(1); setRollover(false)
+    setVisits(undefined); setStartDay(1)
   }
 
   const summary = a
@@ -39,7 +38,6 @@ export default function GymPlanEditor({ gym }: { gym: Gym }) {
             {Array.from({ length: 30 }, (_, i) => i + 2).map((d) => <option key={d} value={d}>{t('gymplan.dayN', { day: d })}</option>)}
           </select>
         </label>
-        <label className="inline"><input type="checkbox" checked={rollover} onChange={(e) => setRollover(e.target.checked)} /> {t('gymplan.rollover')}</label>
         <p className="muted small help">{t('gymplan.help')}</p>
         <div className="actions">
           <button className="primary" disabled={!visits} onClick={() => void save()}>{t('gymplan.save')}</button>

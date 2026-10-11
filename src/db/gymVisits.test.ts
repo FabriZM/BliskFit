@@ -6,7 +6,7 @@ import { gymPeriods, qualifyingSessionIds, visitDays } from '../lib/gymVisits'
 import type { GymAllowance } from './types'
 
 const at = (day: string, h = 18) => new Date(`${day}T${String(h).padStart(2, '0')}:00:00`).getTime()
-const plan: GymAllowance = { visits: 12, startDay: 1, rollover: false, since: '2026-10-01' }
+const plan: GymAllowance = { visits: 12, startDay: 1, since: '2026-10-01' }
 
 async function addVisit(gymId: string | undefined, day: string, setType: 'working' | 'warmup' = 'working') {
   const id = newId()

@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
-import { daysLeftIn, gymPeriods, paceHint, qualifyingSessionIds, visitDays } from '../lib/gymVisits'
+import { daysLeftIn, effectiveVisitDays, gymPeriods, paceHint, qualifyingSessionIds, visitDays } from '../lib/gymVisits'
+import VisitDaysEditor from './VisitDaysEditor'
 import { useNow } from '../lib/useNow'
 
 /** One card per gym that has a visit plan (nothing at all if none do). Profile only. */
 export default function GymVisitsCard() {
   const { t, i18n } = useTranslation()
   const now = useNow(60_000)
+  const [editing, setEditing] = useState<string | null>(null)
   const data = useLiveQuery(async () => {
     const gyms = (await db.gyms.toArray()).filter((g) => g.allowance)
     if (!gyms.length) return { gyms }
@@ -24,7 +27,8 @@ export default function GymVisitsCard() {
     <>
       <h2>{t('gymplan.title')}</h2>
       {data.gyms.map((g) => {
-        const periods = gymPeriods(g.allowance!, visitDays(data.sessions!, data.qualifying!, g.id), today)
+        const workoutDays = visitDays(data.sessions!, data.qualifying!, g.id)
+        const periods = gymPeriods(g.allowance!, effectiveVisitDays(workoutDays, g.visitAdjustments), today)
         const cur = periods[periods.length - 1]
         const prev = periods[periods.length - 2]
         const left = daysLeftIn(cur, today)
@@ -34,17 +38,18 @@ export default function GymVisitsCard() {
           <div className="card gym-card" key={g.id}>
             <div className="row head">
               <strong>{g.name}</strong>
-              <span className="muted small">{fmt.format(cur.start)} – {fmt.format(new Date(cur.end.getFullYear(), cur.end.getMonth(), cur.end.getDate() - 1))}</span>
+              <button className="icon" aria-label={t('gymplan.edit')} title={t('gymplan.edit')} onClick={() => setEditing(g.id)}>✎</button>
             </div>
+            <p className="muted small period-range">{fmt.format(cur.start)} – {fmt.format(new Date(cur.end.getFullYear(), cur.end.getMonth(), cur.end.getDate() - 1))}</p>
             <p className="gym-line">
               <strong>{t('gymplan.usedOf', { used: cur.used, total: cur.total })}</strong>
               {' · '}{t('gymplan.left', { count: cur.left })}{' · '}{t('gymplan.daysLeft', { count: left })}
             </p>
             <div className="meter" role="progressbar" aria-valuemin={0} aria-valuemax={cur.total} aria-valuenow={cur.used}
               aria-label={t('gymplan.usedOf', { used: cur.used, total: cur.total })}><i style={{ width: `${pct}%` }} /></div>
-            {cur.carried > 0 && <p className="muted small">{t('gymplan.carried', { count: cur.carried })}</p>}
             {pace.kind !== 'none' && <p className="muted small">{t(`gymplan.pace_${pace.kind}`, { count: 'days' in pace ? pace.days : 'surplus' in pace ? pace.surplus : 0 })}</p>}
             {prev && <p className="muted small">{t('gymplan.lastPeriod', { used: prev.used, total: prev.total })}</p>}
+            {editing === g.id && <VisitDaysEditor gym={g} workoutDays={workoutDays} onClose={() => setEditing(null)} />}
           </div>
         )
       })}

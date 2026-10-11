@@ -37,7 +37,7 @@ export default function Gyms() {
               <input defaultValue={g.name} onBlur={(e) => e.target.value.trim() && void db.gyms.update(g.id, { name: e.target.value.trim() })} />
               <button className="danger" onClick={() => void remove(g.id)}>{t('common.delete')}</button>
             </div>
-            <GymPlanEditor key={`${g.id}-${g.allowance?.visits}-${g.allowance?.startDay}-${g.allowance?.rollover}`} gym={g} />
+            <GymPlanEditor key={`${g.id}-${g.allowance?.visits}-${g.allowance?.startDay}`} gym={g} />
           </li>
         ))}
       </ul>

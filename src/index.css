@@ -134,3 +134,12 @@ button.wd { background: transparent; padding: 0; border: 0; color: inherit; curs
 .gym-card .row.head { padding: 0 0 6px; border: 0; } .gym-line { margin: 0 0 8px; } .gym-card p.muted { margin: 6px 0 0; }
 .meter { height: 6px; border-radius: 3px; background: var(--chart-grid); overflow: hidden; } .meter i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
 .edit-meta { margin: 8px 0 12px; }
+.period-range { margin: -2px 0 6px; } .gym-card .row.head .icon { font-size: 1.1rem; }
+.visit-count { margin: 4px 0 10px; font-size: 1.05rem; }
+.visit-grid .cal-day { position: relative; }
+.visit-grid .cal-day.visit-workout, .visit-grid .cal-day.visit-added { background: var(--accent); color: #064e3b; font-weight: 700; }
+.visit-grid .cal-day.visit-added::after { content: '+'; position: absolute; top: -2px; right: 1px; font-size: .75rem; font-weight: 800; color: var(--fg); }
+.visit-grid .cal-day.visit-removed { border: 2px dashed var(--muted); color: var(--muted); text-decoration: line-through; }
+.visit-grid .cal-day:disabled { opacity: .35; }
+.vk { display: inline-block; width: 14px; height: 14px; border-radius: 50%; font-style: normal; font-size: .7rem; line-height: 14px; text-align: center; font-weight: 800; }
+.vk.workout { background: var(--accent); } .vk.added { background: var(--accent); color: #064e3b; } .vk.removed { border: 2px dashed var(--muted); line-height: 10px; }

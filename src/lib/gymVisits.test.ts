@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { GymAllowance, SetLog, WorkoutSession } from '../db/types'
 import { dateKey } from './goals'
-import { daysLeftIn, gymPeriods, paceHint, periodFor, programIncludesRoutine, qualifyingSessionIds, visitDays } from './gymVisits'
+import {
+  daysLeftIn, effectiveVisitDays, gymPeriods, paceHint, periodDays, periodFor, programIncludesRoutine, qualifyingSessionIds,
+  toggleVisitDay, visitDays,
+} from './gymVisits'
 
 const d = (s: string) => new Date(s + 'T12:00:00')
 const ymd = (x: Date) => dateKey(x)
@@ -78,7 +81,7 @@ describe('visits', () => {
 })
 
 describe('gymPeriods', () => {
-  const plan = (extra: Partial<GymAllowance> = {}): GymAllowance => ({ visits: 12, startDay: 1, rollover: false, since: '2026-10-01', ...extra })
+  const plan = (extra: Partial<GymAllowance> = {}): GymAllowance => ({ visits: 12, startDay: 1, since: '2026-10-01', ...extra })
   const days = (...k: string[]) => new Set(k)
 
   it('current period: used, left, days left', () => {
@@ -98,19 +101,17 @@ describe('gymPeriods', () => {
     expect(ps.map((p) => [ymd(p.start), p.used])).toEqual([['2026-09-15', 2], ['2026-10-15', 2]])
   })
 
-  it('without rollover unused visits expire; with rollover they carry forward', () => {
-    const base = plan({ since: '2026-08-01' })
-    const dys = days(...['2026-08-03', '2026-08-05'], ...['2026-09-02'], ...['2026-10-02', '2026-10-04'])
-    const off = gymPeriods(base, dys, d('2026-10-11')).map((p) => [p.total, p.used, p.left])
-    expect(off).toEqual([[12, 2, 10], [12, 1, 11], [12, 2, 10]])
-    const on = gymPeriods({ ...base, rollover: true }, dys, d('2026-10-11')).map((p) => [p.carried, p.total, p.used, p.left])
-    expect(on).toEqual([[0, 12, 2, 10], [10, 22, 1, 21], [21, 33, 2, 31]])
+  it('unused visits are lost: every period starts from the plan\'s own total', () => {
+    const dys = days('2026-08-03', '2026-08-05', '2026-09-02', '2026-10-02', '2026-10-04')
+    const ps = gymPeriods(plan({ since: '2026-08-01' }), dys, d('2026-10-11'))
+    expect(ps.map((p) => [p.total, p.used, p.left])).toEqual([[12, 2, 10], [12, 1, 11], [12, 2, 10]])
   })
 
-  it('over-using never goes negative and does not create negative carry', () => {
-    const many = Array.from({ length: 15 }, (_, i) => `2026-09-${String(i + 1).padStart(2, '0')}`)
-    const ps = gymPeriods(plan({ since: '2026-09-01', rollover: true, visits: 12 }), days(...many), d('2026-10-11'))
-    expect([ps[0].used, ps[0].left, ps[1].carried, ps[1].total]).toEqual([15, 0, 0, 12])
+  it('going over the plan shows the real count (13 of 12) and 0 left, never negative', () => {
+    const many = Array.from({ length: 13 }, (_, i) => `2026-10-${String(i + 1).padStart(2, '0')}`)
+    const [p] = gymPeriods(plan(), days(...many), d('2026-10-20'))
+    expect([p.used, p.total, p.left]).toEqual([13, 12, 0])
+    expect(gymPeriods(plan(), days(...many), d('2026-11-02'))[1].total).toBe(12) // nothing carries into November
   })
 
   it('periods before the plan was set up are not counted', () => {
@@ -148,5 +149,59 @@ describe('programIncludesRoutine', () => {
     expect(programIncludesRoutine({ schedule: { 0: { 1: 'push' }, 1: { 3: 'pull' } } }, 'pull')).toBe(true)
     expect(programIncludesRoutine({ schedule: { 0: { 1: 'push' } }, rotation: [] }, 'legs')).toBe(false)
     expect(programIncludesRoutine({}, 'x')).toBe(false)
+  })
+})
+
+describe('manual adjustments', () => {
+  const wk = new Set(['2026-10-05', '2026-10-07'])
+  it('add counts a day without a workout; remove excludes one that has a workout', () => {
+    expect([...effectiveVisitDays(wk, { '2026-10-06': 'add' })].sort()).toEqual(['2026-10-05', '2026-10-06', '2026-10-07'])
+    expect([...effectiveVisitDays(wk, { '2026-10-05': 'remove' })]).toEqual(['2026-10-07'])
+    expect(effectiveVisitDays(wk, undefined).size).toBe(2)
+  })
+  it('an adjustment wins over the workouts, including a stale remove on a day with no workout', () => {
+    expect(effectiveVisitDays(new Set(), { '2026-10-05': 'remove' }).size).toBe(0)
+    expect(effectiveVisitDays(wk, { '2026-10-05': 'add' }).size).toBe(2) // already counted: no double count
+  })
+  it('toggling a workout day removes then restores it, leaving no leftover adjustment', () => {
+    let adj = toggleVisitDay({}, '2026-10-05', true)
+    expect(adj).toEqual({ '2026-10-05': 'remove' })
+    adj = toggleVisitDay(adj, '2026-10-05', true)
+    expect(adj).toEqual({})
+  })
+  it('toggling a day without a workout adds then removes it', () => {
+    let adj = toggleVisitDay({}, '2026-10-06', false)
+    expect(adj).toEqual({ '2026-10-06': 'add' })
+    adj = toggleVisitDay(adj, '2026-10-06', false)
+    expect(adj).toEqual({})
+  })
+  it('toggling a manually added day that later got a real workout turns it off, then back on', () => {
+    let adj = toggleVisitDay({ '2026-10-06': 'add' }, '2026-10-06', true)
+    expect(adj).toEqual({ '2026-10-06': 'remove' })
+    expect(toggleVisitDay(adj, '2026-10-06', true)).toEqual({})
+  })
+  it('does not mutate its input', () => {
+    const input = { '2026-10-05': 'remove' as const }
+    toggleVisitDay(input, '2026-10-05', true)
+    expect(input).toEqual({ '2026-10-05': 'remove' })
+  })
+  it('adjustments change the period count: a forgotten day, an uncounted day, a mid-month start', () => {
+    const base = new Set(['2026-10-05', '2026-10-07'])
+    const count = (adj: Record<string, 'add' | 'remove'>) => gymPeriods({ visits: 12, startDay: 1, since: '2026-10-01' }, effectiveVisitDays(base, adj), d('2026-10-20'))[0].used
+    expect(count({})).toBe(2)
+    expect(count({ '2026-10-06': 'add', '2026-10-08': 'add' })).toBe(4) // forgot to log two days
+    expect(count({ '2026-10-05': 'remove' })).toBe(1)                   // the gym didn't count that day
+    expect(count({ '2026-10-02': 'add', '2026-10-03': 'add' })).toBe(4) // plan started mid-month
+  })
+})
+
+describe('periodDays', () => {
+  it('lists every day of a billing period', () => {
+    const p = periodFor(d('2026-02-20'), 15)
+    const days = periodDays(p)
+    expect(ymd(days[0])).toBe('2026-02-15')
+    expect(ymd(days[days.length - 1])).toBe('2026-03-14')
+    expect(days).toHaveLength(28)
+    expect(periodDays(periodFor(d('2026-03-31'), 31)).length).toBe(30) // Mar 31 .. Apr 29
   })
 })

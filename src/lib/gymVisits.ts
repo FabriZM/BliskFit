@@ -8,8 +8,9 @@ import { dayDiff } from './programs'
  *  - A visit is a calendar day with at least one finished session at that gym that has a completed non-warm-up
  *    set. Two sessions on one day count once; sessions without a gym, unfinished, empty or warm-up-only ones don't.
  *  - Periods start on `startDay` of each month, clamped to short months (31 -> Feb 28/29, Apr 30...); 1 = calendar month.
- *  - With rollover, unused visits carry into the next period (they don't expire) starting from the period the
- *    plan was set up in. Periods before that aren't counted.
+ *  - No rollover: unused visits are lost, and going over simply shows e.g. 13 of 12 (0 left).
+ *  - The user can correct which days count (a forgotten day, a day the gym didn't count): an adjustment always
+ *    wins over what the workouts say. Periods before the one the plan was set up in aren't listed.
  */
 
 const fromKey = (k: string) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d) }
@@ -46,12 +47,11 @@ export function visitDays(
 export interface PeriodSummary {
   start: Date
   end: Date
-  /** The plan's visits per period. */
-  base: number
-  /** Unused visits carried in from the previous period (0 without rollover). */
-  carried: number
+  /** The plan's visits for the period. */
   total: number
+  /** Counted visits; can exceed `total` (13 of 12). */
   used: number
+  /** Never negative. */
   left: number
 }
 
@@ -59,18 +59,45 @@ export interface PeriodSummary {
 export function gymPeriods(allowance: GymAllowance, days: Set<string>, today: Date): PeriodSummary[] {
   const since = fromKey(allowance.since)
   const out: PeriodSummary[] = []
-  let carry = 0
   let p = periodFor(since > today ? today : since, allowance.startDay)
   for (let guard = 0; guard < 1200 && dayDiff(p.start, today) >= 0; guard++) {
     let used = 0
     for (const k of days) { const d = fromKey(k); if (dayDiff(p.start, d) >= 0 && dayDiff(d, p.end) > 0) used++ }
-    const carried = allowance.rollover ? carry : 0
-    const total = allowance.visits + carried
-    out.push({ start: p.start, end: p.end, base: allowance.visits, carried, total, used, left: Math.max(0, total - used) })
-    carry = Math.max(0, total - used)
+    out.push({ start: p.start, end: p.end, total: allowance.visits, used, left: Math.max(0, allowance.visits - used) })
     p = periodFor(p.end, allowance.startDay)
   }
   return out
+}
+
+export type VisitAdjustments = Record<string, 'add' | 'remove'>
+
+/** Days that count: (days with a qualifying workout + manually added days) minus manually removed days. */
+export function effectiveVisitDays(workoutDays: Set<string>, adjustments: VisitAdjustments = {}): Set<string> {
+  const out = new Set(workoutDays)
+  for (const [k, v] of Object.entries(adjustments)) {
+    if (v === 'add') out.add(k)
+    else out.delete(k)
+  }
+  return out
+}
+
+/**
+ * Flip whether `key` counts. Never stores a redundant adjustment: turning a workout day back on, or a manually
+ * added day off, simply deletes the adjustment.
+ */
+export function toggleVisitDay(adjustments: VisitAdjustments = {}, key: string, hasWorkout: boolean): VisitAdjustments {
+  const next = { ...adjustments }
+  const counted = effectiveVisitDays(hasWorkout ? new Set([key]) : new Set(), adjustments).has(key)
+  if (counted) { if (hasWorkout) next[key] = 'remove'; else delete next[key] }
+  else if (hasWorkout) delete next[key]
+  else next[key] = 'add'
+  return next
+}
+
+/** Every day of a period, in order. */
+export function periodDays(period: Pick<Period, 'start' | 'end'>): Date[] {
+  const n = Math.max(0, dayDiff(period.start, period.end))
+  return Array.from({ length: n }, (_, i) => new Date(period.start.getFullYear(), period.start.getMonth(), period.start.getDate() + i))
 }
 
 /** Days remaining in the period including today (1 on its last day). */

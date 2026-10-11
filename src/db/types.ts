@@ -41,6 +41,12 @@ export interface Gym {
   name: string
   /** Optional visit plan (e.g. 12 visits per month). Absent = no plan, and nothing about it is shown anywhere. */
   allowance?: GymAllowance
+  /**
+   * Manual corrections to which days count as visits, by YYYY-MM-DD: 'add' counts a day without a recorded
+   * workout (e.g. you forgot to log it), 'remove' excludes a day that has one (e.g. the gym didn't count it).
+   * Kept separate from the plan, so removing and re-adding a plan doesn't lose them.
+   */
+  visitAdjustments?: Record<string, 'add' | 'remove'>
 }
 
 export interface GymAllowance {
@@ -48,8 +54,6 @@ export interface GymAllowance {
   visits: number
   /** Day of month a period starts on (1 = calendar month); clamped to short months, so 31 means "last day". */
   startDay: number
-  /** Unused visits carry into the next period. */
-  rollover: boolean
   /** YYYY-MM-DD the plan was set up; periods before it aren't counted. */
   since: string
 }

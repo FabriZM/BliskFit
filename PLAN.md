@@ -4,7 +4,7 @@ Personal gym tracker for Android. Built web-first as an offline PWA (installable
 
 ## Stack
 React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, three bottom tabs (no Home), in this order: **Profile · Workout · Exercises**. The app opens on Profile.
-- **Profile** (default screen): at the top, the week card (this week's training days against the goal, and the weekly streak); then Stats (charts, muscle volume, PRs) and body weight and measurements. Settings (goal, week start, language, units, rest popup, backup, gyms) open from a gear icon at the top right.
+- **Profile** (default screen): at the top, the week card (this week's training days against the goal, and the weekly streak); then your pinned stats (a few cards chosen from the full Stats panel, which opens from a "See all" link) and the gym visit card. Settings (goal, week start, language, units, rest popup, backup, gyms) open from a gear icon at the top right.
 - **Workout:** today's suggested workout with Start (or Resume if a session is running), then routines (incl. programs). **History** (sessions, calendar, recent PRs) opens from an icon at the top right.
 - **Exercises:** library, search by muscle and equipment, favorites, add exercise; later the interactive body figure.
 An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
@@ -27,7 +27,7 @@ Stay with web + Capacitor rather than full native Kotlin: one codebase gives the
 | MuscleGroup | id, name, parent (e.g. Calves > Gastrocnemius, Soleus) |
 | Exercise | name, tracking type (see below), equipment, primary muscles, secondary muscles, photo, demo image/animation URL, user video link, default rest, learned rest, source (seeded/custom) |
 | ExerciseGymNote | exercise, gym (optional), setup note (seat height, pin, grip width), photo |
-| Gym | id, name, optional visit allowance (none by default; if set: visits per period, billing day, rollover); app works fully without any gym or allowance |
+| Gym | id, name, optional visit allowance (none by default; if set: visits per period and billing day, no rollover; plus optional manual day adjustments); app works fully without any gym or allowance |
 | Routine | name, ordered RoutineExercise (target sets, rep range, rest override, superset group), archived |
 | Program | name, weeks, schedule (routine per weekday) or rotation (A/B/C cycle), optional default gym |
 | WorkoutSession | start, end, routine ref, optional gym ref, notes, status (active/paused/finished), paused intervals |
@@ -136,7 +136,8 @@ Both are built from pure, tested functions over finished sessions, so they also 
 ### M5b: Gym visit plan (optional)
 **Status: done.** Notes on decisions the spec left open:
 - **Where:** the plan is configured per gym under Profile → Settings → Gyms (collapsed "Visit plan (optional)" on each gym; Save plan / Remove plan). The Profile "Gym visits" section only exists while at least one gym has a plan.
-- **Rollover:** unused visits carry forward and never expire (they accumulate across periods), counted from the period the plan was set up in (`allowance.since`, set when the plan is first saved). Visits before that period are ignored; visits earlier in the *same* period still count, so setting a plan mid-month stays honest. Changing the visit count re-derives every period (nothing per period is stored).
+- **No rollover:** unused visits are lost at the end of each period, and going over just shows the real count (e.g. "13 of 12", 0 left): the user deals with it. `since` (the period the plan was set up in) only limits how far back past periods are listed; visits earlier in that same period still count.
+- **Editing visits:** the card has an edit button (✎) that opens a day grid for the period (‹ › to go to earlier periods back to when the plan was set up). Days with a workout count automatically; tap a day to add one you forgot to log, or remove one the gym didn't count. Adjustments are stored per gym (`visitAdjustments`, by date) and always win over the workouts; turning a day back to what the workouts say deletes the adjustment, so nothing redundant is kept. They survive removing and re-adding the plan. Future days can't be toggled.
 - **Periods:** start on the billing day each month, clamped to short months (31 → last day of Feb/Apr...), 1 = calendar month. "Days left" includes today.
 - **Pace hint:** "about every N days" (rounded down so you don't undershoot), "most days", "every remaining day", or "N visits more than days left".
 - **Default gym:** a program has an optional default gym (Program editor). It applies to routines in the *active* program (schedule or rotation) however they are started; everything else uses the last used gym; deleted gyms are never used. The gym stays optional and changeable from the session menu.
@@ -144,9 +145,9 @@ Both are built from pure, tested functions over finished sessions, so they also 
 - **Not done:** the optional "visits unused near period end" notification.
 
 For gyms that include a limited number of visits per period (e.g. 12 per month). Entirely optional: with no plan configured, nothing about it appears anywhere.
-- **No allowance by default:** a new gym has none and behaves exactly like today. Setting an allowance is a deliberate, optional step in Profile > Gyms (visits per period, billing day or calendar month, rollover on/off), and it can be cleared again at any time without losing session history.
+- **No allowance by default:** a new gym has none and behaves exactly like today. Setting an allowance is a deliberate, optional step in Profile > Gyms (visits per period, billing day or calendar month), and it can be cleared again at any time without losing session history.
 - **Tied to a gym:** the allowance is a property of the Gym, and only gyms that have one get a card.
-- **Shown only on Profile, and only for gyms with an allowance:** a compact card, e.g. "Gym X: 7 of 12 visits · 5 left · 9 days left", with a thin progress bar, plus past periods ("last period: 11 of 12"). Not shown on the Workout tab.
+- **Shown only on Profile, and only for gyms with an allowance:** a compact card, e.g. "Gym X: 7 of 12 visits · 5 left · 9 days left", with a thin progress bar, plus past periods ("last period: 11 of 12") and an edit option to correct which days count. Not shown on the Workout tab.
 - **Gym selection in a workout:** stays optional and tucked away. The gym is preselected automatically: the program's default gym if the session comes from a program that has one, otherwise the last used gym. It can be changed or cleared from the session menu.
 - **What counts as a visit:** each calendar day with at least one finished working session at that gym counts once. A session needs at least one completed non-warm-up set; empty or warm-up-only sessions don't count. Two sessions on the same day count as one.
 - **Derived, not stored:** used and remaining visits are calculated from history for the current period window, so edits and deletes in History keep it correct. Period windows follow the billing day (handle short months, e.g. a billing day of 31), not just the calendar month.
@@ -156,7 +157,34 @@ Tests: period boundaries, billing-day edge cases, same-day sessions, sessions wi
 Done when: a gym with no allowance shows nothing; with a 12-visit allowance, finishing a working session at that gym moves the Profile card from N to N+1 once per day.
 
 ### M6: Stats and body tracking
-Per-exercise charts (max weight, e1RM, volume, reps) with date range, muscle-group weekly sets/volume, muscle balance (push/pull ratio, left/right measurement asymmetry), plateau detector, weekly summary (sessions, volume, new PRs, under-trained muscles), body weight log with trend, body measurements (standard + custom, left/right) with charts and change summaries. Gym comparison for the same exercise (only shown if gyms are used).
+A full **Stats panel** (Profile → Stats, route `/profile/stats`) holds every chart and number. Profile itself only shows the stats you **pin**, so it stays short and personal. Everything is derived from finished sessions, sets and body entries (nothing aggregated is stored), so edits and deletes in History flow through, same as goals and gym visits.
+
+**Panel layout:** a segmented switch at the top, each section a scroll of cards sharing one date-range control (4 weeks / 3 months / 6 months / year / all).
+- **Overview:** weekly summary (sessions, total volume, new PRs, under-trained muscles) with a previous-week comparison; recent PRs.
+- **Exercises:** pick an exercise (search, favorites first), then charts for max weight, estimated 1RM (Epley), volume and reps per session; plateau flag when the best e1RM hasn't improved over the last N sessions (default 5, at least 3 weeks); PRs list for that exercise. Charts respect the tracking type (assisted: lower is better; duration/cardio: time, distance, pace instead of weight).
+- **Muscles:** weekly sets and volume per muscle group (primary full credit, secondary partial, from the exercise-muscle links), with the drill-down from group to muscle; balance block with push/pull ratio and left/right asymmetry from measurements; under-trained list (below a set-per-week target, default 10, adjustable).
+- **Body:** body weight log with a smoothed trend line and change over the range; measurements (standard set plus custom types, left/right pairs shown side by side) with a chart and change summary each; quick add for today's weight.
+- **Gyms:** same-exercise comparison across gyms (best set, e1RM, volume per gym). Section only exists when sessions have been logged at two or more gyms, matching the "nothing shown unless used" rule from M5b.
+
+**Pinning:**
+- Every card in the panel has a pin toggle. A pin stores *what* is shown, not a snapshot: `{ kind, exerciseId?, muscleId?, measurement?, range }`, so "Bench press e1RM, 3 months" and "Squat e1RM, 3 months" are two pins. Persisted in Settings (`pinnedStats`, ordered), default-empty field so old data needs no migration.
+- Profile renders pins as compact cards: title, current value, change over the range, and a small sparkline. Tap opens the panel scrolled to that card with the same range. Body weight's pin has an inline "+ add today" action.
+- "Edit" mode on Profile's stats section reorders and unpins; capped at 6 pins to keep the tab light. First launch with history and no pins shows three suggested defaults (weekly summary, weekly sets by muscle, body weight) with a one-tap dismiss; with no history, an empty hint pointing to the panel.
+- A pin whose exercise or measurement is deleted disappears silently.
+
+**Build order** (each step shippable on its own):
+1. Pure functions (`lib/stats.ts`: series per exercise and metric, range bucketing, muscle credit, plateau, summary, trend smoothing) with tests, then the panel shell, range control, pin framework and Profile pinned section, with the Exercises section as the first real content.
+2. Overview and Muscles (weekly summary, set/volume per muscle, under-trained, push/pull).
+3. Body weight and measurements (entry UI, trend, left/right asymmetry, change summaries, charts).
+4. Gym comparison.
+
+**Decisions to confirm:**
+- Push/pull is derived from muscle groups (push: chest, shoulders, triceps; pull: back, biceps), not from exercise names. Exercises hitting both count for both at their credit weight.
+- Trend line is an exponential moving average on body weight (so a single weigh-in doesn't jump the line); raw points still shown.
+- Charts reuse the Recharts/uPlot choice and the dataviz palette conventions from `GoalChart` (table view and readout for accessibility).
+
+Tests: range bucketing and week boundaries, muscle credit split, plateau detection (flat, rising, too few sessions), tracking-type metrics (assisted, duration), trend smoothing, left/right asymmetry, pin persistence and deleted-target cleanup, gym section hidden with fewer than two gyms.
+Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sparkline and tapping it opens the panel on that chart; unpinning removes it; a body weight entry moves the trend and the Profile card; the Gyms section appears only after logging at two gyms.
 
 ### M7: Data safety and sharing
 - JSON export/import, CSV export of sets, persistent storage request.
