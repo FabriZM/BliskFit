@@ -316,7 +316,14 @@
     "sets": "Series",
     "volume": "Volumen",
     "exercises": "Ejercicios",
-    "prs": "Récords"
+    "prs": "Récords",
+    "shareImage": "Compartir imagen",
+    "share": "Compartir",
+    "pr": "PR",
+    "moreExercises_one": "+ {{count}} ejercicio más",
+    "moreExercises_other": "+ {{count}} ejercicios más",
+    "imageAlt": "Imagen del resumen del entrenamiento",
+    "imageHelp": "Muestra solo el entrenamiento: sin gimnasio, notas ni datos corporales."
   },
   "forgotten": {
     "title": "¿Sigues entrenando?",

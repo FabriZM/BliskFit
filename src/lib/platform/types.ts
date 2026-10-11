@@ -19,9 +19,10 @@ export interface Platform {
   keepAwake(on: boolean): Promise<void>
   /**
    * Hands a file to the user: a download in the browser, Android's share sheet in the app (save to Files or Drive,
-   * send it, ...). Resolves false if the user dismissed the share sheet.
+   * send it, ...). With `share`, the browser also offers its share sheet where it has one (phones), falling back to
+   * a download. Resolves false if the user dismissed the share sheet.
    */
-  saveFile(name: string, data: Blob): Promise<boolean>
+  saveFile(name: string, data: Blob, opts?: { share?: boolean }): Promise<boolean>
   /** Shares a link through the system share sheet, or copies it where there's none. */
   shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'dismissed'>
   notifications: {

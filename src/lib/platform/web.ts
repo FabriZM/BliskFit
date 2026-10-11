@@ -24,7 +24,13 @@ export const webPlatform: Platform = {
   vibrate(pattern = [250, 120, 250]) {
     try { navigator.vibrate?.(pattern) } catch { /* unsupported */ }
   },
-  async saveFile(name, data) {
+  async saveFile(name, data, opts) {
+    const file = new File([data], name, { type: data.type })
+    if (opts?.share && navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return true } catch (e) {
+        if ((e as DOMException).name === 'AbortError') return false
+      }
+    }
     const url = URL.createObjectURL(data)
     const a = document.createElement('a')
     a.href = url

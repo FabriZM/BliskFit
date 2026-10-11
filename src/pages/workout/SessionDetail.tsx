@@ -13,6 +13,7 @@ import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
 import { SetFields } from './SetRow'
+import SummaryImage from './SummaryImage'
 
 /** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
 function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
@@ -48,6 +49,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
   const showPR = useSettings((s) => s.settings.prBadges)
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [sharing, setSharing] = useState(false)
 
   const data = useLiveQuery(async () => {
     const session = await db.sessions.get(id)
@@ -163,8 +165,24 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
 
       <div className="actions">
         <button className={editing ? 'primary' : ''} onClick={() => setEditing(!editing)}>{editing ? t('detail.doneEditing') : `✎ ${t('detail.edit')}`}</button>
+        {items.length > 0 && !editing && <button onClick={() => setSharing(true)}>{t('summary.shareImage')}</button>}
         <button className="danger" onClick={() => setConfirmDelete(true)}>{t('detail.deleteWorkout')}</button>
       </div>
+      {sharing && (
+        <SummaryImage onClose={() => setSharing(false)} input={{
+          title: routineName ?? t('workout.empty'),
+          date: `${dayFmt.format(session.startedAt)} · ${timeFmt.format(session.startedAt)}`,
+          stats: [
+            { value: formatClock(elapsedMs(session, Date.now())), label: t('summary.duration') },
+            { value: String(stats.sets), label: t('summary.sets') },
+            { value: `${formatNum(kgToDisplay(stats.volume, units))} ${units}`, label: t('summary.volume') },
+            showPR ? { value: String(prCount), label: t('summary.prs') } : { value: String(stats.exercises), label: t('summary.exercises') },
+          ],
+          items, sets, units, trackingOf,
+          names: new Map([...exercises].map(([k, e]) => [k, e.name])),
+          prs: showPR ? prs : new Map(),
+        }} />
+      )}
       {justFinished && <Link className="btn wide-link" to="/workout">{t('common.done')}</Link>}
 
       {confirmDelete && (

@@ -316,7 +316,14 @@
     "sets": "Sets",
     "volume": "Volume",
     "exercises": "Exercises",
-    "prs": "PRs"
+    "prs": "PRs",
+    "shareImage": "Share image",
+    "share": "Share",
+    "pr": "PR",
+    "moreExercises_one": "+ {{count}} more exercise",
+    "moreExercises_other": "+ {{count}} more exercises",
+    "imageAlt": "Workout summary image",
+    "imageHelp": "Shows the workout only: no gym, notes or body data."
   },
   "forgotten": {
     "title": "Still working out?",
