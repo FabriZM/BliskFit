@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BliskFit</string>
+    <string name="title_activity_main">BliskFit</string>
+    <string name="package_name">com.fabrizm.bliskfit</string>
+    <string name="custom_url_scheme">com.fabrizm.bliskfit</string>
+</resources>

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { adjustRest, clearRest } from '../../db/workout'
 import type { WorkoutSession } from '../../db/types'
 import { beep, vibrate } from '../../lib/alerts'
-import { notificationPermission, showNotification } from '../../lib/notify'
+import { platform } from '../../lib/platform'
+import { useNotificationState } from '../../lib/platform/hooks'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
 
@@ -13,25 +14,18 @@ export default function RestBar({ session }: { session: WorkoutSession }) {
   const now = useNow(250)
   const rest = session.rest
   const alerted = useRef<number | null>(null)
+  // In the Android app the scheduled notification already sounds and vibrates, so don't double up.
+  const { permission } = useNotificationState()
+  const osAlerts = platform.isNative && permission === 'granted'
   const remaining = rest ? rest.endsAt - now : 0
 
   useEffect(() => {
     // Only alert for a timer that ends while we're looking; never replay one that expired while away.
     if (rest && remaining <= 0 && alerted.current !== rest.endsAt) {
-      if (now - rest.endsAt < 5000) { vibrate(); beep() }
+      if (now - rest.endsAt < 5000 && !osAlerts) { vibrate(); beep() }
       alerted.current = rest.endsAt
     }
-  }, [rest, remaining, now])
-
-  // Backup for when the page is hidden at the moment the rest ends (vibration/beep can be blocked there).
-  // Best effort: a locked phone may suspend this timer; the native wrapper (M3b) removes that limit.
-  useEffect(() => {
-    if (!rest || notificationPermission() !== 'granted') return
-    const id = setTimeout(() => {
-      if (document.hidden) void showNotification(t('workout.restOverShort'), t('workout.restNotification'), 'rest-over', [250, 120, 250])
-    }, Math.max(0, rest.endsAt - Date.now()))
-    return () => clearTimeout(id)
-  }, [rest?.endsAt, t]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rest, remaining, now, osAlerts])
 
   if (!rest) return null
   const over = remaining <= 0

@@ -296,5 +296,21 @@
     "empty": "No finished workouts yet.",
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "notifications": "Notifications",
+    "exact": "Exact alarms",
+    "enable": "Enable",
+    "openSettings": "Open settings",
+    "notNow": "Not now",
+    "exactTitle": "Allow exact alarms",
+    "exactBody": "Android only fires timers on time if BliskFit may schedule exact alarms. Without it, the rest-over alert can arrive late.",
+    "state": {
+      "granted": "On",
+      "denied": "Blocked",
+      "prompt": "Off",
+      "unsupported": "Not available"
+    }
   }
 }

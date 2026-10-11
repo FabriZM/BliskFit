@@ -91,6 +91,17 @@ Done when: a full push/pull/legs split can be built and scheduled.
 Done when: a real gym session works end to end.
 
 ### M3b: Android wrapper (APK)
+**Status: built and verified on the Pixel 8 emulator (Android 17), not yet on a physical phone.** With the screen off, the rest-over notification fired and showed as "Go! Time for your next set." (checked in `dumpsys notification` and the shade). The 2-hour forgotten-workout alarm is registered with Android as an exact wake-up alarm 2h out (confirmed in `dumpsys alarm`); I could not advance the emulator clock to watch it fire. Notes:
+- **Layout:** `capacitor.config.json` (JSON, because TypeScript 7 no longer exposes the compiler API Capacitor uses to read `.ts` config), app id `com.fabrizm.bliskfit`, Capacitor 8 with local-notifications, haptics and keep-awake. The `android/` project is committed (without build output or `local.properties`).
+- **`lib/platform`:** one interface with a web implementation (Vibration, Wake Lock, service-worker notifications) and a native one (plugins loaded lazily, so the PWA never loads them). `TimerNotifications` is always mounted and owns the rest-over (id 1001) and 2h-forgotten (id 1002) notifications; when the OS notification is guaranteed, the in-app beep/vibration is skipped to avoid doubling up.
+- **Foreground service:** not needed. Scheduled alarms fire without it, so rest timers survive screen lock without a persistent notification.
+- **Exact alarms:** Android 14+ denies them by default and the plugin would otherwise throw the user into system settings on every schedule call. We schedule normally until access is granted, and a one-time dialog in the workout (plus Settings → Reminders) explains and opens the page. Without the grant, the alert may arrive a little late.
+- **Training-day reminders:** the platform API supports them; the feature itself belongs to M5.
+- **Gotcha:** never resolve a promise with a Capacitor plugin object (it's a proxy; `.then()` is rejected by the native bridge), so the native layer wraps it.
+- **Building:** `pnpm android:debug` / `android:release` / `android:install` (`scripts/android.sh`). The native build uses `VITE_NATIVE=1 VITE_BASE=/` (no service worker). It needs JDK 21 and the Android SDK; the script passes JDK 21 explicitly because a machine-wide `org.gradle.java.home` would override `JAVA_HOME`. Launcher icons come from `public/icon.svg` via `pnpm icons:android`.
+- **Signing key:** `~/.bliskfit-signing/` (`bliskfit-release.jks` + `keystore.properties`, mode 600, outside the repo). **Back it up offline; losing it means installed copies can never be updated.** The release APK is signed with it (verified with `apksigner`).
+- **Not covered by the pnpm release-age policy:** Gradle/Maven dependencies. Keep Android library versions pinned by Capacitor and review upgrades.
+
 Add Capacitor to the existing web app and build a debug/release APK for the owner's phone. Native plugins only for what the PWA can't do reliably: scheduled local notifications (rest timer end, 2h forgotten-session reminder, training-day reminders), haptics, keep-awake, optionally a foreground service so the rest timer survives screen lock. These sit behind a small platform interface (`lib/platform`) with browser fallbacks, so the PWA keeps working. Set up the release signing key (back it up: losing it breaks updates) and a build script.
 Done when: with the screen locked, the rest timer alerts and the 2h reminder fires.
 

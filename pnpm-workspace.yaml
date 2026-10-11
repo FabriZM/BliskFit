@@ -5,3 +5,10 @@ minimumReleaseAgeStrict: true
 # Dependencies may not run install scripts. Nothing needs one today (sharp ships prebuilt binaries);
 # if a package ever does, allowlist it explicitly after reviewing it.
 ignoreScripts: true
+
+# Reviewed exceptions for `pnpm audit` (re-check when @capacitor/cli updates):
+# GHSA-w5hq-g745-h8pq: uuid <11.1.1 reached via @capacitor/cli > xcode (iOS project helper). Build-time tool on the
+# developer machine only, never shipped in the app, and we don't target iOS.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-w5hq-g745-h8pq

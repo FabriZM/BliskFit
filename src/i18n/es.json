@@ -296,5 +296,21 @@
     "empty": "Aún no hay entrenos terminados.",
     "sets_one": "{{count}} serie",
     "sets_other": "{{count}} series"
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "notifications": "Notificaciones",
+    "exact": "Alarmas exactas",
+    "enable": "Activar",
+    "openSettings": "Abrir ajustes",
+    "notNow": "Ahora no",
+    "exactTitle": "Permitir alarmas exactas",
+    "exactBody": "Android solo dispara los temporizadores a tiempo si BliskFit puede programar alarmas exactas. Sin eso, el aviso de fin de descanso puede llegar tarde.",
+    "state": {
+      "granted": "Activadas",
+      "denied": "Bloqueadas",
+      "prompt": "Desactivadas",
+      "unsupported": "No disponible"
+    }
   }
 }

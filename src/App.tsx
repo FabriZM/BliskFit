@@ -8,6 +8,7 @@ import Summary from './pages/workout/Summary'
 import History from './pages/workout/History'
 import ForgottenGuard from './components/ForgottenGuard'
 import InProgressBar from './components/InProgressBar'
+import TimerNotifications from './components/TimerNotifications'
 import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
 import ProgramEditor from './pages/programs/ProgramEditor'
@@ -74,6 +75,7 @@ export default function App() {
         </Routes>
       </main>
       <ForgottenGuard />
+      <TimerNotifications />
       <InProgressBar />
       <nav className="tabbar">
         {TABS.map(({ path, key, Icon, match }) => {

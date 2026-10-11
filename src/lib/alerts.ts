@@ -1,3 +1,5 @@
+import { platform } from './platform'
+
 let ctx: AudioContext | undefined
 
 /** Call from a tap so the browser lets us play the rest-timer beep later. */
@@ -23,6 +25,4 @@ export function beep(times = 3): void {
   }
 }
 
-export function vibrate(pattern: number | number[] = [250, 120, 250]): void {
-  try { navigator.vibrate?.(pattern) } catch { /* unsupported */ }
-}
+export const vibrate = (pattern?: number[]): void => platform.vibrate(pattern)

@@ -1,12 +1,10 @@
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { acknowledgeForgotten, discardSession, finishSession, getActiveSession } from '../db/workout'
-import { notificationPermission, showNotification } from '../lib/notify'
 import { useNow } from '../lib/useNow'
-import { forgottenDueAt, forgottenEndTime, isForgotten, lastDoneAt } from '../lib/workout'
+import { forgottenEndTime, isForgotten, lastDoneAt } from '../lib/workout'
 
 /** Offers to end a session that has had no logged set for 2 active hours, wherever the user is in the app. */
 export default function ForgottenGuard() {
@@ -17,16 +15,6 @@ export default function ForgottenGuard() {
     const session = await getActiveSession()
     return session ? { session, sets: await db.setLogs.where('sessionId').equals(session.id).toArray() } : null
   }, [])
-
-  // Best effort while the page is alive but hidden: a closed PWA can't schedule this (native wrapper does, M3b).
-  const dueAt = data ? forgottenDueAt(data.session, data.sets, Date.now()) : undefined
-  useEffect(() => {
-    if (dueAt === undefined || notificationPermission() !== 'granted') return
-    const id = setTimeout(() => {
-      if (document.hidden) void showNotification(t('forgotten.title'), t('forgotten.notification'), 'forgotten-session')
-    }, Math.min(2_000_000_000, Math.max(0, dueAt - Date.now())))
-    return () => clearTimeout(id)
-  }, [dueAt, t])
 
   if (!data || !isForgotten(data.session, data.sets, now)) return null
   const end = forgottenEndTime(data.session, data.sets)

@@ -5,12 +5,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // Pages serves from /BliskFit/; Capacitor/custom domain builds set VITE_BASE=/.
 const base = process.env.VITE_BASE ?? '/BliskFit/'
+// The Android app bundles its own assets, so it needs neither the service worker nor the install manifest.
+const native = process.env.VITE_NATIVE === '1'
 
 export default defineConfig({
   base,
   plugins: [
     react(),
     VitePWA({
+      disable: native,
       registerType: 'prompt',
       includeAssets: ['icon.svg'],
       manifest: {

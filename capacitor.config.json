@@ -1,0 +1,15 @@
+{
+  "appId": "com.fabrizm.bliskfit",
+  "appName": "BliskFit",
+  "webDir": "dist",
+  "backgroundColor": "#111827",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_bliskfit",
+      "iconColor": "#34d399"
+    },
+    "SystemBars": {
+      "style": "DARK"
+    }
+  }
+}

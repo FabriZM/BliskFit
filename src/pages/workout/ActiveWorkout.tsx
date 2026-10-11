@@ -9,7 +9,7 @@ import {
 } from '../../db/workout'
 import { groupPositions } from '../../lib/routines'
 import { formatClock } from '../../lib/units'
-import { notificationPermission, requestNotifications } from '../../lib/notify'
+import { useNotificationState } from '../../lib/platform/hooks'
 import { useNow } from '../../lib/useNow'
 import { useWakeLock } from '../../lib/useWakeLock'
 import { elapsedMs } from '../../lib/workout'
@@ -18,6 +18,7 @@ import ExercisePicker from '../routines/ExercisePicker'
 import ExerciseCard from './ExerciseCard'
 import MuscleCounter from './MuscleCounter'
 import RestBar from './RestBar'
+import ReminderSetup from '../../components/ReminderSetup'
 import RestPopup from './RestPopup'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
@@ -30,7 +31,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const [swapTo, setSwapTo] = useState<Exercise | null>(null)
   const [menu, setMenu] = useState(false)
   const [confirmFinish, setConfirmFinish] = useState(false)
-  const [notif, setNotif] = useState(notificationPermission())
+  const notif = useNotificationState()
   useWakeLock(true)
 
   const sets = useLiveQuery(() => db.setLogs.where('sessionId').equals(session.id).toArray(), [session.id]) ?? []
@@ -79,11 +80,9 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
               </select>
             </label>
           )}
-          {notif === 'default' && (
-            <button onClick={async () => setNotif(await requestNotifications())}>{t('workout.enableReminders')}</button>
-          )}
-          {notif === 'granted' && <span className="muted small">{t('workout.remindersOn')}</span>}
-          {notif === 'denied' && <span className="muted small">{t('workout.remindersDenied')}</span>}
+          {notif.permission === 'prompt' && <button onClick={() => void notif.request()}>{t('workout.enableReminders')}</button>}
+          {notif.permission === 'granted' && <span className="muted small">{t('workout.remindersOn')}</span>}
+          {notif.permission === 'denied' && <span className="muted small">{t('workout.remindersDenied')}</span>}
           <button className="danger" onClick={() => setConfirmFinish(true)}>{t('workout.discard')}</button>
         </div>
       )}
@@ -100,6 +99,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       </ul>
       <button className="primary wide" onClick={() => setAdding(true)}>+ {t('routines.addExercises')}</button>
 
+      <ReminderSetup />
       <RestBar session={session} />
       {restPopup && <RestPopup session={session} />}
 
