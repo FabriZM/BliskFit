@@ -53,7 +53,7 @@ details { background: var(--card); border-radius: 8px; padding: 8px 12px; margin
 .wk-timer { font-size: 1.6rem; font-variant-numeric: tabular-nums; } .wk-actions { display: flex; gap: 6px; align-items: center; }
 .menu { display: flex; flex-direction: column; gap: 8px; background: var(--card); border-radius: 12px; padding: 12px; margin: 8px 0; } .menu label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; }
 .muscle-counter { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; } .muscle-counter .chip { white-space: nowrap; font-size: .8rem; padding: 4px 10px; }
-.ex-card.skipped { opacity: .55; } .ex-card .muted { margin: 2px 0 6px; }
+.ex-card.skipped .swipe-body > :not(.menu):not(.rx-head) { opacity: .5; } .ex-card.skipped .rx-name { opacity: .6; } .ex-card .muted { margin: 2px 0 6px; }
 .sets { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
 .set { border-radius: 10px; background: var(--bg); padding: 6px; } .set.done { background: #064e3b55; }
 .set-main { display: flex; align-items: center; gap: 6px; }
@@ -83,3 +83,6 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 .rest-card.over .ring-fill { stroke: #fbbf24; stroke-dashoffset: 0; }
 .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; } .ring-text strong { font-size: 2.6rem; font-variant-numeric: tabular-nums; } .ring-text span { color: var(--muted); }
 .rest-actions { display: flex; gap: 8px; width: 100%; } .rest-actions button { flex: 1; }
+.menu.icons { flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px; }
+.menu.icons button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 64px; padding: 6px 10px; background: var(--bg); }
+.menu.icons button span { font-size: 1.3rem; line-height: 1; } .menu.icons button small { font-size: .65rem; color: var(--muted); }

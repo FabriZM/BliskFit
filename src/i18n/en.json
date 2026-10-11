@@ -252,7 +252,9 @@
     "restOverShort": "Go!",
     "dismiss": "Hide",
     "restNotification": "Time for your next set.",
-    "notifyRest": "Notify me when rest ends (screen off)"
+    "notifyRest": "Notify me when rest ends (screen off)",
+    "swapShort": "Swap",
+    "skipShort": "Skip"
   },
   "summary": {
     "title": "Workout complete",

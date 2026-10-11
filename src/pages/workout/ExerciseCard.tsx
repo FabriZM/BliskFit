@@ -96,9 +96,14 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       </p>
 
       {menu && (
-        <div className="menu">
-          <button onClick={() => { onSwap(); setMenu(false) }}>{t('workout.swap')}</button>
-          <button onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>{item.skipped ? t('workout.unskip') : t('workout.skip')}</button>
+        <div className="menu icons" role="menu">
+          <button role="menuitem" title={t('workout.swap')} aria-label={t('workout.swap')} onClick={() => { onSwap(); setMenu(false) }}>
+            <span aria-hidden>🔄</span><small>{t('workout.swapShort')}</small>
+          </button>
+          <button role="menuitem" title={item.skipped ? t('workout.unskip') : t('workout.skip')} aria-label={item.skipped ? t('workout.unskip') : t('workout.skip')}
+            onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>
+            <span aria-hidden>{item.skipped ? '↩️' : '⏭️'}</span><small>{item.skipped ? t('workout.unskip') : t('workout.skipShort')}</small>
+          </button>
         </div>
       )}
 

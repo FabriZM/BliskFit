@@ -252,7 +252,9 @@
     "restOverShort": "¡Vamos!",
     "dismiss": "Ocultar",
     "restNotification": "Hora de tu siguiente serie.",
-    "notifyRest": "Avisarme al terminar el descanso (pantalla apagada)"
+    "notifyRest": "Avisarme al terminar el descanso (pantalla apagada)",
+    "swapShort": "Cambiar",
+    "skipShort": "Saltar"
   },
   "summary": {
     "title": "Entreno completado",
