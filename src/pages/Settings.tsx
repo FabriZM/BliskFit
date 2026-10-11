@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { setWeeklyGoal } from '../db/goals'
@@ -11,12 +10,6 @@ export default function Settings() {
   const { t, i18n } = useTranslation()
   const { settings, update } = useSettings()
   const rem = useNotificationState()
-  const [persisted, setPersisted] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    void navigator.storage?.persisted?.().then(setPersisted)
-  }, [])
-
   return (
     <section>
       <p><Link to="/profile">← {t('tabs.profile')}</Link></p>
@@ -104,8 +97,7 @@ export default function Settings() {
       </label>
       <p className="muted small help">{t('reminders.trainHelp')}{platform.isNative ? '' : ` ${t('reminders.webNote')}`}</p>
       <p className="row">
-        {t('profile.persist')}
-        <span className="muted">{persisted ? t('profile.persistGranted') : t('profile.persistDenied')}</span>
+        <Link to="/profile/backup">{t('backup.title')}</Link>
       </p>
       <p className="row">
         <Link to="/profile/gyms">{t('gyms.title')}</Link>

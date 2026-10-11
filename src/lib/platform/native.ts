@@ -19,6 +19,16 @@ async function localNotifications(): Promise<{ ln: (typeof import('@capacitor/lo
   return { ln: LocalNotifications }
 }
 
+async function blobToBase64(b: Blob): Promise<string> {
+  const url = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader()
+    r.onload = () => resolve(r.result as string)
+    r.onerror = () => reject(r.error)
+    r.readAsDataURL(b)
+  })
+  return url.slice(url.indexOf(',') + 1)
+}
+
 const toState = (s: string): PermissionState =>
   s === 'granted' ? 'granted' : s === 'denied' ? 'denied' : 'prompt'
 
@@ -27,6 +37,17 @@ export const nativePlatform: Platform = {
   vibrate(pattern = [250, 120, 250]) {
     const duration = Math.min(600, pattern.reduce((a, b) => a + b, 0))
     void import('@capacitor/haptics').then(({ Haptics }) => Haptics.vibrate({ duration }))
+  },
+  async saveFile(name, data) {
+    const [{ Filesystem, Directory }, { Share }] = await Promise.all([import('@capacitor/filesystem'), import('@capacitor/share')])
+    // Written to the app's cache (no storage permission needed), then offered through the share sheet.
+    const { uri } = await Filesystem.writeFile({ path: name, data: await blobToBase64(data), directory: Directory.Cache })
+    try {
+      await Share.share({ title: name, files: [uri] })
+      return true
+    } catch {
+      return false // dismissed
+    }
   },
   async keepAwake(on) {
     const { KeepAwake } = await import('@capacitor-community/keep-awake')

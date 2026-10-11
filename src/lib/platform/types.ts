@@ -17,6 +17,11 @@ export interface Platform {
   vibrate(pattern?: number[]): void
   /** Keep the screen on (live workout). */
   keepAwake(on: boolean): Promise<void>
+  /**
+   * Hands a file to the user: a download in the browser, Android's share sheet in the app (save to Files or Drive,
+   * send it, ...). Resolves false if the user dismissed the share sheet.
+   */
+  saveFile(name: string, data: Blob): Promise<boolean>
   notifications: {
     permission(): Promise<PermissionState>
     request(): Promise<PermissionState>

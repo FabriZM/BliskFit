@@ -24,6 +24,17 @@ export const webPlatform: Platform = {
   vibrate(pattern = [250, 120, 250]) {
     try { navigator.vibrate?.(pattern) } catch { /* unsupported */ }
   },
+  async saveFile(name, data) {
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    document.body.append(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    return true
+  },
   async keepAwake(on) {
     wantLock = on
     if (on) await acquire()

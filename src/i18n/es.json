@@ -584,5 +584,27 @@
     "entries": "Entradas",
     "noEntries": "Aún no hay nada registrado.",
     "showMore": "Mostrar más"
+  },
+  "backup": {
+    "title": "Copia de seguridad y datos",
+    "backupTitle": "Copia de seguridad",
+    "backupHelp": "Guarda todo (entrenamientos, rutinas, ejercicios, registro corporal, fotos de progreso y ajustes) en un archivo. Guárdalo fuera de este teléfono, por ejemplo en Google Drive.",
+    "export": "Guardar copia",
+    "last": "Última copia: {{date}}",
+    "never": "Aún no se guardó ninguna copia.",
+    "saved": "Copia guardada.",
+    "restoreTitle": "Restaurar",
+    "restoreHelp": "Reemplaza todos los datos de este dispositivo con el contenido de una copia.",
+    "choose": "Elegir archivo de copia",
+    "confirmRestore": "¿Restaurar la copia del {{date}}? Tiene {{workouts}} entrenamientos, {{routines}} rutinas y {{photos}} fotos. Se reemplazará todo lo que hay en este dispositivo.",
+    "csvTitle": "Exportar series (CSV)",
+    "csvHelp": "Todas las series registradas de tus entrenamientos terminados, para hojas de cálculo. No se puede restaurar; para eso usa una copia.",
+    "csv": "Exportar CSV",
+    "persistHelp": "El navegador puede borrar los datos de la app si el teléfono se queda sin espacio. Instala la app o guarda copias seguido.",
+    "error": {
+      "invalid": "Ese archivo no es una copia de BliskFit.",
+      "newer": "Esta copia la hizo una versión más nueva de la app. Actualiza la app primero.",
+      "failed": "Algo salió mal. No se cambió nada."
+    }
   }
 }

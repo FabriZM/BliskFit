@@ -584,5 +584,27 @@
     "entries": "Entries",
     "noEntries": "Nothing logged yet.",
     "showMore": "Show more"
+  },
+  "backup": {
+    "title": "Backup and data",
+    "backupTitle": "Backup",
+    "backupHelp": "Saves everything (workouts, routines, exercises, body log, progress photos and settings) in one file. Keep it somewhere off this phone, such as Google Drive.",
+    "export": "Save backup",
+    "last": "Last backup: {{date}}",
+    "never": "No backup saved yet.",
+    "saved": "Backup saved.",
+    "restoreTitle": "Restore",
+    "restoreHelp": "Replaces all data on this device with the contents of a backup file.",
+    "choose": "Choose backup file",
+    "confirmRestore": "Restore the backup from {{date}}? It has {{workouts}} workouts, {{routines}} routines and {{photos}} photos. Everything currently on this device will be replaced.",
+    "csvTitle": "Export sets (CSV)",
+    "csvHelp": "Every logged set of your finished workouts, for spreadsheets. It can't be restored; use a backup for that.",
+    "csv": "Export CSV",
+    "persistHelp": "The browser may clear this app's data when the phone runs low on space. Install the app or save backups regularly.",
+    "error": {
+      "invalid": "That file isn't a BliskFit backup.",
+      "newer": "This backup was made by a newer version of the app. Update the app first.",
+      "failed": "Something went wrong. Nothing was changed."
+    }
   }
 }

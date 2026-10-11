@@ -206,6 +206,12 @@ Tests: photo storage and deletion, the 6-photos-per-day limit (including backdat
 Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sparkline and tapping it opens the panel on that chart; unpinning removes it; logging a waist measurement on the Body log screen and pinning it from the panel's Body section shows it on Profile, and tapping it opens that chart; a body weight entry moves the trend and the Profile card; a progress photo logged on the Body log screen shows in the panel's timeline and in compare, and can be pinned; the Gyms section appears only after logging at two gyms.
 
 ### M7: Data safety and sharing
+**Status: step 1 (backup, restore, CSV) done, web-checked; not yet tried on the phone.** Notes:
+- **Screen:** Settings → Backup and data (`/profile/backup`); the persistent-storage status moved there (web only, since the installed app's data isn't evicted).
+- **Backup file** (`db/backup.ts`): one JSON file, `{ app: 'bliskfit', format: 1, schemaVersion, appVersion, exportedAt, tables }`, every Dexie table as stored, blobs inlined as `{ $blob: type, data: base64 }`. Restoring replaces everything in one transaction (all or nothing), fills settings added since with defaults, refuses files that aren't backups or come from a newer schema, asks for confirmation with a summary (date, workouts, routines, photos), then reloads the app. "Last backup" date kept in `meta`.
+- **CSV** (`lib/csv.ts`): one row per logged set of finished workouts, in the user's units, blank sets skipped, UTF-8 with BOM. Export only (spreadsheets); not an import format.
+- **Saving files:** `platform.saveFile` downloads in the browser; in the app it writes to the cache with `@capacitor/filesystem` and opens the share sheet with `@capacitor/share` (save to Files or Drive, send it).
+- **Next:** Strong/Hevy CSV importer, routine sharing and session summary image, automatic cloud backup, distribution and updates.
 - JSON export/import (including progress photos from M6), CSV export of sets, persistent storage request.
 - Optional automatic cloud backup (Google Drive file), restore on a new phone.
 - CSV importer for other apps (Strong, Hevy).

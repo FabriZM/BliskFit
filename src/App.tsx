@@ -18,6 +18,7 @@ import BodyLog from './pages/BodyLog'
 import StatsPanel from './pages/stats/StatsPanel'
 import Gyms from './pages/Gyms'
 import Settings from './pages/Settings'
+import Backup from './pages/Backup'
 import ExerciseList from './pages/exercises/ExerciseList'
 import ExerciseDetail from './pages/exercises/ExerciseDetail'
 import ExerciseForm from './pages/exercises/ExerciseForm'
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/gyms" element={<Gyms />} />
+          <Route path="/profile/backup" element={<Backup />} />
           <Route path="/profile/stats" element={<StatsPanel />} />
           <Route path="/profile/body" element={<BodyLog />} />
           <Route path="*" element={<Navigate to="/profile" replace />} />
