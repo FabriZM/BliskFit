@@ -20,7 +20,19 @@
     "stats": "Estadísticas",
     "measurements": "Medidas corporales",
     "settings": "Ajustes",
-    "comingSoon": "Próximamente."
+    "comingSoon": "Próximamente.",
+    "thisWeek": "Esta semana",
+    "daysOfGoal": "{{count}} de {{goal}} días",
+    "streakWeeks_one": "Racha de {{count}} semana",
+    "streakWeeks_other": "Racha de {{count}} semanas",
+    "noStreak_one": "Entrena {{count}} día esta semana para empezar una racha.",
+    "noStreak_other": "Entrena {{count}} días esta semana para empezar una racha.",
+    "streakKeep_one": "{{count}} día más para mantenerla",
+    "streakKeep_other": "{{count}} días más para mantenerla",
+    "weeklyGoal": "Meta semanal",
+    "goalDays_one": "{{count}} día",
+    "goalDays_other": "{{count}} días",
+    "weekStart": "La semana empieza el"
   },
   "muscles": {
     "chest": "Pecho",
@@ -278,5 +290,11 @@
     "finish": "Terminar a las {{time}}",
     "notification": "Sin series registradas hace 2 horas. Abre la app para terminar tu entreno.",
     "bodyEmpty": "No se registró ninguna serie en este entreno y lleva más de 2 horas abierto. ¿Descartarlo o seguir?"
+  },
+  "history": {
+    "title": "Historial",
+    "empty": "Aún no hay entrenos terminados.",
+    "sets_one": "{{count}} serie",
+    "sets_other": "{{count}} series"
   }
 }

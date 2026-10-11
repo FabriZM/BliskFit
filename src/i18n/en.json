@@ -20,7 +20,19 @@
     "stats": "Stats",
     "measurements": "Body measurements",
     "settings": "Settings",
-    "comingSoon": "Coming soon."
+    "comingSoon": "Coming soon.",
+    "thisWeek": "This week",
+    "daysOfGoal": "{{count}} of {{goal}} days",
+    "streakWeeks_one": "{{count}} week streak",
+    "streakWeeks_other": "{{count}} week streak",
+    "noStreak_one": "Train {{count}} day this week to start a streak.",
+    "noStreak_other": "Train {{count}} days this week to start a streak.",
+    "streakKeep_one": "{{count}} more day to keep it",
+    "streakKeep_other": "{{count}} more days to keep it",
+    "weeklyGoal": "Weekly goal",
+    "goalDays_one": "{{count}} day",
+    "goalDays_other": "{{count}} days",
+    "weekStart": "Week starts on"
   },
   "muscles": {
     "chest": "Chest",
@@ -278,5 +290,11 @@
     "finish": "Finish at {{time}}",
     "notification": "No set logged for 2 hours. Open the app to finish your workout.",
     "bodyEmpty": "No set was logged in this workout, and it has been open for over 2 hours. Discard it or keep going?"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No finished workouts yet.",
+    "sets_one": "{{count}} set",
+    "sets_other": "{{count}} sets"
   }
 }

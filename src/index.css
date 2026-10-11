@@ -95,3 +95,9 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 .inprogress { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: #064e3b; color: var(--fg); text-decoration: none; border-top: 1px solid var(--accent); font-size: .9rem; }
 .inprogress strong { font-variant-numeric: tabular-nums; font-size: 1.05rem; } .inprogress .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; } .inprogress .dot.paused { background: #fbbf24; animation: none; }
 @keyframes pulse { 50% { opacity: .35; } }
+.icon-link { color: var(--fg); padding: 8px; border-radius: 10px; display: flex; } .icon-link:active { background: var(--card); }
+.week-card .row.head { padding: 0 0 10px; } .week-card strong.met { color: var(--accent); }
+.week-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+.wd { display: flex; flex-direction: column; align-items: center; gap: 4px; } .wd span { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #374151; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #064e3b; }
+.wd.on span { background: var(--accent); border-color: var(--accent); } .wd.today span { border-color: var(--fg); } .wd.on.today span { border-color: var(--accent); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--accent); }
+.wd.future { opacity: .45; } .wd small { font-size: .7rem; color: var(--muted); } .streak { margin: 12px 0 0; }

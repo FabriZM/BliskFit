@@ -3,10 +3,10 @@
 Personal gym tracker for Android. Built web-first as an offline PWA (installable from Chrome, shareable through a free static host), then wrapped as an APK with Capacitor once the live workout needs reliable timers/notifications. Same codebase for both. Data stays local on each device, with optional cloud backup.
 
 ## Stack
-React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, three bottom tabs (no Home):
-- **Workout** (default screen): top card with today's suggested workout + Start, or Resume if a session is running; week progress and streak; below, a segmented switch **Routines** (incl. programs) | **History** (sessions, calendar, recent PRs).
-- **Exercises:** library, search/filters, add exercise; later the interactive body figure.
-- **Profile:** Stats first (charts, muscle volume, PRs), then body weight and measurements, goals, settings, backup, gyms.
+React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, three bottom tabs (no Home), in this order: **Profile · Workout · Exercises**. The app opens on Profile.
+- **Profile** (default screen): at the top, the week card (this week's training days against the goal, and the weekly streak); then Stats (charts, muscle volume, PRs), body weight and measurements, goals, settings, backup, gyms.
+- **Workout:** today's suggested workout with Start (or Resume if a session is running), then routines (incl. programs). **History** (sessions, calendar, recent PRs) opens from an icon at the top right.
+- **Exercises:** library, search by muscle and equipment, favorites, add exercise; later the interactive body figure.
 An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
 
 ## Tooling and supply chain security
@@ -95,10 +95,14 @@ Add Capacitor to the existing web app and build a debug/release APK for the owne
 Done when: with the screen locked, the rest timer alerts and the 2h reminder fires.
 
 ### M4: History and PRs
+**Started:** the History screen (top-right icon on Workout) lists finished sessions and opens each one's summary. Still to do: edit/delete, the calendar, PR detection and badges.
+
 Session history and detail with edit/delete, calendar of training days, PR detection and badges (live, summary, history), PR list per exercise.
 
 ### M5: Goals, streaks and reminders
-Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), week progress and streak shown at the top of the Workout tab, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes).
+**Started:** the Profile week card, weekly goal (training days) and week-start settings, and the streak calculation (unit-tested, including week boundaries) are in. Still to do: streak freeze, reminders and notifications, and a snapshot of the goal per week so changing it doesn't rewrite past weeks.
+
+Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), week progress and streak shown at the top of the Workout tab, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes)..
 
 ### M6: Stats and body tracking
 Per-exercise charts (max weight, e1RM, volume, reps) with date range, muscle-group weekly sets/volume, muscle balance (push/pull ratio, left/right measurement asymmetry), plateau detector, weekly summary (sessions, volume, new PRs, under-trained muscles), body weight log with trend, body measurements (standard + custom, left/right) with charts and change summaries. Gym comparison for the same exercise (only shown if gyms are used).

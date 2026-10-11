@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import WeekCard from '../components/WeekCard'
+import { weekdayNames } from '../lib/dates'
 import { useSettings } from '../stores/settings'
 
 export default function Profile() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { settings, update } = useSettings()
   const [persisted, setPersisted] = useState<boolean | null>(null)
 
@@ -15,11 +17,24 @@ export default function Profile() {
   return (
     <section>
       <h1>{t('tabs.profile')}</h1>
+      <WeekCard />
       <h2>{t('profile.stats')}</h2>
       <div className="card muted">{t('profile.comingSoon')}</div>
       <h2>{t('profile.measurements')}</h2>
       <div className="card muted">{t('profile.comingSoon')}</div>
       <h2>{t('profile.settings')}</h2>
+      <label className="row">
+        {t('profile.weeklyGoal')}
+        <select value={settings.weeklyGoal} onChange={(e) => void update({ weeklyGoal: Number(e.target.value) })}>
+          {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{t('profile.goalDays', { count: n })}</option>)}
+        </select>
+      </label>
+      <label className="row">
+        {t('profile.weekStart')}
+        <select value={settings.weekStartDay} onChange={(e) => void update({ weekStartDay: Number(e.target.value) })}>
+          {[1, 0, 6].map((d) => <option key={d} value={d}>{weekdayNames(i18n.language)[d]}</option>)}
+        </select>
+      </label>
       <label className="row">
         {t('profile.language')}
         <select value={settings.language} onChange={(e) => void update({ language: e.target.value as 'en' | 'es' })}>

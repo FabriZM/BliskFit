@@ -5,6 +5,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
 import WorkoutPage from './pages/workout/WorkoutPage'
 import Summary from './pages/workout/Summary'
+import History from './pages/workout/History'
 import ForgottenGuard from './components/ForgottenGuard'
 import InProgressBar from './components/InProgressBar'
 import RoutineEditor from './pages/routines/RoutineEditor'
@@ -53,8 +54,9 @@ export default function App() {
       )}
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to="/workout" replace />} />
+          <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/workout" element={<WorkoutPage />} />
+          <Route path="/workout/history" element={<History />} />
           <Route path="/workout/summary/:id" element={<Summary />} />
           <Route path="/routines" element={<Navigate to="/workout" replace />} />
           <Route path="/routines/programs" element={<ProgramList />} />
@@ -66,7 +68,7 @@ export default function App() {
           <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/gyms" element={<Gyms />} />
-          <Route path="*" element={<Navigate to="/workout" replace />} />
+          <Route path="*" element={<Navigate to="/profile" replace />} />
         </Routes>
       </main>
       <ForgottenGuard />
