@@ -22,6 +22,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Shared routines and programs: bliskfit://import?d=... (from the web app's "Open in the app" button). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="bliskfit" android:host="import" />
+            </intent-filter>
+
+            <!-- Web app links (https://fabrizm.github.io/BliskFit/...). Not verified, so Android 12+ only opens them here
+                 if the user enables it in the app's "Open by default" settings; older versions offer a choice. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="fabrizm.github.io" android:pathPrefix="/BliskFit" />
+            </intent-filter>
+
         </activity>
 
         <provider

@@ -21,6 +21,9 @@ const { db } = await import('./db')
 
 describe('automatic pre-update backups', () => {
   it('saves a restorable backup and keeps only the newest few, leaving other files alone', async () => {
+    // Distinct timestamps, so each save gets its own file name (real saves are seconds apart).
+    let now = 1_700_000_000_000
+    vi.spyOn(Date, 'now').mockImplementation(() => (now += 1000))
     files.set('notes.txt', { text: 'x', mtime: 0 })
     for (let i = 0; i < KEEP_AUTO_BACKUPS + 2; i++) await saveAutoBackup()
     const names = [...files.keys()].filter((n) => n.startsWith('pre-update-'))

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ShareError, decodeLinkData, linkDataFrom, validatePackage, type SharePackage } from '../lib/share'
+import { ShareError, androidAppIntent, decodeLinkData, linkDataFrom, validatePackage, type SharePackage } from '../lib/share'
 import { importPackage, previewImport, type ImportPreview } from '../db/share'
 import { useSettings } from '../stores/settings'
+import { platform } from '../lib/platform'
+
+const isAndroidBrowser = () => !platform.isNative && /Android/i.test(navigator.userAgent)
 
 /** Adds a routine or program someone shared, from a link (#/import?d=…), a pasted link or a file. */
 export default function Import() {
@@ -64,6 +67,10 @@ export default function Import() {
           )}
           {preview.missing > 0 && <p className="small">{t('share.missing', { count: preview.missing })}</p>}
           <p className="muted small help">{t(pkg.kind === 'program' ? 'share.addProgramHelp' : 'share.addRoutineHelp')}</p>
+          {d && isAndroidBrowser() && (
+            // The web app and the Android app keep separate data, so app users want it added there.
+            <p className="muted small help">{t('share.inAppHelp')} <a href={androidAppIntent(d)}>{t('share.openInApp')}</a></p>
+          )}
           <div className="actions">
             <button className="primary" onClick={() => void add()}>{t(pkg.kind === 'program' ? 'share.addProgram' : 'share.addRoutine')}</button>
             <button onClick={() => { setPkg(undefined); nav('/import', { replace: true }) }}>{t('common.cancel')}</button>

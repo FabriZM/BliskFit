@@ -33,6 +33,11 @@ export interface Platform {
    * a download. Resolves false if the user dismissed the share sheet.
    */
   saveFile(name: string, data: Blob, opts?: { share?: boolean }): Promise<boolean>
+  /**
+   * Links that opened the app (bliskfit://… or https://fabrizm.github.io/BliskFit/…), including the one it was
+   * launched with. Only in the Android app. Returns an unsubscribe function.
+   */
+  onOpenUrl?(cb: (url: string) => void): () => void
   /** Private file storage for automatic backups; only in the Android app. */
   appFiles?: AppFiles
   /** Shares a link through the system share sheet, or copies it where there's none. */

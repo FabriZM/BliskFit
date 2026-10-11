@@ -209,5 +209,10 @@ export function linkDataFrom(text: string): string | undefined {
   return /^[A-Za-z0-9_-]{16,}$/.test(t) ? t : undefined
 }
 
+/** Android: a link that opens the installed app on the import screen, or the install guide if it isn't installed. */
+export const INSTALL_GUIDE = 'https://github.com/FabriZM/BliskFit/blob/main/INSTALL.md'
+export const androidAppIntent = (d: string) =>
+  `intent://import?d=${d}#Intent;scheme=bliskfit;package=com.fabrizm.bliskfit;S.browser_fallback_url=${encodeURIComponent(INSTALL_GUIDE)};end`
+
 export const shareFileName = (name: string) =>
   `${name.trim().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase() || 'routine'}.bliskfit.json`

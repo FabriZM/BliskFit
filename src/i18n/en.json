@@ -642,7 +642,9 @@
       "invalid": "That isn't a valid shared routine or program.",
       "newer": "This was shared from a newer version of the app. Update the app first.",
       "backup": "That's a full backup. Restore it from Settings → Backup and data."
-    }
+    },
+    "openInApp": "Open in the BliskFit app",
+    "inAppHelp": "Using the Android app? It keeps its own data, so add it there:"
   },
   "updates": {
     "title": "App updates",

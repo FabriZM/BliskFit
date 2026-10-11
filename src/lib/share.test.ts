@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise, Program, Routine } from '../db/types'
-import { ShareError, decodeLinkData, encodeLinkData, linkDataFrom, packProgram, packRoutine, shareFileName, validatePackage } from './share'
+import { ShareError, androidAppIntent, decodeLinkData, encodeLinkData, linkDataFrom, packProgram, packRoutine, shareFileName, validatePackage } from './share'
 
 const custom: Exercise = {
   id: 'c1', name: 'Landmine press', trackingType: 'weight_reps', primaryMuscleIds: ['m:shoulders'], secondaryMuscleIds: [],
@@ -77,5 +77,16 @@ describe('sharing routines and programs', () => {
   it('names files from the routine name', () => {
     expect(shareFileName('Push / Pull día 1')).toBe('push-pull-día-1.bliskfit.json')
     expect(shareFileName('  ')).toBe('routine.bliskfit.json')
+  })
+})
+
+describe('opening shared links in the Android app', () => {
+  it('builds an intent link that falls back to the install guide, and the app reads the code back', () => {
+    const intent = androidAppIntent('abc_DEF-123')
+    expect(intent).toBe('intent://import?d=abc_DEF-123#Intent;scheme=bliskfit;package=com.fabrizm.bliskfit;'
+      + 'S.browser_fallback_url=https%3A%2F%2Fgithub.com%2FFabriZM%2FBliskFit%2Fblob%2Fmain%2FINSTALL.md;end')
+    expect(linkDataFrom('bliskfit://import?d=abc_DEF-123')).toBe('abc_DEF-123')
+    expect(linkDataFrom('https://fabrizm.github.io/BliskFit/#/import?d=abc_DEF-123')).toBe('abc_DEF-123')
+    expect(linkDataFrom('https://fabrizm.github.io/BliskFit/')).toBeUndefined()
   })
 })

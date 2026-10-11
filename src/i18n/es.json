@@ -642,7 +642,9 @@
       "invalid": "No es una rutina o programa compartido válido.",
       "newer": "Se compartió desde una versión más nueva de la app. Actualiza la app primero.",
       "backup": "Es una copia de seguridad completa. Restáurala desde Ajustes → Copia de seguridad y datos."
-    }
+    },
+    "openInApp": "Abrir en la app BliskFit",
+    "inAppHelp": "¿Usas la app de Android? Tiene sus propios datos, así que agrégalo ahí:"
   },
   "updates": {
     "title": "Actualizaciones",

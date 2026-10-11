@@ -62,6 +62,18 @@ const appFiles: AppFiles = {
 export const nativePlatform: Platform = {
   isNative: true,
   appFiles,
+  onOpenUrl(cb) {
+    let handle: { remove: () => Promise<void> } | undefined
+    let stopped = false
+    void import('@capacitor/app').then(async ({ App }) => {
+      const launch = await App.getLaunchUrl()
+      if (launch?.url && !stopped) cb(launch.url)
+      const h = await App.addListener('appUrlOpen', (e) => cb(e.url))
+      if (stopped) void h.remove()
+      else handle = h
+    })
+    return () => { stopped = true; void handle?.remove() }
+  },
   vibrate(pattern = [250, 120, 250]) {
     const duration = Math.min(600, pattern.reduce((a, b) => a + b, 0))
     void import('@capacitor/haptics').then(({ Haptics }) => Haptics.vibrate({ duration }))

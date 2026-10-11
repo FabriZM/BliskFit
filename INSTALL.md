@@ -25,6 +25,10 @@ It works offline and updates itself (tap **Reload** on the "Update available" ba
 
 Everything lives only on your phone. Save a backup now and then from Profile → ⚙ → **Backup and data** → **Save backup**, and keep the file somewhere else (Google Drive, your computer). On a new phone, install BliskFit and use **Restore** with that file.
 
+## Opening shared routines in the app
+
+When someone sends you a routine or program link, it opens in the browser. Tap **Open in the BliskFit app** there to add it to the Android app. To have these links open the app directly: Android Settings → Apps → BliskFit → **Open by default** → turn on **Open supported links** and add `fabrizm.github.io`.
+
 ## Switching from the web app to the Android app
 
 They don't share data. In the web app save a backup, then in the Android app restore it.
