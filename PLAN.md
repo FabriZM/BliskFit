@@ -4,7 +4,7 @@ Personal gym tracker for Android. Built web-first as an offline PWA (installable
 
 ## Stack
 React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, three bottom tabs (no Home), in this order: **Profile · Workout · Exercises**. The app opens on Profile.
-- **Profile** (default screen): at the top, the week card (this week's training days against the goal, and the weekly streak); then Stats (charts, muscle volume, PRs), body weight and measurements, goals, settings, backup, gyms.
+- **Profile** (default screen): at the top, the week card (this week's training days against the goal, and the weekly streak); then Stats (charts, muscle volume, PRs) and body weight and measurements. Settings (goal, week start, language, units, rest popup, backup, gyms) open from a gear icon at the top right.
 - **Workout:** today's suggested workout with Start (or Resume if a session is running), then routines (incl. programs). **History** (sessions, calendar, recent PRs) opens from an icon at the top right.
 - **Exercises:** library, search by muscle and equipment, favorites, add exercise; later the interactive body figure.
 An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
@@ -102,7 +102,12 @@ Session history and detail with edit/delete, calendar of training days, PR detec
 ### M5: Goals, streaks and reminders
 **Started:** the Profile week card, weekly goal (training days) and week-start settings, and the streak calculation (unit-tested, including week boundaries) are in. Still to do: streak freeze, reminders and notifications, and a snapshot of the goal per week so changing it doesn't rewrite past weeks.
 
-Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), week progress and streak shown at the top of the Workout tab, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes)..
+Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), week progress and streak shown at the top of the Workout tab, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes).
+
+Two progress views:
+1. **Week strip (linear):** a single row of the week's days (starting on the configured week start). Trained days are marked (filled dot/check, tappable to open that day's session), today is outlined, and future days are empty. Shown on the Workout tab next to the streak, and a larger version on Profile.
+2. **Weekly goal graph:** a bar chart of workouts per week over the last 8-12 weeks, with a goal line. Bars that reach the goal are highlighted and misses are muted; the current week is shown as in progress. It uses the goal that applied in each past week (hence the per-week goal snapshot), and a range switch (8 weeks / 6 months / year).
+Both are built from pure, tested functions over finished sessions, so they also reflect edits and deletes made in History..
 
 ### M6: Stats and body tracking
 Per-exercise charts (max weight, e1RM, volume, reps) with date range, muscle-group weekly sets/volume, muscle balance (push/pull ratio, left/right measurement asymmetry), plateau detector, weekly summary (sessions, volume, new PRs, under-trained muscles), body weight log with trend, body measurements (standard + custom, left/right) with charts and change summaries. Gym comparison for the same exercise (only shown if gyms are used).

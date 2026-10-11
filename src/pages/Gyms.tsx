@@ -26,7 +26,7 @@ export default function Gyms() {
 
   return (
     <section>
-      <p><Link to="/profile">← {t('tabs.profile')}</Link></p>
+      <p><Link to="/profile/settings">← {t('profile.settings')}</Link></p>
       <h1>{t('gyms.title')}</h1>
       <p className="muted">{t('gyms.help')}</p>
       <ul className="list">

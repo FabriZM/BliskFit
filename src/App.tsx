@@ -13,6 +13,7 @@ import ProgramList from './pages/programs/ProgramList'
 import ProgramEditor from './pages/programs/ProgramEditor'
 import Profile from './pages/Profile'
 import Gyms from './pages/Gyms'
+import Settings from './pages/Settings'
 import ExerciseList from './pages/exercises/ExerciseList'
 import ExerciseDetail from './pages/exercises/ExerciseDetail'
 import ExerciseForm from './pages/exercises/ExerciseForm'
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/exercises/:id" element={<ExerciseDetail />} />
           <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/gyms" element={<Gyms />} />
           <Route path="*" element={<Navigate to="/profile" replace />} />
         </Routes>
