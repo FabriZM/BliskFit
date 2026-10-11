@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
 import Placeholder from './pages/Placeholder'
+import Home from './pages/Home'
+import RoutineList from './pages/routines/RoutineList'
+import RoutineEditor from './pages/routines/RoutineEditor'
+import ProgramList from './pages/programs/ProgramList'
+import ProgramEditor from './pages/programs/ProgramEditor'
 import Profile from './pages/Profile'
 import Gyms from './pages/Gyms'
 import ExerciseList from './pages/exercises/ExerciseList'
@@ -47,9 +52,14 @@ export default function App() {
       )}
       <main>
         <Routes>
-          {TABS.filter((x) => x.key !== 'profile' && x.key !== 'exercises').map((tab) => (
+          {TABS.filter((x) => !['profile', 'exercises', 'home', 'routines'].includes(x.key)).map((tab) => (
             <Route key={tab.key} path={tab.path} element={<Placeholder title={t(`tabs.${tab.key}`)} />} />
           ))}
+          <Route path="/" element={<Home />} />
+          <Route path="/routines" element={<RoutineList />} />
+          <Route path="/routines/programs" element={<ProgramList />} />
+          <Route path="/routines/programs/:id" element={<ProgramEditor />} />
+          <Route path="/routines/:id" element={<RoutineEditor />} />
           <Route path="/exercises" element={<ExerciseList />} />
           <Route path="/exercises/new" element={<ExerciseForm />} />
           <Route path="/exercises/:id" element={<ExerciseDetail />} />

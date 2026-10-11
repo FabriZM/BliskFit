@@ -43,4 +43,4 @@ export class GymDB extends Dexie {
 
 export const db = new GymDB()
 
-export const newId = (): string => crypto.randomUUID()
+export { newId } from '../lib/id'

@@ -71,7 +71,9 @@ export interface Program {
   mode: 'weekday' | 'rotation'
   /** weekday mode: weekIndex -> weekday (0-6) -> routineId */
   schedule?: Record<number, Record<number, ID>>
-  /** rotation mode: ordered routine ids (A/B/C) */
+  /** weekday mode: any date inside week 1 (local time); the week is aligned to Settings.weekStartDay */
+  startDate?: number
+  /** rotation mode: ordered routine ids (A/B/C), no duplicates (position is inferred from history) */
   rotation?: ID[]
 }
 
