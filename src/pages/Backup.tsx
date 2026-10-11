@@ -6,6 +6,7 @@ import { db } from '../db/db'
 import { BackupError, backupFileName, backupSummary, exportBackup, parseBackup, restoreBackup } from '../db/backup'
 import { setsToCsv } from '../lib/csv'
 import { platform } from '../lib/platform'
+import type { AppFile } from '../lib/platform/types'
 import { useSettings } from '../stores/settings'
 
 const LAST_BACKUP = 'lastBackupAt'
@@ -19,8 +20,11 @@ export default function Backup() {
   const [message, setMessage] = useState<string>()
   const lastBackup = useLiveQuery(() => db.meta.get(LAST_BACKUP), [])?.value as number | undefined
 
+  const [autoBackups, setAutoBackups] = useState<AppFile[]>()
+
   useEffect(() => {
     void navigator.storage?.persisted?.().then(setPersisted)
+    void platform.appFiles?.list().then((l) => setAutoBackups(l.filter((f) => f.name.startsWith('pre-update-')).sort((a, b) => b.mtime - a.mtime)))
   }, [])
 
   const run = async (fn: () => Promise<void>) => {
@@ -40,8 +44,9 @@ export default function Backup() {
     setMessage(t('backup.saved'))
   })
 
-  const restore = (f: File) => run(async () => {
-    const file = parseBackup(await f.text(), db.verno)
+  // From a chosen file or one of the automatic backups kept in the app.
+  const restoreText = (text: () => Promise<string>) => run(async () => {
+    const file = parseBackup(await text(), db.verno)
     const s = backupSummary(file)
     if (!confirm(t('backup.confirmRestore', {
       date: new Date(s.exportedAt).toLocaleString(i18n.language), workouts: s.workouts, routines: s.routines, photos: s.photos,
@@ -85,9 +90,22 @@ export default function Backup() {
         <label className={`btn file-btn${busy ? ' disabled' : ''}`}>
           {t('backup.choose')}
           <input type="file" accept="application/json,.json" hidden disabled={busy}
-            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void restore(f) }} />
+            onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void restoreText(() => f.text()) }} />
         </label>
       </p>
+      {autoBackups && autoBackups.length > 0 && (
+        <>
+          <p className="muted small help">{t('backup.autoHelp')}</p>
+          <ul className="list">
+            {autoBackups.map((f) => (
+              <li key={f.name} className="row">
+                <span>{new Date(f.mtime).toLocaleString(i18n.language)} <span className="muted small">· {(f.size / 1048576).toFixed(1)} MB</span></span>
+                <button disabled={busy} onClick={() => void restoreText(() => platform.appFiles!.read(f.name))}>{t('backup.restore')}</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <h2>{t('backup.csvTitle')}</h2>
       <p className="muted small help">{t('backup.csvHelp')}</p>

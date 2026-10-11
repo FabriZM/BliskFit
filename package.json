@@ -15,7 +15,8 @@
     "android:sync": "bash scripts/android.sh sync",
     "android:debug": "bash scripts/android.sh assembleDebug",
     "android:release": "bash scripts/android.sh assembleRelease",
-    "android:install": "bash scripts/android.sh install"
+    "android:install": "bash scripts/android.sh install",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "8.0.1",

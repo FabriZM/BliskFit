@@ -1,4 +1,4 @@
-import type { PermissionState, Platform, ScheduledNotification } from './types'
+import type { AppFiles, PermissionState, Platform, ScheduledNotification } from './types'
 
 /** Capacitor (Android) implementation. Plugins are imported lazily so the plain PWA never loads them. */
 const CHANNEL = 'timers'
@@ -32,8 +32,36 @@ async function blobToBase64(b: Blob): Promise<string> {
 const toState = (s: string): PermissionState =>
   s === 'granted' ? 'granted' : s === 'denied' ? 'denied' : 'prompt'
 
+const BACKUP_DIR = 'backups'
+const fs = () => import('@capacitor/filesystem')
+
+const appFiles: AppFiles = {
+  async write(name, text) {
+    const { Filesystem, Directory, Encoding } = await fs()
+    await Filesystem.writeFile({ path: `${BACKUP_DIR}/${name}`, data: text, directory: Directory.Data, encoding: Encoding.UTF8, recursive: true })
+  },
+  async read(name) {
+    const { Filesystem, Directory, Encoding } = await fs()
+    return (await Filesystem.readFile({ path: `${BACKUP_DIR}/${name}`, directory: Directory.Data, encoding: Encoding.UTF8 })).data as string
+  },
+  async list() {
+    const { Filesystem, Directory } = await fs()
+    try {
+      const { files } = await Filesystem.readdir({ path: BACKUP_DIR, directory: Directory.Data })
+      return files.filter((f) => f.type === 'file').map((f) => ({ name: f.name, mtime: Number(f.mtime), size: f.size }))
+    } catch {
+      return [] // folder not created yet
+    }
+  },
+  async remove(name) {
+    const { Filesystem, Directory } = await fs()
+    await Filesystem.deleteFile({ path: `${BACKUP_DIR}/${name}`, directory: Directory.Data })
+  },
+}
+
 export const nativePlatform: Platform = {
   isNative: true,
+  appFiles,
   vibrate(pattern = [250, 120, 250]) {
     const duration = Math.min(600, pattern.reduce((a, b) => a + b, 0))
     void import('@capacitor/haptics').then(({ Haptics }) => Haptics.vibrate({ duration }))

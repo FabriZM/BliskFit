@@ -612,7 +612,9 @@
       "invalid": "Ese archivo no es una copia de BliskFit.",
       "newer": "Esta copia la hizo una versión más nueva de la app. Actualiza la app primero.",
       "failed": "Algo salió mal. No se cambió nada."
-    }
+    },
+    "autoHelp": "Copias automáticas, guardadas en la app antes de cada actualización:",
+    "restore": "Restaurar"
   },
   "share": {
     "link": "Compartir enlace",
@@ -641,5 +643,19 @@
       "newer": "Se compartió desde una versión más nueva de la app. Actualiza la app primero.",
       "backup": "Es una copia de seguridad completa. Restáurala desde Ajustes → Copia de seguridad y datos."
     }
+  },
+  "updates": {
+    "title": "Actualizaciones",
+    "available": "La versión {{version}} está disponible",
+    "update": "Actualizar",
+    "later": "Más tarde",
+    "check": "Buscar",
+    "checking": "Buscando…",
+    "upToDate": "Tienes la última versión",
+    "failed": "No se pudo comprobar. ¿Tienes conexión?",
+    "backupFailed": "No se pudo guardar la copia automática. ¿Actualizar igual?",
+    "help": "Al actualizar se guarda primero una copia automática y luego se descarga la nueva versión; Android te pide confirmar la instalación. Tus datos se mantienen.",
+    "allReleases": "Todas las versiones",
+    "webHelp": "La versión web se actualiza sola: cuando haya una nueva verás una barra de “Actualización disponible”."
   }
 }

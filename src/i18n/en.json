@@ -612,7 +612,9 @@
       "invalid": "That file isn't a BliskFit backup.",
       "newer": "This backup was made by a newer version of the app. Update the app first.",
       "failed": "Something went wrong. Nothing was changed."
-    }
+    },
+    "autoHelp": "Automatic backups, saved in the app before each update:",
+    "restore": "Restore"
   },
   "share": {
     "link": "Share link",
@@ -641,5 +643,19 @@
       "newer": "This was shared from a newer version of the app. Update the app first.",
       "backup": "That's a full backup. Restore it from Settings → Backup and data."
     }
+  },
+  "updates": {
+    "title": "App updates",
+    "available": "Version {{version}} is available",
+    "update": "Update",
+    "later": "Later",
+    "check": "Check",
+    "checking": "Checking…",
+    "upToDate": "You have the latest version",
+    "failed": "Couldn't check. Are you online?",
+    "backupFailed": "Couldn't save the automatic backup. Update anyway?",
+    "help": "Updating saves an automatic backup first, then downloads the new version; Android asks you to confirm the install. Your data stays.",
+    "allReleases": "All releases",
+    "webHelp": "The web version updates itself: when a new version is out you'll see an “Update available” bar."
   }
 }

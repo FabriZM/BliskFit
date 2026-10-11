@@ -5,6 +5,9 @@ import { orderedWeekdays, weekdayNames } from '../lib/dates'
 import { platform } from '../lib/platform'
 import { useNotificationState } from '../lib/platform/hooks'
 import { useSettings } from '../stores/settings'
+import { useAppUpdate } from '../db/appUpdate'
+import { useInstall } from '../components/UpdateBanner'
+import { RELEASES_PAGE } from '../lib/updates'
 
 export default function Settings() {
   const { t, i18n } = useTranslation()
@@ -106,6 +109,31 @@ export default function Settings() {
         {t('profile.version')}
         <span className="muted">{__APP_VERSION__}</span>
       </p>
+      {platform.isNative ? <AppUpdates /> : <p className="muted small help">{t('updates.webHelp')}</p>}
     </section>
+  )
+}
+
+/** Android app: manual update check and install (the launch banner does the same once a day). */
+function AppUpdates() {
+  const { t } = useTranslation()
+  const { status, available, check } = useAppUpdate()
+  const { install, busy } = useInstall()
+  return (
+    <>
+      <div className="row">
+        <span>
+          {available ? t('updates.available', { version: available.version })
+            : status === 'checking' ? t('updates.checking')
+            : status === 'upToDate' ? t('updates.upToDate')
+            : status === 'failed' ? t('updates.failed') : t('updates.title')}
+        </span>
+        {available
+          ? <button className="primary" disabled={busy} onClick={() => void install(available)}>{t('updates.update')}</button>
+          : <button disabled={status === 'checking'} onClick={() => void check()}>{t('updates.check')}</button>}
+      </div>
+      {available?.notes && <p className="muted small help notes-text">{available.notes}</p>}
+      <p className="muted small help">{t('updates.help')} <a href={RELEASES_PAGE}>{t('updates.allReleases')}</a></p>
+    </>
   )
 }

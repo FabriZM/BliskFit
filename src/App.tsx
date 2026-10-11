@@ -10,6 +10,8 @@ import ForgottenGuard from './components/ForgottenGuard'
 import InProgressBar from './components/InProgressBar'
 import TimerNotifications from './components/TimerNotifications'
 import TrainingReminders from './components/TrainingReminders'
+import UpdateBanner from './components/UpdateBanner'
+import { platform } from './lib/platform'
 import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
 import ProgramEditor from './pages/programs/ProgramEditor'
@@ -59,6 +61,7 @@ export default function App() {
           <button onClick={() => void updateServiceWorker(true)}>{t('profile.reload')}</button>
         </div>
       )}
+      {platform.isNative && <UpdateBanner />}
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/profile" replace />} />

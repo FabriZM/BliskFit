@@ -11,6 +11,16 @@ export interface ScheduledNotification {
   body: string
 }
 
+export interface AppFile { name: string; mtime: number; size: number }
+
+/** Files in the app's private storage (kept across app updates, removed with the app). */
+export interface AppFiles {
+  write(name: string, text: string): Promise<void>
+  read(name: string): Promise<string>
+  list(): Promise<AppFile[]>
+  remove(name: string): Promise<void>
+}
+
 export interface Platform {
   readonly isNative: boolean
   /** Short buzz for feedback while the app is in the foreground. */
@@ -23,6 +33,8 @@ export interface Platform {
    * a download. Resolves false if the user dismissed the share sheet.
    */
   saveFile(name: string, data: Blob, opts?: { share?: boolean }): Promise<boolean>
+  /** Private file storage for automatic backups; only in the Android app. */
+  appFiles?: AppFiles
   /** Shares a link through the system share sheet, or copies it where there's none. */
   shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'dismissed'>
   notifications: {

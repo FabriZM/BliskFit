@@ -17,7 +17,11 @@ const native = process.env.VITE_NATIVE === '1'
 
 export default defineConfig({
   base,
-  define: { __APP_VERSION__: JSON.stringify(`${pkgVersion} (build ${process.env.BLISKFIT_VERSION_CODE ?? build})`) },
+  define: {
+    __APP_VERSION__: JSON.stringify(`${pkgVersion} (build ${process.env.BLISKFIT_VERSION_CODE ?? build})`),
+    // Matches the Android versionCode; the update check compares it with the latest release's.
+    __APP_BUILD__: JSON.stringify(Number(process.env.BLISKFIT_VERSION_CODE ?? build)),
+  },
   plugins: [
     react(),
     VitePWA({

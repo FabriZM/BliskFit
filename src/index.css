@@ -12,7 +12,7 @@ select, button { font: inherit; padding: 8px 12px; border-radius: 8px; border: 0
 .tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 0 8px; font-size: .78rem; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 68px; position: relative; }
 .tabbar a.active { color: var(--accent); }
 .tabbar a.active::before { content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
-.update-banner { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: var(--accent); color: #064e3b; }
+.update-banner { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 16px; background: var(--accent); color: #064e3b; } .update-banner button.primary { background: #064e3b; color: #ecfdf5; }
 input, textarea { font: inherit; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151; background: var(--card); color: var(--fg); width: 100%; }
 .row.head { border: 0; padding: 0 0 8px; }
 .btn, button.primary { background: var(--accent); color: #064e3b; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: 600; }
