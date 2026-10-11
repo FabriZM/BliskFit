@@ -2,6 +2,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+
+// "0.3.0 (build 17)": package.json version + git commit count, matching the Android versionName.
+const pkgVersion = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
+let build = '0'
+try { build = execSync('git rev-list --count HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() } catch { /* not a git checkout */ }
 
 // Pages serves from /BliskFit/; Capacitor/custom domain builds set VITE_BASE=/.
 const base = process.env.VITE_BASE ?? '/BliskFit/'
@@ -10,6 +17,7 @@ const native = process.env.VITE_NATIVE === '1'
 
 export default defineConfig({
   base,
+  define: { __APP_VERSION__: JSON.stringify(`${pkgVersion} (build ${process.env.BLISKFIT_VERSION_CODE ?? build})`) },
   plugins: [
     react(),
     VitePWA({

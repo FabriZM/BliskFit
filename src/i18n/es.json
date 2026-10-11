@@ -32,7 +32,8 @@
     "weeklyGoal": "Meta semanal",
     "goalDays_one": "{{count}} día",
     "goalDays_other": "{{count}} días",
-    "weekStart": "La semana empieza el"
+    "weekStart": "La semana empieza el",
+    "version": "Versión"
   },
   "muscles": {
     "chest": "Pecho",

@@ -74,6 +74,10 @@ export default function Settings() {
       <p className="row">
         <Link to="/profile/gyms">{t('gyms.title')}</Link>
       </p>
+      <p className="row">
+        {t('profile.version')}
+        <span className="muted">{__APP_VERSION__}</span>
+      </p>
     </section>
   )
 }
