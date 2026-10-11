@@ -47,6 +47,10 @@ export default function Settings() {
         </select>
       </label>
       <label className="row">
+        {t('profile.prBadges')}
+        <input type="checkbox" className="toggle" checked={settings.prBadges} onChange={(e) => void update({ prBadges: e.target.checked })} />
+      </label>
+      <label className="row">
         {t('profile.restPopup')}
         <input type="checkbox" className="toggle" checked={settings.restPopup} onChange={(e) => void update({ restPopup: e.target.checked })} />
       </label>

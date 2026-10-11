@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DecimalInput from '../../components/DecimalInput'
 import type { SetLog, SetType, TrackingType, Units } from '../../db/types'
+import PRBadge from '../../components/PRBadge'
+import type { PRKind } from '../../lib/prs'
 import { formatNum, displayToKg, kgToDisplay } from '../../lib/units'
 import { isFilled } from '../../lib/workout'
 
@@ -26,13 +28,40 @@ const fromDisplay = (f: Field, v: number | undefined, units: Units) =>
 const RPE = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 const SET_TYPES: SetType[] = ['working', 'warmup', 'drop']
 
-export default function SetRow({ set, tracking, units, label, hint, expanded, canRepeat, canUseLast, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete }: {
+/** The number inputs for one set, by tracking type. Shared by the live workout and the history editor. */
+export function SetFields({ set, tracking, units, hint, onChange }: {
+  set: SetLog; tracking: TrackingType; units: Units; hint?: SetLog; onChange: (patch: Partial<SetLog>) => void
+}) {
+  const { t } = useTranslation()
+  const unitLabel = (f: Field) =>
+    f.kind === 'weight' ? (tracking === 'assisted_bodyweight' ? `−${units}` : tracking === 'bodyweight_added' ? `+${units}` : units)
+      : f.kind === 'reps' ? t('workout.repsUnit') : f.kind === 'sec' ? t('workout.secUnit') : f.kind === 'min' ? t('workout.minUnit') : t('workout.kmUnit')
+  return (
+    <>
+      {FIELDS[tracking].map((f) => {
+        const h = hint ? toDisplay(f, hint[f.key], units) : undefined
+        return (
+          <label key={f.key} className="field">
+            <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
+              value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
+              onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units) })} />
+            <span>{unitLabel(f)}</span>
+          </label>
+        )
+      })}
+    </>
+  )
+}
+
+export default function SetRow({ set, tracking, units, label, hint, pr, expanded, canRepeat, canUseLast, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete }: {
   set: SetLog
   tracking: TrackingType
   units: Units
   label: string
   /** Last time's matching set, shown as greyed placeholders (never applied silently). */
   hint?: SetLog
+  /** Records this set achieved (shown as a PR badge once it's done). */
+  pr?: PRKind[]
   expanded: boolean
   canRepeat: boolean
   canUseLast: boolean
@@ -46,10 +75,6 @@ export default function SetRow({ set, tracking, units, label, hint, expanded, ca
 }) {
   const { t } = useTranslation()
   const done = set.doneAt !== undefined
-  const fields = FIELDS[tracking]
-  const unitLabel = (f: Field) =>
-    f.kind === 'weight' ? (tracking === 'assisted_bodyweight' ? `−${units}` : tracking === 'bodyweight_added' ? `+${units}` : units)
-      : f.kind === 'reps' ? t('workout.repsUnit') : f.kind === 'sec' ? t('workout.secUnit') : f.kind === 'min' ? t('workout.minUnit') : t('workout.kmUnit')
   const ready = isFilled(set, tracking)
 
   // Swipe either way to delete the set (no confirmation). Works from anywhere on the row, including fields;
@@ -88,18 +113,11 @@ export default function SetRow({ set, tracking, units, label, hint, expanded, ca
       <div className="set-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .15s' }}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}>
       <div className="set-main">
-        <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
-        {fields.map((f) => {
-          const h = hint ? toDisplay(f, hint[f.key], units) : undefined
-          return (
-            <label key={f.key} className="field">
-              <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
-                value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
-                onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units) })} />
-              <span>{unitLabel(f)}</span>
-            </label>
-          )
-        })}
+        <span className="label-wrap">
+          <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
+          {done && pr && pr.length > 0 && <PRBadge kinds={pr} />}
+        </span>
+        <SetFields set={set} tracking={tracking} units={units} hint={hint} onChange={onChange} />
         <button className="icon" disabled={!canRepeat || done} aria-label={t('workout.repeat')} title={t('workout.repeat')} onClick={onRepeat}>⟲</button>
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
           onClick={done ? onUndo : onDone}>✓</button>

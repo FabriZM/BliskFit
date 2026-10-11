@@ -33,7 +33,8 @@
     "goalDays_one": "{{count}} día",
     "goalDays_other": "{{count}} días",
     "weekStart": "La semana empieza el",
-    "version": "Versión"
+    "version": "Versión",
+    "prBadges": "Mostrar insignias de récord"
   },
   "muscles": {
     "chest": "Pecho",
@@ -283,7 +284,8 @@
     "duration": "Duración",
     "sets": "Series",
     "volume": "Volumen",
-    "exercises": "Ejercicios"
+    "exercises": "Ejercicios",
+    "prs": "Récords"
   },
   "forgotten": {
     "title": "¿Sigues entrenando?",
@@ -296,7 +298,14 @@
     "title": "Historial",
     "empty": "Aún no hay entrenos terminados.",
     "sets_one": "{{count}} serie",
-    "sets_other": "{{count}} series"
+    "sets_other": "{{count}} series",
+    "view": "Vista",
+    "list": "Lista",
+    "calendar": "Calendario",
+    "pickDay": "Toca un día para ver sus entrenos.",
+    "noWorkoutDay": "No hay entreno este día.",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente"
   },
   "reminders": {
     "title": "Recordatorios",
@@ -313,5 +322,30 @@
       "prompt": "Desactivadas",
       "unsupported": "No disponible"
     }
+  },
+  "pr": {
+    "kind": {
+      "weight": "Mayor peso",
+      "reps": "Récord de repeticiones",
+      "e1rm": "1RM estimado",
+      "volume": "Volumen de serie",
+      "duration": "Mayor tiempo"
+    }
+  },
+  "detail": {
+    "edit": "Editar",
+    "doneEditing": "Terminar edición",
+    "deleteWorkout": "Eliminar entreno",
+    "confirmDelete": "¿Eliminar este entreno y todas sus series? No se puede deshacer.",
+    "notes": "Notas",
+    "notesPlaceholder": "¿Cómo fue?",
+    "noSets": "No hay series en este entreno."
+  },
+  "records": {
+    "title": "Récords",
+    "none": "Aún no hay récords. Registra este ejercicio para empezar a seguirlos.",
+    "mostReps": "Más repeticiones",
+    "repsAtWeight": "Mejores repeticiones por peso",
+    "history": "Historial de récords"
   }
 }

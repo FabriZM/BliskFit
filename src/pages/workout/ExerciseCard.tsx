@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
@@ -7,6 +7,7 @@ import { addSet, completeSet, deleteSet, removeItem, toggleSkip, uncompleteSet, 
 import { primeAudio } from '../../lib/alerts'
 import { formatSet } from '../../lib/format'
 import type { GroupPos } from '../../lib/routines'
+import { computePRs } from '../../lib/prs'
 import { formatClock } from '../../lib/units'
 import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
 import ExerciseNotes from './ExerciseNotes'
@@ -40,6 +41,11 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
     const sessions = new Map((await db.sessions.bulkGet(ids)).filter((x) => !!x).map((x) => [x!.id, x!]))
     return pickLastTime({ logs, sessions, gymId: session.gymId, excludeSessionId: session.id })
   }, [item.exerciseId, session.gymId, session.id])
+
+  // Records are always recomputed from every done set of this exercise (history + this session), so undoing or
+  // editing a set can never leave a stale badge.
+  const allDone = useLiveQuery(() => db.setLogs.where('exerciseId').equals(item.exerciseId).filter((x) => x.doneAt !== undefined).toArray(), [item.exerciseId])
+  const prs = useMemo(() => computePRs(allDone ?? [], tracking), [allDone, tracking])
 
   // Index among non-warm-up sets: "set 2 last time" lines up with set 2 now.
   let w = 0
@@ -125,7 +131,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}
-                hint={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined}
+                hint={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined} pr={prs.get(s.id)}
                 expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!lastSetFor(last, workingIdx[i]) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}

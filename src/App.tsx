@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
 import WorkoutPage from './pages/workout/WorkoutPage'
-import Summary from './pages/workout/Summary'
+import SessionDetail from './pages/workout/SessionDetail'
 import History from './pages/workout/History'
 import ForgottenGuard from './components/ForgottenGuard'
 import InProgressBar from './components/InProgressBar'
@@ -59,7 +59,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/workout/history" element={<History />} />
-          <Route path="/workout/summary/:id" element={<Summary />} />
+          <Route path="/workout/summary/:id" element={<SessionDetail justFinished />} />
+          <Route path="/workout/history/:id" element={<SessionDetail />} />
           <Route path="/routines" element={<Navigate to="/workout" replace />} />
           <Route path="/routines/programs" element={<ProgramList />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />

@@ -33,7 +33,8 @@
     "goalDays_one": "{{count}} day",
     "goalDays_other": "{{count}} days",
     "weekStart": "Week starts on",
-    "version": "Version"
+    "version": "Version",
+    "prBadges": "Show PR badges"
   },
   "muscles": {
     "chest": "Chest",
@@ -283,7 +284,8 @@
     "duration": "Duration",
     "sets": "Sets",
     "volume": "Volume",
-    "exercises": "Exercises"
+    "exercises": "Exercises",
+    "prs": "PRs"
   },
   "forgotten": {
     "title": "Still working out?",
@@ -296,7 +298,14 @@
     "title": "History",
     "empty": "No finished workouts yet.",
     "sets_one": "{{count}} set",
-    "sets_other": "{{count}} sets"
+    "sets_other": "{{count}} sets",
+    "view": "View",
+    "list": "List",
+    "calendar": "Calendar",
+    "pickDay": "Tap a day to see its workouts.",
+    "noWorkoutDay": "No workout on this day.",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "reminders": {
     "title": "Reminders",
@@ -313,5 +322,30 @@
       "prompt": "Off",
       "unsupported": "Not available"
     }
+  },
+  "pr": {
+    "kind": {
+      "weight": "Heaviest weight",
+      "reps": "Rep record",
+      "e1rm": "Est. 1RM",
+      "volume": "Set volume",
+      "duration": "Longest hold"
+    }
+  },
+  "detail": {
+    "edit": "Edit",
+    "doneEditing": "Done editing",
+    "deleteWorkout": "Delete workout",
+    "confirmDelete": "Delete this workout and all its sets? This can't be undone.",
+    "notes": "Notes",
+    "notesPlaceholder": "How did it go?",
+    "noSets": "No sets in this workout."
+  },
+  "records": {
+    "title": "Records",
+    "none": "No records yet. Log this exercise to start tracking them.",
+    "mostReps": "Most reps",
+    "repsAtWeight": "Best reps at a weight",
+    "history": "PR history"
   }
 }

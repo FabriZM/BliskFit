@@ -1,16 +1,24 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
+import CalendarMonth from '../../components/CalendarMonth'
 import { db } from '../../db/db'
 import type { Exercise } from '../../db/types'
+import { dateKey, trainingDayKeys } from '../../lib/goals'
+import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
 
-/** Finished workouts, newest first. Detail view is the summary page; calendar, edit and PRs arrive with M4. */
+/** Finished workouts as a list or a calendar of training days; each opens its detail (edit, delete, PRs). */
 export default function History() {
   const { t, i18n } = useTranslation()
-  const units = useSettings((s) => s.settings.units)
+  const { units, weekStartDay, prBadges } = useSettings((s) => s.settings)
+  const [view, setView] = useState<'list' | 'calendar'>('list')
+  const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
+  const [day, setDay] = useState<string | null>(null)
+
   const data = useLiveQuery(async () => {
     const sessions = (await db.sessions.where('status').equals('finished').toArray()).sort((a, b) => b.startedAt - a.startedAt)
     const sets = await db.setLogs.filter((s) => s.doneAt !== undefined).toArray()
@@ -18,21 +26,46 @@ export default function History() {
     const routines = new Map((await db.routines.toArray()).map((r) => [r.id, r.name]))
     return { sessions, sets, exercises, routines }
   }, [])
-  if (!data) return <p className="muted">…</p>
+
+  const derived = useMemo(() => {
+    if (!data) return undefined
+    const trackingOf = (id: string) => data.exercises.get(id)?.trackingType ?? 'weight_reps'
+    const prs = computeAllPRs(data.sets, trackingOf)
+    return { trackingOf, prs, trained: trainingDayKeys(data.sessions) }
+  }, [data])
+
+  if (!data || !derived) return <p className="muted">…</p>
   const date = new Intl.DateTimeFormat(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })
+  const shown = view === 'calendar' ? (day ? data.sessions.filter((s) => dateKey(new Date(s.startedAt)) === day) : []) : data.sessions
 
   return (
     <section>
       <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
       <h1>{t('history.title')}</h1>
-      {data.sessions.length === 0 && <p className="muted">{t('history.empty')}</p>}
+      <div className="segmented" role="group" aria-label={t('history.view')}>
+        <button className={view === 'list' ? 'on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('history.list')}</button>
+        <button className={view === 'calendar' ? 'on' : ''} aria-pressed={view === 'calendar'} onClick={() => setView('calendar')}>{t('history.calendar')}</button>
+      </div>
+      {view === 'calendar' && (
+        <>
+          <CalendarMonth month={month} onMonthChange={setMonth} trained={derived.trained} selected={day} onSelect={setDay} weekStartDay={weekStartDay} />
+          {!day && <p className="muted">{t('history.pickDay')}</p>}
+          {day && shown.length === 0 && <p className="muted">{t('history.noWorkoutDay')}</p>}
+        </>
+      )}
+      {view === 'list' && data.sessions.length === 0 && <p className="muted">{t('history.empty')}</p>}
       <ul className="list">
-        {data.sessions.map((s) => {
-          const stats = sessionStats(data.sets.filter((x) => x.sessionId === s.id), (id) => data.exercises.get(id)?.trackingType ?? 'weight_reps')
+        {shown.map((s) => {
+          const sets = data.sets.filter((x) => x.sessionId === s.id)
+          const stats = sessionStats(sets, derived.trackingOf)
+          const prCount = sets.filter((x) => (derived.prs.get(x.id)?.length ?? 0) > 0).length
           return (
             <li key={s.id}>
-              <Link to={`/workout/summary/${s.id}`}>
-                <strong>{date.format(s.startedAt)} · {(s.routineId && data.routines.get(s.routineId)) || t('workout.empty')}</strong>
+              <Link to={`/workout/history/${s.id}`}>
+                <strong>
+                  {date.format(s.startedAt)} · {(s.routineId && data.routines.get(s.routineId)) || t('workout.empty')}
+                  {prBadges && prCount > 0 && <span className="pr-badge inline" title={t('summary.prs')}>{prCount} PR</span>}
+                </strong>
                 <span className="muted">
                   {formatClock(elapsedMs(s, Date.now()))} · {t('history.sets', { count: stats.sets })}
                   {stats.volume > 0 ? ` · ${formatNum(kgToDisplay(stats.volume, units))} ${units}` : ''}

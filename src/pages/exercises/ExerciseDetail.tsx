@@ -8,6 +8,7 @@ import { compressImage } from '../../lib/image'
 import { muscleLabel } from '../../lib/muscles'
 import { demoImageUrls } from '../../lib/seed'
 import { useBlobUrl } from '../../lib/useBlobUrl'
+import ExerciseRecords from './ExerciseRecords'
 
 function NotePhoto({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
@@ -72,6 +73,8 @@ export default function ExerciseDetail() {
       <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
       {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
       {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener">▶ {t('exercises.video')}</a></p>}
+
+      <ExerciseRecords exercise={ex} />
 
       <h2>{t('exercises.setupNotes')}</h2>
       <ul className="list">

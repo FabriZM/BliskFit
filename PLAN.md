@@ -107,9 +107,9 @@ Add Capacitor to the existing web app and build a debug/release APK for the owne
 Done when: with the screen locked, the rest timer alerts and the 2h reminder fires.
 
 ### M4: History and PRs
-**Started:** the History screen (top-right icon on Workout) lists finished sessions and opens each one's summary. Still to do: edit/delete, the calendar, PR detection and badges.
-
-Session history and detail with edit/delete, calendar of training days, PR detection and badges (live, summary, history), PR list per exercise.
+**Status: done (web-only; no native changes).** History (icon at the top right of Workout) is a list or a month calendar of training days; each workout opens a detail page (also shown right after finishing) with stats, notes, sets and PR badges, and can be edited (set values, delete sets, notes) or deleted with confirmation. PRs are shown as a "PR" pill in the live workout, the finish summary, History rows and the detail page, and each exercise has a Records section (current bests, best reps at each weight, PR history). A "Show PR badges" switch is in Settings.
+PR rules (`lib/prs.ts`, unit-tested): always recomputed from the logged sets, never stored, so edits and deletes can't leave stale flags. A set must be strictly better than everything done before it; the first time an exercise is done is a baseline; warm-ups are ignored. Weighted lifts: heaviest weight, rep record at the same weight, estimated 1RM (Epley, a single counts at face value) and best set volume. Bodyweight reps: most reps. Duration: longest hold. Not yet: assisted bodyweight and cardio.
+Not done: editing a past workout's date/time and adding exercises to a finished workout.
 
 ### M5: Goals, streaks and reminders
 **Started:** the Profile week card, weekly goal (training days) and week-start settings, and the streak calculation (unit-tested, including week boundaries) are in. Still to do: streak freeze, reminders and notifications, and a snapshot of the goal per week so changing it doesn't rewrite past weeks.
