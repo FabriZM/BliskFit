@@ -11,9 +11,9 @@ import { useSettings } from '../stores/settings'
 
 /**
  * This week's training days against the goal, plus the weekly streak. Days with a workout are tappable: one
- * workout opens its detail, several open that day in the History calendar. `compact` is the Workout-tab version: just the week's days and count; the streak lives on Profile only.
+ * workout opens its detail, several open that day in the History calendar. Profile only (not on the Workout tab).
  */
-export default function WeekCard({ variant = 'full' }: { variant?: 'full' | 'compact' }) {
+export default function WeekCard() {
   const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const { weeklyGoal, weekStartDay, streakFreezes } = useSettings((s) => s.settings)
@@ -47,9 +47,9 @@ export default function WeekCard({ variant = 'full' }: { variant?: 'full' | 'com
   )
 
   return (
-    <div className={`card week-card${variant === 'compact' ? ' compact' : ''}`}>
+    <div className="card week-card">
       <div className="row head">
-        {variant === 'full' ? <h2>{t('profile.thisWeek')}</h2> : <span className="muted small">{t('profile.thisWeek')}</span>}
+        <h2>{t('profile.thisWeek')}</h2>
         <strong className={week.met ? 'met' : ''}>{t('profile.daysOfGoal', { count: week.count, goal })}</strong>
       </div>
       <div className="week-days">
@@ -68,7 +68,7 @@ export default function WeekCard({ variant = 'full' }: { variant?: 'full' | 'com
           )
         })}
       </div>
-      {variant === 'full' && streakLine}
+      {streakLine}
     </div>
   )
 }

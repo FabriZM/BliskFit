@@ -4,7 +4,6 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { getActiveSession, startSession } from '../../db/workout'
 import { HistoryIcon } from '../../components/TabIcons'
 import TodayCard from '../../components/TodayCard'
-import WeekCard from '../../components/WeekCard'
 import ActiveWorkout from './ActiveWorkout'
 import RoutinesSection from './RoutinesSection'
 
@@ -20,7 +19,6 @@ export default function WorkoutPage() {
         <h1>{t('tabs.workout')}</h1>
         <Link className="icon-link" to="/workout/history" aria-label={t('history.title')} title={t('history.title')}><HistoryIcon /></Link>
       </div>
-      <WeekCard variant="compact" />
       <TodayCard />
       <button className="wide" onClick={() => void startSession()}>{t('workout.startEmpty')}</button>
       <RoutinesSection />
