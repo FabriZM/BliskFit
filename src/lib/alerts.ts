@@ -10,6 +10,7 @@ export function primeAudio(): void {
 
 export function beep(times = 3): void {
   if (!ctx) return
+  void ctx.resume() // the context can be suspended after the app was backgrounded
   for (let i = 0; i < times; i++) {
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()

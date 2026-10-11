@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adjustRest, clearRest } from '../../db/workout'
+import { notificationPermission, requestNotifications } from '../../lib/notify'
 import type { WorkoutSession } from '../../db/types'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
@@ -17,6 +18,7 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
   const now = useNow(250)
   const rest = session.rest
   const [shownFor, setShownFor] = useState<number | null>(null)
+  const [perm, setPerm] = useState(notificationPermission())
 
   // Open for a rest that just began; a rest already in progress when the page loads stays a card.
   useEffect(() => {
@@ -47,6 +49,9 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
           <button onClick={() => void adjustRest(session.id, 15)}>+15</button>
           <button onClick={() => { void clearRest(session.id); close() }}>{t('workout.skipRest')}</button>
         </div>
+        {perm === 'default' && (
+          <button className="link" onClick={async () => setPerm(await requestNotifications())}>🔔 {t('workout.notifyRest')}</button>
+        )}
         <button className="primary" onClick={close}>{t('workout.dismiss')}</button>
       </div>
     </div>

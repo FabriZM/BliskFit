@@ -250,7 +250,9 @@
     "removeBody_one": "También se elimina {{count}} serie registrada.",
     "removeBody_other": "También se eliminan {{count}} series registradas.",
     "restOverShort": "¡Vamos!",
-    "dismiss": "Ocultar"
+    "dismiss": "Ocultar",
+    "restNotification": "Hora de tu siguiente serie.",
+    "notifyRest": "Avisarme al terminar el descanso (pantalla apagada)"
   },
   "summary": {
     "title": "Entreno completado",

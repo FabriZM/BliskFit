@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { adjustRest, clearRest } from '../../db/workout'
 import type { WorkoutSession } from '../../db/types'
 import { beep, vibrate } from '../../lib/alerts'
+import { notificationPermission, showNotification } from '../../lib/notify'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
 
@@ -21,6 +22,16 @@ export default function RestBar({ session }: { session: WorkoutSession }) {
       alerted.current = rest.endsAt
     }
   }, [rest, remaining, now])
+
+  // Backup for when the page is hidden at the moment the rest ends (vibration/beep can be blocked there).
+  // Best effort: a locked phone may suspend this timer; the native wrapper (M3b) removes that limit.
+  useEffect(() => {
+    if (!rest || notificationPermission() !== 'granted') return
+    const id = setTimeout(() => {
+      if (document.hidden) void showNotification(t('workout.restOverShort'), t('workout.restNotification'), 'rest-over', [250, 120, 250])
+    }, Math.max(0, rest.endsAt - Date.now()))
+    return () => clearTimeout(id)
+  }, [rest?.endsAt, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!rest) return null
   const over = remaining <= 0

@@ -250,7 +250,9 @@
     "removeBody_one": "This also deletes {{count}} logged set.",
     "removeBody_other": "This also deletes {{count}} logged sets.",
     "restOverShort": "Go!",
-    "dismiss": "Hide"
+    "dismiss": "Hide",
+    "restNotification": "Time for your next set.",
+    "notifyRest": "Notify me when rest ends (screen off)"
   },
   "summary": {
     "title": "Workout complete",

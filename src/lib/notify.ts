@@ -8,8 +8,10 @@ export async function requestNotifications(): Promise<NotificationPermission | '
   return Notification.requestPermission()
 }
 
-export async function showNotification(title: string, body: string, tag: string): Promise<void> {
+export async function showNotification(title: string, body: string, tag: string, vibrate?: number[]): Promise<void> {
   if (notificationPermission() !== 'granted') return
   const reg = await navigator.serviceWorker.ready
-  await reg.showNotification(title, { body, tag, icon: 'pwa-192.png' })
+  // `vibrate`/`renotify` are valid on Android but missing from the DOM typings.
+  const options = { body, tag, icon: 'pwa-192.png', vibrate, renotify: true } as NotificationOptions
+  await reg.showNotification(title, options)
 }
