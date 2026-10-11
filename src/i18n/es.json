@@ -293,7 +293,22 @@
     "suggested": "Inicio sugerido",
     "basedOn": "según {{names}}",
     "rough": "estimación aproximada",
-    "useSuggestion": "Usar sugerencia"
+    "useSuggestion": "Usar sugerencia",
+    "restTimer": "Temporizador de descanso",
+    "restShort": "Descanso",
+    "restNow": "ahora {{time}}",
+    "restOff": "sin temporizador",
+    "restOffHint": "Sin temporizador de descanso para este ejercicio",
+    "restSeconds": "Descanso en segundos",
+    "restSessionOnly": "Solo este entreno",
+    "restFuture": "Este y los próximos entrenos",
+    "restReset": "Volver a automático",
+    "custom": "propio",
+    "restSource_routine": "rutina o entreno",
+    "restSource_custom": "tu valor guardado",
+    "restSource_learned": "aprendido",
+    "restSource_exercise": "valor del ejercicio",
+    "restSource_default": "valor de la app"
   },
   "summary": {
     "title": "Entreno completado",

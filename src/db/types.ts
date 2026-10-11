@@ -33,6 +33,8 @@ export interface Exercise {
   videoUrl?: string
   defaultRestSec?: number
   learnedRestSec?: number
+  /** Set by the user from a workout ("always for this exercise"); wins over learned and default rest. 0 = no timer. */
+  customRestSec?: number
   source: 'seeded' | 'custom'
 }
 

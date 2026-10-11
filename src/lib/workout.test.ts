@@ -113,6 +113,11 @@ describe('pickLastTime', () => {
 describe('rest', () => {
   const item = (extra: Partial<SessionExercise> = {}): SessionExercise => ({ id: 'i', exerciseId: 'e', targetSets: 3, ...extra })
   const ex = (extra: Partial<Exercise> = {}): Exercise => ({ id: 'e', name: 'x', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom', ...extra })
+  it('your saved "always" value beats learned and the exercise default, but not a routine/session override', () => {
+    expect(restFor(item({ restSec: 45 }), ex({ customRestSec: 150, learnedRestSec: 100 }), 90)).toEqual({ sec: 45, source: 'routine' })
+    expect(restFor(item(), ex({ customRestSec: 150, learnedRestSec: 100, defaultRestSec: 60 }), 90)).toEqual({ sec: 150, source: 'custom' })
+    expect(restFor(item(), ex({ customRestSec: 0, learnedRestSec: 100 }), 90)).toEqual({ sec: 0, source: 'custom' }) // 0 = no timer, not "unset"
+  })
   it('resolves routine > learned > exercise > default', () => {
     expect(restFor(item({ restSec: 45 }), ex({ learnedRestSec: 100 }), 90)).toEqual({ sec: 45, source: 'routine' })
     expect(restFor(item(), ex({ learnedRestSec: 100, defaultRestSec: 60 }), 90)).toEqual({ sec: 100, source: 'learned' })

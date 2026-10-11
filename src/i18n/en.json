@@ -293,7 +293,22 @@
     "suggested": "Suggested start",
     "basedOn": "based on {{names}}",
     "rough": "rough guess",
-    "useSuggestion": "Use suggestion"
+    "useSuggestion": "Use suggestion",
+    "restTimer": "Rest timer",
+    "restShort": "Rest",
+    "restNow": "now {{time}}",
+    "restOff": "off",
+    "restOffHint": "No rest timer for this exercise",
+    "restSeconds": "Rest in seconds",
+    "restSessionOnly": "This session only",
+    "restFuture": "This and future sessions",
+    "restReset": "Reset to automatic",
+    "custom": "custom",
+    "restSource_routine": "routine or session",
+    "restSource_custom": "your saved value",
+    "restSource_learned": "learned",
+    "restSource_exercise": "exercise default",
+    "restSource_default": "app default"
   },
   "summary": {
     "title": "Workout complete",

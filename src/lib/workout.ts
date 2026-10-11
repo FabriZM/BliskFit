@@ -167,10 +167,12 @@ export const lastSetFor = (last: LastTime | undefined, workingIndex: number): Se
 
 // ---- rest -------------------------------------------------------------------------------------
 
-export type RestSource = 'routine' | 'learned' | 'exercise' | 'default'
+export type RestSource = 'routine' | 'custom' | 'learned' | 'exercise' | 'default'
 
 export function restFor(item: SessionExercise, ex: Exercise | undefined, defaultSec: number): { sec: number; source: RestSource } {
+  // Order: this exercise in the routine/session > your saved "always" value > learned > exercise default > global.
   if (item.restSec !== undefined) return { sec: item.restSec, source: 'routine' }
+  if (ex?.customRestSec !== undefined) return { sec: ex.customRestSec, source: 'custom' }
   if (ex?.learnedRestSec !== undefined) return { sec: ex.learnedRestSec, source: 'learned' }
   if (ex?.defaultRestSec !== undefined) return { sec: ex.defaultRestSec, source: 'exercise' }
   return { sec: defaultSec, source: 'default' }

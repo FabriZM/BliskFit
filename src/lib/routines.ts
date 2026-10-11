@@ -79,7 +79,7 @@ export function unlinkFromNext(exs: RoutineExercise[], i: number): RoutineExerci
 }
 
 /** Set rest for an exercise; for grouped exercises it applies to the whole group. */
-export function setRest(exs: RoutineExercise[], i: number, restSec: number | undefined): RoutineExercise[] {
+export function setRest<T extends { supersetGroup?: string; restSec?: number }>(exs: T[], i: number, restSec: number | undefined): T[] {
   const g = exs[i]?.supersetGroup
   return exs.map((e, k) => {
     if (k !== i && !(g && e.supersetGroup === g)) return e

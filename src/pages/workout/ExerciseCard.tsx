@@ -12,6 +12,7 @@ import { formatClock } from '../../lib/units'
 import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
 import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
+import RestEditor from './RestEditor'
 import SetRow from './SetRow'
 
 export default function ExerciseCard({ session, item, exercise, sets, pos, units, defaultRest, onSwap }: {
@@ -29,6 +30,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const [expanded, setExpanded] = useState<string | null>(null)
   const [addingNote, setAddingNote] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [editingRest, setEditingRest] = useState(false)
   const [dx, setDx] = useState(0)
   const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
   const tracking = exercise?.trackingType ?? 'weight_reps'
@@ -114,7 +116,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       <p className="muted small meta">
         <button className="icon tiny" aria-label={t('workout.addNote')} title={t('workout.addNote')} onClick={() => setAddingNote(true)}>📝</button>
         {item.targetSets} × {item.repMin ? (item.repMax && item.repMax !== item.repMin ? `${item.repMin}–${item.repMax}` : item.repMin) : '—'}
-        {' · '}{t('workout.rest')} {formatClock(rest.sec * 1000)}{rest.source === 'learned' ? ` (${t('workout.learned')})` : ''}
+        {' · '}{t('workout.rest')} {rest.sec === 0 ? t('workout.restOff') : formatClock(rest.sec * 1000)}{rest.source === 'learned' ? ` (${t('workout.learned')})` : rest.source === 'custom' ? ` (${t('workout.custom')})` : ''}
         {item.skipped ? ` · ${t('workout.skipped')}` : ''}
       </p>
 
@@ -122,6 +124,9 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         <div className="menu icons" role="menu">
           <button role="menuitem" title={t('workout.swap')} aria-label={t('workout.swap')} onClick={() => { onSwap(); setMenu(false) }}>
             <span aria-hidden>🔄</span><small>{t('workout.swapShort')}</small>
+          </button>
+          <button role="menuitem" title={t('workout.restTimer')} aria-label={t('workout.restTimer')} onClick={() => { setEditingRest(true); setMenu(false) }}>
+            <span aria-hidden>⏱️</span><small>{t('workout.restShort')}</small>
           </button>
           <button role="menuitem" title={item.skipped ? t('workout.unskip') : t('workout.skip')} aria-label={item.skipped ? t('workout.unskip') : t('workout.skip')}
             onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>
@@ -161,7 +166,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
-                onDone={() => { primeAudio(); void completeSet(s.id, shouldStartRest(session.exercises, item.id) ? rest.sec : null) }}
+                onDone={() => { primeAudio(); void completeSet(s.id, shouldStartRest(session.exercises, item.id) && rest.sec > 0 ? rest.sec : null) }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onRepeat={() => void updateSet(s.id, valuesOf(sorted[i - 1]))}
                 onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, valuesOf(src)) }}
@@ -172,6 +177,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         </>
       )}
       </div>
+      {editingRest && <RestEditor session={session} item={item} exercise={exercise} defaultRest={defaultRest} onClose={() => setEditingRest(false)} />}
       {confirmRemove && (
         <div className="modal" role="alertdialog" aria-modal="true">
           <div className="modal-card">

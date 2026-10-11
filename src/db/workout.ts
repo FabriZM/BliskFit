@@ -1,6 +1,6 @@
 import { db, newId } from './db'
 import type { Exercise, ID, SessionExercise, SetLog, SetType, WorkoutSession } from './types'
-import { defaultsFor, replaceExercise } from '../lib/routines'
+import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
 import { finalizeSession, learnRest, pauseSession, restGaps, resumeSession, valuesOf } from '../lib/workout'
@@ -198,5 +198,45 @@ export async function shiftSession(id: ID, newStartedAt: number): Promise<void> 
       pausedIntervals: s.pausedIntervals.map((p) => ({ start: p.start + delta, end: p.end === undefined ? undefined : p.end + delta })),
     })
     await db.setLogs.where('sessionId').equals(id).modify((l) => { if (l.doneAt !== undefined) l.doneAt += delta })
+  })
+}
+
+/** Rest for this exercise in this session only (a superset/circuit shares one rest, so it applies to the group). */
+export const setSessionRest = (id: ID, itemId: ID, sec: number | undefined) =>
+  mutate(id, (s) => {
+    const i = s.exercises.findIndex((x) => x.id === itemId)
+    return i < 0 ? undefined : { ...s, exercises: setRest(s.exercises, i, sec) }
+  })
+
+/**
+ * "This and future sessions": remembers `sec` on the exercise, and also updates any routine that already
+ * overrides this exercise's rest (so an older routine value can't silently beat your new choice). With a
+ * session context it applies to the running workout too.
+ */
+export async function setExerciseRest(exerciseId: ID, sec: number, ctx?: { sessionId: ID; itemId: ID }): Promise<void> {
+  await db.transaction('rw', db.exercises, db.routines, db.sessions, async () => {
+    await db.exercises.update(exerciseId, { customRestSec: sec })
+    for (const r of await db.routines.toArray()) {
+      let list = r.exercises
+      list.forEach((e, i) => { if (e.exerciseId === exerciseId && e.restSec !== undefined && e.restSec !== sec) list = setRest(list, i, sec) })
+      if (list !== r.exercises) await db.routines.put({ ...r, exercises: list })
+    }
+    if (ctx) {
+      const s = await db.sessions.get(ctx.sessionId)
+      const i = s?.exercises.findIndex((x) => x.id === ctx.itemId) ?? -1
+      if (s && i >= 0) await db.sessions.put({ ...s, exercises: setRest(s.exercises, i, sec) })
+    }
+  })
+}
+
+/** Back to automatic: forgets the saved value (and this session's override); routine overrides are left alone. */
+export async function clearExerciseRest(exerciseId: ID, ctx?: { sessionId: ID; itemId: ID }): Promise<void> {
+  await db.transaction('rw', db.exercises, db.sessions, async () => {
+    await db.exercises.update(exerciseId, { customRestSec: undefined })
+    if (ctx) {
+      const s = await db.sessions.get(ctx.sessionId)
+      const i = s?.exercises.findIndex((x) => x.id === ctx.itemId) ?? -1
+      if (s && i >= 0) await db.sessions.put({ ...s, exercises: setRest(s.exercises, i, undefined) })
+    }
   })
 }
