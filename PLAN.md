@@ -3,9 +3,8 @@
 Personal gym tracker for Android. Built web-first as an offline PWA (installable from Chrome, shareable through a free static host), then wrapped as an APK with Capacitor once the live workout needs reliable timers/notifications. Same codebase for both. Data stays local on each device, with optional cloud backup.
 
 ## Stack
-React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, four bottom tabs:
-- **Home:** today's workout + Start, Resume card, week progress, streak, recent PRs.
-- **Workout:** segmented switch **Routines** (incl. programs) | **History** (sessions, calendar).
+React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, three bottom tabs (no Home):
+- **Workout** (default screen): top card with today's suggested workout + Start, or Resume if a session is running; week progress and streak; below, a segmented switch **Routines** (incl. programs) | **History** (sessions, calendar, recent PRs).
 - **Exercises:** library, search/filters, add exercise; later the interactive body figure.
 - **Profile:** Stats first (charts, muscle volume, PRs), then body weight and measurements, goals, settings, backup, gyms.
 An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
@@ -69,7 +68,7 @@ Seed muscle hierarchy and exercises from an open dataset (check license first, e
 Done when: "Calf raise (seated machine X)" can be created with a photo, tagged to Calves and found by muscle, with seat-height notes.
 
 ### M2: Routines and programs
-**Status: done (drag-and-drop not yet tried on a real touch device).** Superset members are contiguous and share one rest value (last one set in the group). Program weekday schedules are aligned to the configured week start; the active program id lives in `meta`. Rotation position is inferred from the last finished session, so each routine can appear once per rotation. The "Today's workout" card is on Home and Routines; the Start button arrives with M3.
+**Status: done (drag-and-drop not yet tried on a real touch device).** Superset members are contiguous and share one rest value (last one set in the group). Program weekday schedules are aligned to the configured week start; the active program id lives in `meta`. Rotation position is inferred from the last finished session, so each routine can appear once per rotation. The "Today's workout" card is on the Workout tab.
 
 Unlimited routines: create, rename, duplicate, archive. Add exercises, drag to reorder, set sets/rep range/rest, group into supersets/circuits with a shared rest timer. Programs: multi-week schedules per weekday, or A/B/C rotation that suggests the next routine regardless of calendar day. "Today's workout" suggestion.
 Done when: a full push/pull/legs split can be built and scheduled.
@@ -99,7 +98,7 @@ Done when: with the screen locked, the rest timer alerts and the 2h reminder fir
 Session history and detail with edit/delete, calendar of training days, PR detection and badges (live, summary, history), PR list per exercise.
 
 ### M5: Goals, streaks and reminders
-Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), home dashboard, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes).
+Weekly goal, training days per week, streak = consecutive weeks meeting the goal, configurable week start, optional streak freeze (e.g. one per month for illness/travel), week progress and streak shown at the top of the Workout tab, optional notifications on planned training days. Edge cases tested (week boundaries, skipped weeks, goal changes, freezes).
 
 ### M6: Stats and body tracking
 Per-exercise charts (max weight, e1RM, volume, reps) with date range, muscle-group weekly sets/volume, muscle balance (push/pull ratio, left/right measurement asymmetry), plateau detector, weekly summary (sessions, volume, new PRs, under-trained muscles), body weight log with trend, body measurements (standard + custom, left/right) with charts and change summaries. Gym comparison for the same exercise (only shown if gyms are used).
