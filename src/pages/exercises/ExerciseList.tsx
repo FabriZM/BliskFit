@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -9,16 +9,35 @@ import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
 
 const PAGE = 60
 
+// Kept in memory so coming back from an exercise page restores the search, filters and scroll position.
+const saved = { query: '', muscle: '', equipment: '', favoritesOnly: false, shown: PAGE, scroll: 0 }
+
 export default function ExerciseList() {
   const { t } = useTranslation()
-  const [query, setQuery] = useState('')
-  const [muscle, setMuscle] = useState('')
-  const [equipment, setEquipment] = useState('')
-  const [favoritesOnly, setFavoritesOnly] = useState(false)
-  const [shown, setShown] = useState(PAGE)
+  const [query, setQuery] = useState(saved.query)
+  const [muscle, setMuscle] = useState(saved.muscle)
+  const [equipment, setEquipment] = useState(saved.equipment)
+  const [favoritesOnly, setFavoritesOnly] = useState(saved.favoritesOnly)
+  const [shown, setShown] = useState(saved.shown)
+  const restored = useRef(false)
   const favorites = useFavorites()
 
   const exercises = useLiveQuery(() => db.exercises.toArray(), [])
+
+  useEffect(() => { Object.assign(saved, { query, muscle, equipment, favoritesOnly, shown }) }, [query, muscle, equipment, favoritesOnly, shown])
+  // Restore the scroll once the list has rendered; remember it when leaving.
+  useLayoutEffect(() => {
+    if (!exercises || restored.current) return
+    restored.current = true
+    const main = document.querySelector('main')
+    if (main) main.scrollTop = saved.scroll
+  }, [exercises])
+  useEffect(() => {
+    const main = document.querySelector('main')
+    const onScroll = () => { if (restored.current && main) saved.scroll = main.scrollTop }
+    main?.addEventListener('scroll', onScroll, { passive: true })
+    return () => main?.removeEventListener('scroll', onScroll)
+  }, [])
   const muscles = useLiveQuery(() => db.muscleGroups.toArray(), [])
 
   const equipmentOptions = useMemo(
