@@ -77,12 +77,13 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
     drag.current = null
     setDx(0)
   }
+  const cancelSwipe = () => { drag.current = null; setDx(0) }
 
   return (
     <li className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}`}>
       <div className="swipe-bg" aria-hidden>🗑 {t('workout.removeExercise')}</div>
       <div className="swipe-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={endSwipe}>
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={cancelSwipe}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
         <strong className="rx-name">{exercise?.name ?? '…'}</strong>

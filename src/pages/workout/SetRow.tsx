@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DecimalInput from '../../components/DecimalInput'
 import type { SetLog, SetType, TrackingType, Units } from '../../db/types'
@@ -51,8 +52,41 @@ export default function SetRow({ set, tracking, units, label, hint, expanded, ca
       : f.kind === 'reps' ? t('workout.repsUnit') : f.kind === 'sec' ? t('workout.secUnit') : f.kind === 'min' ? t('workout.minUnit') : t('workout.kmUnit')
   const ready = isFilled(set, tracking)
 
+  // Swipe either way to delete the set (no confirmation). Works from anywhere on the row, including fields;
+  // a mostly-vertical gesture is left to the page scroll. Stops propagation so the card's own swipe stays out.
+  const [dx, setDx] = useState(0)
+  const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
+  const SWIPE_AT = 80
+  const down = (e: React.PointerEvent) => { e.stopPropagation(); drag.current = { x: e.clientX, y: e.clientY, active: false } }
+  const move = (e: React.PointerEvent<HTMLElement>) => {
+    const d = drag.current
+    if (!d) return
+    e.stopPropagation()
+    const ddx = e.clientX - d.x, ddy = e.clientY - d.y
+    if (!d.active) {
+      if (Math.abs(ddy) > 10 && Math.abs(ddy) > Math.abs(ddx)) { drag.current = null; return }
+      if (Math.abs(ddx) > 10) {
+        d.active = true
+        try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* pointer already gone */ }
+      }
+    }
+    if (d.active) setDx(ddx)
+  }
+  const up = (e: React.PointerEvent) => {
+    e.stopPropagation()
+    const swiped = drag.current?.active && Math.abs(dx) > SWIPE_AT
+    drag.current = null
+    setDx(0)
+    if (swiped) onDelete()
+  }
+  // A cancelled gesture (the OS took over the touch) must never delete anything.
+  const cancel = (e: React.PointerEvent) => { e.stopPropagation(); drag.current = null; setDx(0) }
+
   return (
-    <li className={`set${done ? ' done' : ''}`}>
+    <li className={`set${done ? ' done' : ''}${dx ? ` swiping ${dx > 0 ? 'dir-r' : 'dir-l'}` : ''}`}>
+      <div className="swipe-bg" aria-hidden>🗑</div>
+      <div className="set-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .15s' }}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}>
       <div className="set-main">
         <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
         {fields.map((f) => {
@@ -96,6 +130,7 @@ export default function SetRow({ set, tracking, units, label, hint, expanded, ca
           </div>
         </div>
       )}
+      </div>
     </li>
   )
 }
