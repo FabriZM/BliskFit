@@ -5,6 +5,18 @@ Personal gym tracker for Android. Built web-first as an offline PWA (installable
 ## Stack
 React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, bottom tabs: Home, Workout, Routines, Exercises, Stats, Profile. UI available in English and Spanish; kg/lb switchable.
 
+## Tooling and supply chain security
+- **Package manager: pnpm.** M0 was scaffolded with npm (`package-lock.json`, exact versions already pinned), so migrating is a small one-time task now, before more dependencies pile up: `pnpm import` from the lockfile, delete `package-lock.json`, set the `packageManager` field, update the Pages workflow in `.github/` to use pnpm.
+- Dependency install scripts are blocked by default; allowlist only what is needed via `onlyBuiltDependencies`. Expected: `esbuild` and `sharp` (native binary, used by the icon script). Review every addition.
+- Set a minimum release age so brand-new package versions are not installed for a few days (verify the exact pnpm option name and version before relying on it).
+- Commit the lockfile; install with `--frozen-lockfile` in CI. Keep exact version pins (no `^`) and update deliberately after reading changelogs; run `pnpm audit` occasionally.
+- Keep the dependency list short and well known. Prefer a few lines of code over tiny single-purpose packages. Consider moving `sharp` out of the app's dependency tree if only the icon script needs it.
+- Never commit the APK signing key, keystore passwords or tokens; back up the key offline.
+- Fallback if staying on npm: `ignore-scripts=true` in `.npmrc`, `npm ci` in CI, same pinning rules.
+
+## Architecture decision
+Stay with web + Capacitor rather than full native Kotlin: one codebase gives the shareable PWA and the APK, faster iteration, easy SVG/charts, and web-bundle updates. Business logic and the data model stay UI-independent so a native rewrite remains possible. Revisit only if a home-screen widget or Health Connect sync becomes important (native-only strengths).
+
 ## Data model
 | Entity | Key fields |
 |---|---|
@@ -46,6 +58,8 @@ Scaffold, PWA manifest/icons/service worker, tab shell, i18n setup (en/es), Dexi
 Done when: installs on Android from a dev URL and tabs navigate.
 
 ### M1: Exercise library
+**Status: done.** Dataset: free-exercise-db (Unlicense, 876 exercises, demo images served from jsDelivr and cached by the service worker). Seeded muscles/exercises use stable ids (`m:<slug>`, `x:<id>`); custom ones use UUIDs. Schema v2 added a `meta` table (seed version). Seeded exercises are read-only; setup notes work on all.
+
 Seed muscle hierarchy and exercises from an open dataset (check license first, e.g. free-exercise-db or wger). List/search/filter by muscle and equipment. Add/edit/delete custom exercises with tracking type, muscle selector and photo upload (compressed). Detail page with image/demo and optional own video link. Per-exercise machine/setup notes with photo (e.g. seat height); an optional gym tag on notes, managed from a hidden-away settings screen.
 Done when: "Calf raise (seated machine X)" can be created with a photo, tagged to Calves and found by muscle, with seat-height notes.
 
@@ -105,7 +119,6 @@ Two layers, so most updates need no new APK:
 - Health Connect integration is not possible from a plain PWA; only if the app is later wrapped natively (Capacitor, which would also allow an APK).
 
 ## Open items
-- Exercise dataset choice (license, quality, images) at M1.
 - App name/branding (icons).
 - Hosting provider (GitHub Pages/Releases assumed), live-update approach and cloud backup mechanism at M7.
 - APK release signing key storage/backup at M3b.

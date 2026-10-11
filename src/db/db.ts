@@ -17,6 +17,7 @@ export class GymDB extends Dexie {
   bodyWeights!: EntityTable<BodyWeight, 'id'>
   measurements!: EntityTable<Measurement, 'id'>
   settings!: EntityTable<Settings, 'id'>
+  meta!: EntityTable<{ key: string; value: unknown }, 'key'>
 
   constructor(name = 'gymapp') {
     super(name)
@@ -35,6 +36,8 @@ export class GymDB extends Dexie {
       measurements: 'id, date, type, [type+date]',
       settings: 'id',
     })
+    // v2: key/value table (seed version, future flags).
+    this.version(2).stores({ meta: 'key' })
   }
 }
 

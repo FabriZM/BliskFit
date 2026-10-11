@@ -29,6 +29,14 @@ export default defineConfig({
           { src: 'pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
+      workbox: {
+        runtimeCaching: [{
+          // Demo images are remote; cache them after first view so they work offline.
+          urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/yuhonas\/.*\.jpg$/,
+          handler: 'CacheFirst',
+          options: { cacheName: 'exercise-demos', expiration: { maxEntries: 600, maxAgeSeconds: 60 * 60 * 24 * 365 }, cacheableResponse: { statuses: [0, 200] } },
+        }],
+      },
       devOptions: { enabled: true },
     }),
   ],

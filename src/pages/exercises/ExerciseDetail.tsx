@@ -1,0 +1,99 @@
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db, newId } from '../../db/db'
+import { compressImage } from '../../lib/image'
+import { muscleLabel } from '../../lib/muscles'
+import { demoImageUrls } from '../../lib/seed'
+import { useBlobUrl } from '../../lib/useBlobUrl'
+
+function NotePhoto({ blob }: { blob: Blob }) {
+  const url = useBlobUrl(blob)
+  return url ? <img className="photo" src={url} alt="" /> : null
+}
+
+export default function ExerciseDetail() {
+  const { t } = useTranslation()
+  const nav = useNavigate()
+  const id = decodeURIComponent(useParams().id ?? '')
+  const ex = useLiveQuery(() => db.exercises.get(id), [id])
+  const muscles = useLiveQuery(() => db.muscleGroups.toArray(), []) ?? []
+  const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
+  const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
+  const photoUrl = useBlobUrl(ex?.photo)
+
+  const [text, setText] = useState('')
+  const [gymId, setGymId] = useState('')
+  const [notePhoto, setNotePhoto] = useState<Blob>()
+
+  if (ex === undefined) return <p className="muted">…</p>
+  if (!ex) return <section><p>{t('exercises.notFound')}</p><Link to="/exercises">{t('tabs.exercises')}</Link></section>
+
+  const name = (mid: string) => { const m = muscles.find((x) => x.id === mid); return m ? muscleLabel(m, t) : mid }
+  const demo = ex.source === 'seeded' && ex.demoUrl ? demoImageUrls(id.replace(/^x:/, ''), 2) : []
+  const gymName = (gid?: string) => gyms.find((g) => g.id === gid)?.name
+
+  const addNote = async () => {
+    if (!text.trim() && !notePhoto) return
+    await db.exerciseGymNotes.add({ id: newId(), exerciseId: id, gymId: gymId || undefined, text: text.trim(), photo: notePhoto })
+    setText(''); setNotePhoto(undefined); setGymId('')
+  }
+
+  const remove = async () => {
+    if (await db.setLogs.where('exerciseId').equals(id).count()) return alert(t('exercises.inUse'))
+    if (!confirm(t('exercises.confirmDelete'))) return
+    await db.transaction('rw', db.exercises, db.exerciseGymNotes, db.exerciseNotes, async () => {
+      await db.exerciseGymNotes.where('exerciseId').equals(id).delete()
+      await db.exerciseNotes.where('exerciseId').equals(id).delete()
+      await db.exercises.delete(id)
+    })
+    nav('/exercises', { replace: true })
+  }
+
+  return (
+    <section>
+      <p><Link to="/exercises">← {t('tabs.exercises')}</Link></p>
+      <h1>{ex.name}</h1>
+      <p className="muted">
+        {t(`tracking.${ex.trackingType}`)} · {t(`equipment.${ex.equipment ?? 'none'}`, { defaultValue: ex.equipment ?? '' })}
+      </p>
+      {photoUrl && <img className="hero" src={photoUrl} alt={ex.name} />}
+      {demo.length > 0 && <div className="demo">{demo.map((u) => <img key={u} className="hero" src={u} alt="" loading="lazy" />)}</div>}
+      <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
+      {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
+      {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener">▶ {t('exercises.video')}</a></p>}
+
+      <h2>{t('exercises.setupNotes')}</h2>
+      <ul className="list">
+        {notes.map((n) => (
+          <li key={n.id}><div>
+            {gymName(n.gymId) && <span className="muted">{gymName(n.gymId)}</span>}
+            <p>{n.text}</p>
+            {n.photo && <NotePhoto blob={n.photo} />}
+            <button onClick={() => void db.exerciseGymNotes.delete(n.id)}>{t('common.delete')}</button>
+          </div></li>
+        ))}
+      </ul>
+      <div className="form">
+        <textarea rows={2} value={text} placeholder={t('exercises.notePlaceholder')} onChange={(e) => setText(e.target.value)} />
+        {gyms.length > 0 && (
+          <select value={gymId} onChange={(e) => setGymId(e.target.value)} aria-label={t('gyms.gym')}>
+            <option value="">{t('gyms.anyGym')}</option>
+            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+        )}
+        <input type="file" accept="image/*" aria-label={t('exercises.photo')}
+          onChange={async (e) => { const f = e.target.files?.[0]; if (f) setNotePhoto(await compressImage(f)) }} />
+        <button className="primary" onClick={() => void addNote()}>{t('exercises.addNote')}</button>
+      </div>
+
+      {ex.source === 'custom' && (
+        <div className="actions">
+          <Link className="btn" to={`/exercises/${encodeURIComponent(id)}/edit`}>{t('common.edit')}</Link>
+          <button className="danger" onClick={() => void remove()}>{t('common.delete')}</button>
+        </div>
+      )}
+    </section>
+  )
+}

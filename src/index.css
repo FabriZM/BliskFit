@@ -12,3 +12,19 @@ select, button { font: inherit; padding: 8px 12px; border-radius: 8px; border: 0
 .tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; font-size: .7rem; color: var(--muted); text-decoration: none; }
 .tabbar a.active { color: var(--accent); }
 .update-banner { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: var(--accent); color: #064e3b; }
+input, textarea { font: inherit; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151; background: var(--card); color: var(--fg); width: 100%; }
+.row.head { border: 0; padding: 0 0 8px; }
+.btn, button.primary { background: var(--accent); color: #064e3b; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+button.danger { background: #7f1d1d; }
+a { color: var(--accent); }
+.filters { display: flex; gap: 8px; margin: 8px 0; } .filters select { flex: 1; min-width: 0; }
+.list { list-style: none; padding: 0; margin: 0; } .list li { border-bottom: 1px solid var(--card); }
+.list a { display: flex; flex-direction: column; padding: 10px 0; text-decoration: none; color: var(--fg); }
+.form { display: flex; flex-direction: column; gap: 12px; } .form label { display: flex; flex-direction: column; gap: 4px; }
+fieldset { border: 1px solid var(--card); border-radius: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border-radius: 999px; padding: 6px 12px; } .chip.on { background: var(--accent); color: #064e3b; } .chip:disabled { opacity: .35; } .chip.child { font-size: .85em; }
+.actions { display: flex; gap: 8px; margin: 16px 0; }
+.photo { max-width: 160px; border-radius: 8px; display: block; margin: 6px 0; }
+.hero { width: 100%; max-width: 420px; border-radius: 8px; display: block; margin: 8px 0; }
+.error { color: #f87171; }

@@ -5,6 +5,12 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
 import Placeholder from './pages/Placeholder'
 import Profile from './pages/Profile'
+import Gyms from './pages/Gyms'
+import ExerciseList from './pages/exercises/ExerciseList'
+import ExerciseDetail from './pages/exercises/ExerciseDetail'
+import ExerciseForm from './pages/exercises/ExerciseForm'
+import { db } from './db/db'
+import { ensureSeed } from './db/seed'
 
 const TABS = [
   { path: '/', key: 'home', icon: '🏠' },
@@ -22,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     void load()
+    void ensureSeed(db)
     // Ask the browser not to evict our IndexedDB data.
     void navigator.storage?.persist?.()
   }, [load])
@@ -40,10 +47,15 @@ export default function App() {
       )}
       <main>
         <Routes>
-          {TABS.filter((x) => x.key !== 'profile').map((tab) => (
+          {TABS.filter((x) => x.key !== 'profile' && x.key !== 'exercises').map((tab) => (
             <Route key={tab.key} path={tab.path} element={<Placeholder title={t(`tabs.${tab.key}`)} />} />
           ))}
+          <Route path="/exercises" element={<ExerciseList />} />
+          <Route path="/exercises/new" element={<ExerciseForm />} />
+          <Route path="/exercises/:id" element={<ExerciseDetail />} />
+          <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/gyms" element={<Gyms />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../stores/settings'
 
@@ -31,6 +32,9 @@ export default function Profile() {
       <p className="row">
         {t('profile.persist')}
         <span className="muted">{persisted ? t('profile.persistGranted') : t('profile.persistDenied')}</span>
+      </p>
+      <p className="row">
+        <Link to="/profile/gyms">{t('gyms.title')}</Link>
       </p>
     </section>
   )
