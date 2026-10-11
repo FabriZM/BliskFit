@@ -1,0 +1,7 @@
+# Supply-chain policy (see PLAN.md, "Tooling and supply chain security").
+# Don't install package versions published in the last 3 days (value is minutes); fail instead of silently exempting.
+minimumReleaseAge: 4320
+minimumReleaseAgeStrict: true
+# Dependencies may not run install scripts. Nothing needs one today (sharp ships prebuilt binaries);
+# if a package ever does, allowlist it explicitly after reviewing it.
+ignoreScripts: true

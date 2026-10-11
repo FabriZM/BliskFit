@@ -10,13 +10,13 @@ React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot
 An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
 
 ## Tooling and supply chain security
-- **Package manager: pnpm.** M0 was scaffolded with npm (`package-lock.json`, exact versions already pinned), so migrating is a small one-time task now, before more dependencies pile up: `pnpm import` from the lockfile, delete `package-lock.json`, set the `packageManager` field, update the Pages workflow in `.github/` to use pnpm.
-- Dependency install scripts are blocked by default; allowlist only what is needed via `onlyBuiltDependencies`. Expected: `esbuild` and `sharp` (native binary, used by the icon script). Review every addition.
-- Set a minimum release age so brand-new package versions are not installed for a few days (verify the exact pnpm option name and version before relying on it).
-- Commit the lockfile; install with `--frozen-lockfile` in CI. Keep exact version pins (no `^`) and update deliberately after reading changelogs; run `pnpm audit` occasionally.
+- **Package manager: pnpm (done).** Migrated from npm: `pnpm-lock.yaml` is committed, `package-lock.json` is gone, `packageManager` pins pnpm 11.8.0, and the Pages workflow installs with `pnpm install --frozen-lockfile`. Dependency versions are exact pins. `workbox-window` is now an explicit dev dependency (pnpm's strict `node_modules` no longer lets `vite-plugin-pwa` find it by accident).
+- **Install scripts blocked:** `ignoreScripts: true` in `pnpm-workspace.yaml`. Nothing needs a script today (`sharp` ships prebuilt binaries, `esbuild` isn't in the tree). If a package ever needs one, allowlist it explicitly after reviewing it.
+- **Minimum release age: 3 days** (`minimumReleaseAge: 4320`, strict) in `pnpm-workspace.yaml`. It caught three of our own pins (`vite`, `i18next`, `@types/node`, each under 3 days old) and they were moved back one patch release. To move forward, wait for a release to age past 3 days, then bump deliberately after reading the changelog.
+- Install with `--frozen-lockfile` in CI; run `pnpm audit` occasionally (clean at migration time).
 - Keep the dependency list short and well known. Prefer a few lines of code over tiny single-purpose packages. Consider moving `sharp` out of the app's dependency tree if only the icon script needs it.
+- GitHub Actions are referenced by major tag (`@v4`); pin them to commit SHAs if we want the strictest supply-chain posture.
 - Never commit the APK signing key, keystore passwords or tokens; back up the key offline.
-- Fallback if staying on npm: `ignore-scripts=true` in `.npmrc`, `npm ci` in CI, same pinning rules.
 
 ## Architecture decision
 Stay with web + Capacitor rather than full native Kotlin: one codebase gives the shareable PWA and the APK, faster iteration, easy SVG/charts, and web-bundle updates. Business logic and the data model stay UI-independent so a native rewrite remains possible. Revisit only if a home-screen widget or Health Connect sync becomes important (native-only strengths).
