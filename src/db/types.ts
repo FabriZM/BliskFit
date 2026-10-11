@@ -24,6 +24,8 @@ export interface Exercise {
   name: string
   trackingType: TrackingType
   equipment?: string
+  /** Compound (multi-joint) or isolation; used to find comparable exercises for starting-weight suggestions. */
+  mechanic?: 'compound' | 'isolation'
   primaryMuscleIds: ID[]
   secondaryMuscleIds: ID[]
   photo?: Blob

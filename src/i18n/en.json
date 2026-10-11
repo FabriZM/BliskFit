@@ -124,7 +124,11 @@
     "inUse": "This exercise has logged sets and can't be deleted.",
     "favorites": "Favorites",
     "favorite": "Add to favorites",
-    "unfavorite": "Remove from favorites"
+    "unfavorite": "Remove from favorites",
+    "mechanic": "Movement type (helps suggest starting weights)",
+    "mechanicNone": "Not set",
+    "compound": "Compound (several joints)",
+    "isolation": "Isolation (one joint)"
   },
   "gyms": {
     "title": "Gyms (optional)",
@@ -277,7 +281,11 @@
     "swapShort": "Swap",
     "skipShort": "Skip",
     "routines": "Routines",
-    "inProgress": "Workout in progress"
+    "inProgress": "Workout in progress",
+    "suggested": "Suggested start",
+    "basedOn": "based on {{names}}",
+    "rough": "rough guess",
+    "useSuggestion": "Use suggestion"
   },
   "summary": {
     "title": "Workout complete",

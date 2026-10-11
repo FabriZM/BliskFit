@@ -124,7 +124,11 @@
     "inUse": "Este ejercicio tiene series registradas y no se puede eliminar.",
     "favorites": "Favoritos",
     "favorite": "Añadir a favoritos",
-    "unfavorite": "Quitar de favoritos"
+    "unfavorite": "Quitar de favoritos",
+    "mechanic": "Tipo de movimiento (ayuda a sugerir pesos iniciales)",
+    "mechanicNone": "Sin definir",
+    "compound": "Compuesto (varias articulaciones)",
+    "isolation": "Aislado (una articulación)"
   },
   "gyms": {
     "title": "Gimnasios (opcional)",
@@ -277,7 +281,11 @@
     "swapShort": "Cambiar",
     "skipShort": "Saltar",
     "routines": "Rutinas",
-    "inProgress": "Entreno en curso"
+    "inProgress": "Entreno en curso",
+    "suggested": "Inicio sugerido",
+    "basedOn": "según {{names}}",
+    "rough": "estimación aproximada",
+    "useSuggestion": "Usar sugerencia"
   },
   "summary": {
     "title": "Entreno completado",

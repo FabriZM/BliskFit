@@ -111,6 +111,13 @@ Done when: with the screen locked, the rest timer alerts and the 2h reminder fir
 PR rules (`lib/prs.ts`, unit-tested): always recomputed from the logged sets, never stored, so edits and deletes can't leave stale flags. A set must be strictly better than everything done before it; the first time an exercise is done is a baseline; warm-ups are ignored. Weighted lifts: heaviest weight, rep record at the same weight, estimated 1RM (Epley, a single counts at face value) and best set volume. Bodyweight reps: most reps. Duration: longest hold. Not yet: assisted bodyweight and cardio.
 Not done: editing a past workout's date/time and adding exercises to a finished workout.
 
+### Starting-weight suggestions (added after M4)
+For an exercise that has never been done, the live workout suggests a starting weight and reps (a "💡 Suggested start" line, grey placeholders in the set fields, and a "Use suggestion" button that fills the sets; nothing is ever applied or logged automatically). Logic in `lib/suggest.ts`, unit-tested:
+- **Similar exercise:** shares a primary muscle (parent and child count as the same, e.g. Calves and Gastrocnemius), same tracking type, and compatible mechanic (compound vs isolation) when both are known. The library now stores `mechanic` (seed v2); custom exercises can set it in the form. Re-seeding preserves learned rest times.
+- **Estimate:** each similar exercise (top 3 by similarity: muscle overlap, same equipment, secondary muscles) contributes the mean of its best estimated 1RM over its last 3 workouts, normalised to a barbell-equivalent, converted to the new exercise's equipment (rough relative loads: dumbbell 0.4 per hand, cable 0.55, machine 0.9, EZ bar 0.9, kettlebell 0.35), then to the routine's target reps (midpoint of the rep range, else 10).
+- **Conservative:** about 85% of the estimate, rounded to 2.5 kg (5 lb) steps. Labelled "rough guess" unless two or more similar exercises including the same equipment agree.
+- Also covers bodyweight reps (a bit under similar exercises), weighted bodyweight (added load) and durations. Not for assisted bodyweight or cardio. No suggestion when nothing comparable has history.
+
 ### M5: Goals, streaks and reminders
 **Started:** the Profile week card, weekly goal (training days) and week-start settings, and the streak calculation (unit-tested, including week boundaries) are in. Still to do: streak freeze, reminders and notifications, and a snapshot of the goal per week so changing it doesn't rewrite past weeks.
 

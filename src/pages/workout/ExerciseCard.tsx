@@ -10,6 +10,7 @@ import type { GroupPos } from '../../lib/routines'
 import { computePRs } from '../../lib/prs'
 import { formatClock } from '../../lib/units'
 import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
+import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
 import SetRow from './SetRow'
 
@@ -47,10 +48,25 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const allDone = useLiveQuery(() => db.setLogs.where('exerciseId').equals(item.exerciseId).filter((x) => x.doneAt !== undefined).toArray(), [item.exerciseId])
   const prs = useMemo(() => computePRs(allDone ?? [], tracking), [allDone, tracking])
 
+  // Never done before (no done set in any workout): suggest a start from similar exercises that have history.
+  const neverDone = allDone !== undefined && allDone.length === 0
+  const targetReps = item.repMin && item.repMax ? Math.round((item.repMin + item.repMax) / 2) : item.repMin
+  const suggestion = useStartingSuggestion(exercise, neverDone && !item.skipped, units, targetReps)
+  const suggestedSet = useMemo(() => {
+    if (!suggestion) return undefined
+    const base = { weight: tracking === 'weight_reps' ? suggestion.weightKg : undefined, extraWeight: tracking === 'bodyweight_added' ? suggestion.weightKg : undefined, reps: suggestion.reps, durationSec: suggestion.durationSec }
+    return base as SetLog
+  }, [suggestion, tracking])
+
   // Index among non-warm-up sets: "set 2 last time" lines up with set 2 now.
   let w = 0
   const workingIdx = sorted.map((s) => (s.setType === 'warmup' ? -1 : w++))
   const labelOf = (s: SetLog, i: number) => (s.setType === 'warmup' ? 'W' : s.setType === 'drop' ? 'D' : String(workingIdx[i] + 1))
+
+  const useSuggestion = () => {
+    if (!suggestedSet) return
+    sorted.forEach((s, i) => { if (s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, valuesOf(suggestedSet)) })
+  }
 
   const useLast = () => {
     sorted.forEach((s, i) => {
@@ -128,17 +144,27 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
               <button onClick={useLast}>{t('workout.useLast')}</button>
             </div>
           )}
+          {!last && suggestion && suggestedSet && (
+            <div className="last-hint suggest">
+              <span className="muted small">
+                💡 {t('workout.suggested')}: {formatSet(suggestedSet, tracking, units)}
+                {' · '}{t('workout.basedOn', { names: suggestion.basedOn.slice(0, 2).map((b) => b.name).join(', ') })}
+                {suggestion.confidence === 'rough' ? ` (${t('workout.rough')})` : ''}
+              </span>
+              <button onClick={useSuggestion}>{t('workout.useSuggestion')}</button>
+            </div>
+          )}
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}
-                hint={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined} pr={prs.get(s.id)}
-                expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!lastSetFor(last, workingIdx[i]) && workingIdx[i] >= 0}
+                hint={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) ?? suggestedSet : undefined} pr={prs.get(s.id)}
+                expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
                 onDone={() => { primeAudio(); void completeSet(s.id, shouldStartRest(session.exercises, item.id) ? rest.sec : null) }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onRepeat={() => void updateSet(s.id, valuesOf(sorted[i - 1]))}
-                onUseLast={() => { const src = lastSetFor(last, workingIdx[i]); if (src) void updateSet(s.id, valuesOf(src)) }}
+                onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, valuesOf(src)) }}
                 onDelete={() => void deleteSet(s.id)} />
             ))}
           </ul>

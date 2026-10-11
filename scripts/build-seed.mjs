@@ -9,6 +9,7 @@ const out = all.map((e) => ({
   n: e.name,
   c: e.category,
   e: e.equipment ?? null,
+  m: e.mechanic ?? null,
   p: e.primaryMuscles,
   s: e.secondaryMuscles,
   i: e.images.length,

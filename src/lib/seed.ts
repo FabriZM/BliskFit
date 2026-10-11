@@ -6,12 +6,14 @@ export interface SeedRow {
   n: string
   c: string
   e: string | null
+  m?: string | null
   p: string[]
   s: string[]
   i: number
 }
 
-export const SEED_VERSION = 1
+/** v2: adds `mechanic` (compound/isolation). */
+export const SEED_VERSION = 2
 
 const DURATION_NAMES = /\b(plank|wall sit|hold|hang)\b/i
 
@@ -45,6 +47,7 @@ export function seedExercise(row: SeedRow): Exercise {
     name: row.n,
     trackingType: inferTrackingType(row),
     equipment: row.e ?? undefined,
+    mechanic: row.m === 'compound' || row.m === 'isolation' ? row.m : undefined,
     primaryMuscleIds: row.p.map((p) => muscleId(slug(p))),
     secondaryMuscleIds: row.s.map((p) => muscleId(slug(p))),
     demoUrl: row.i > 0 ? demoImageUrls(row.id, row.i)[0] : undefined,

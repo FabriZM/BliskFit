@@ -23,6 +23,7 @@ export default function ExerciseForm() {
   const [name, setName] = useState('')
   const [trackingType, setTrackingType] = useState<TrackingType>('weight_reps')
   const [equipment, setEquipment] = useState('')
+  const [mechanic, setMechanic] = useState<'' | 'compound' | 'isolation'>('')
   const [primary, setPrimary] = useState<string[]>([])
   const [secondary, setSecondary] = useState<string[]>([])
   const [videoUrl, setVideoUrl] = useState('')
@@ -35,7 +36,7 @@ export default function ExerciseForm() {
     if (!editingId) return
     void db.exercises.get(editingId).then((e) => {
       if (!e) return
-      setName(e.name); setTrackingType(e.trackingType); setEquipment(e.equipment ?? '')
+      setName(e.name); setTrackingType(e.trackingType); setEquipment(e.equipment ?? ''); setMechanic(e.mechanic ?? '')
       setPrimary(e.primaryMuscleIds); setSecondary(e.secondaryMuscleIds)
       setVideoUrl(e.videoUrl ?? ''); setRestSec(e.defaultRestSec?.toString() ?? ''); setPhoto(e.photo)
     })
@@ -52,6 +53,7 @@ export default function ExerciseForm() {
       name: name.trim(),
       trackingType,
       equipment: equipment || undefined,
+      mechanic: mechanic || undefined,
       primaryMuscleIds: primary,
       secondaryMuscleIds: secondary.filter((m) => !primary.includes(m)),
       photo,
@@ -79,6 +81,13 @@ export default function ExerciseForm() {
           <select value={equipment} onChange={(e) => setEquipment(e.target.value)}>
             <option value="">{t('equipment.none')}</option>
             {EQUIPMENT.map((x) => <option key={x} value={x}>{t(`equipment.${x}`, { defaultValue: x })}</option>)}
+          </select>
+        </label>
+        <label>{t('exercises.mechanic')}
+          <select value={mechanic} onChange={(e) => setMechanic(e.target.value as '' | 'compound' | 'isolation')}>
+            <option value="">{t('exercises.mechanicNone')}</option>
+            <option value="compound">{t('exercises.compound')}</option>
+            <option value="isolation">{t('exercises.isolation')}</option>
           </select>
         </label>
         <fieldset><legend>{t('exercises.primary')}</legend>
