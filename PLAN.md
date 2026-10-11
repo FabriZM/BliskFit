@@ -35,6 +35,7 @@ Stay with web + Capacitor rather than full native Kotlin: one codebase gives the
 | ExerciseNote | exercise, text, pinned for next time |
 | BodyWeight | date, weight |
 | Measurement | date, type (chest, waist, biceps L/R, ... or custom), value |
+| ProgressPhoto | id, date, tag (free text, user-defined), photo (resized blob), optional note |
 | Settings | weekly goal, week start day, units, language, default rest, PR badge toggle, reminder days, streak freezes |
 
 **Exercise tracking types** (decided in M0 schema, hard to retrofit):
@@ -157,17 +158,27 @@ Tests: period boundaries, billing-day edge cases, same-day sessions, sessions wi
 Done when: a gym with no allowance shows nothing; with a 12-visit allowance, finishing a working session at that gym moves the Profile card from N to N+1 once per day.
 
 ### M6: Stats and body tracking
-A full **Stats panel** (Profile → Stats, route `/profile/stats`) holds every chart and number. Profile itself only shows the stats you **pin**, so it stays short and personal. Everything is derived from finished sessions, sets and body entries (nothing aggregated is stored), so edits and deletes in History flow through, same as goals and gym visits.
+A full **Stats panel** (Profile → Stats, route `/profile/stats`) holds every training chart and number, including how body weight, measurements and progress photos have varied. Logging them happens on a separate **Body log screen** (Profile → Log body, route `/profile/body`). Profile itself only shows the stats you **pin**, so it stays short and personal. Everything is derived from finished sessions, sets and body entries (nothing aggregated is stored), so edits and deletes in History flow through, same as goals and gym visits.
 
-**Panel layout:** a segmented switch at the top, each section a scroll of cards sharing one date-range control (4 weeks / 3 months / 6 months / year / all).
+**Panel layout:** a segmented switch at the top (five sections), each section a scroll of cards sharing one date-range control (4 weeks / 3 months / 6 months / year / all).
 - **Overview:** weekly summary (sessions, total volume, new PRs, under-trained muscles) with a previous-week comparison; recent PRs.
 - **Exercises:** pick an exercise (search, favorites first), then charts for max weight, estimated 1RM (Epley), volume and reps per session; plateau flag when the best e1RM hasn't improved over the last N sessions (default 5, at least 3 weeks); PRs list for that exercise. Charts respect the tracking type (assisted: lower is better; duration/cardio: time, distance, pace instead of weight).
 - **Muscles:** weekly sets and volume per muscle group (primary full credit, secondary partial, from the exercise-muscle links), with the drill-down from group to muscle; balance block with push/pull ratio and left/right asymmetry from measurements; under-trained list (below a set-per-week target, default 10, adjustable).
-- **Body:** body weight log with a smoothed trend line and change over the range; measurements (standard set plus custom types, left/right pairs shown side by side) with a chart and change summary each; quick add for today's weight.
+- **Body:** read-only. Body weight with a smoothed trend line and change over the range; each measurement (standard and custom, left/right pairs side by side) with a chart and change summary; left/right asymmetry. **Progress photos:** a timeline grid filtered by tag, tap for full size, and a compare view (pick any two dates with the same tag, side by side or with a slider; defaults to first vs latest). Empty state links to the Body log screen.
 - **Gyms:** same-exercise comparison across gyms (best set, e1RM, volume per gym). Section only exists when sessions have been logged at two or more gyms, matching the "nothing shown unless used" rule from M5b.
 
+**Body log screen** (separate from the Stats panel, with its own link on Profile): entry only. Add today's weight, add a measurement (standard set plus custom types, left/right), add a progress photo (camera or gallery, a tag (suggested from your existing ones, or new), optional note, date defaults to today but can be backdated), and edit or delete past entries in a simple dated list. No charts here; it links to the Stats panel's Body section to see the effect.
+
+**Progress photos:**
+- **Limit: 6 photos per day** (per calendar date, across all tags). The date is the photo's date, so backdating into a full day is also blocked. When the day is full, adding another asks you to delete one of that day's photos first; nothing is deleted automatically. There is no overall cap, so storage grows over time: the Body log screen shows the space photos use, and photos are stored resized to keep it small.
+- **Tags** exist so you can compare like with like (e.g. full body shots apart from selfies). They are entirely user-defined: no presets. When adding a photo, the tags you have used before are suggested as one-tap chips, or you type a new one. A tag exists only while a photo uses it; renaming a tag (from the photo edit sheet) renames it on all its photos. Photos can be untagged.
+- Stored locally as resized blobs in IndexedDB (reusing `lib/image.ts`, same approach as exercise photos), never uploaded anywhere. Full-size originals aren't kept. Standard quality: `compressImage` with the longest side capped at 1280px and JPEG quality 0.8 (about 150-300 KB per photo, versus 3-5 MB from a phone camera), a slightly larger cap than the 1024px used for exercise photos so zooming in compare view stays sharp. Photos are never upscaled; the phone's orientation is respected.
+- Private by default: photos appear only in the panel's Body section, never on Profile unless pinned, and never in session summaries or share images (M7).
+- A photo can be pinned as a "latest photo" or "first vs latest" card (tag chosen when pinning); pinned photo cards respect the same 6-pin cap. Pins show a thumbnail instead of a sparkline.
+- Included in JSON export/backup (M7 must handle blobs and the size they add); deleting a photo removes the blob for good.
+
 **Pinning:**
-- Every card in the panel has a pin toggle. A pin stores *what* is shown, not a snapshot: `{ kind, exerciseId?, muscleId?, measurement?, range }`, so "Bench press e1RM, 3 months" and "Squat e1RM, 3 months" are two pins. Persisted in Settings (`pinnedStats`, ordered), default-empty field so old data needs no migration.
+- Every card in the Stats panel, including body weight and each measurement, has a pin toggle (photos pin as described above). A pin stores *what* is shown, not a snapshot: `{ kind, exerciseId?, muscleId?, measurement?, range }` (body weight and each measurement type are their own kinds, e.g. waist, left biceps), so "Bench press e1RM, 3 months" and "Squat e1RM, 3 months" are two pins. Persisted in Settings (`pinnedStats`, ordered), default-empty field so old data needs no migration.
 - Profile renders pins as compact cards: title, current value, change over the range, and a small sparkline. Tap opens the panel scrolled to that card with the same range. Body weight's pin has an inline "+ add today" action.
 - "Edit" mode on Profile's stats section reorders and unpins; capped at 6 pins to keep the tab light. First launch with history and no pins shows three suggested defaults (weekly summary, weekly sets by muscle, body weight) with a one-tap dismiss; with no history, an empty hint pointing to the panel.
 - A pin whose exercise or measurement is deleted disappears silently.
@@ -175,7 +186,7 @@ A full **Stats panel** (Profile → Stats, route `/profile/stats`) holds every c
 **Build order** (each step shippable on its own):
 1. Pure functions (`lib/stats.ts`: series per exercise and metric, range bucketing, muscle credit, plateau, summary, trend smoothing) with tests, then the panel shell, range control, pin framework and Profile pinned section, with the Exercises section as the first real content.
 2. Overview and Muscles (weekly summary, set/volume per muscle, under-trained, push/pull).
-3. Body weight and measurements (entry UI, trend, left/right asymmetry, change summaries, charts).
+3. Body log screen (entry, edit, delete, including photos) and the panel's Body section (trend, left/right asymmetry, change summaries, charts, photo timeline and compare, pinning).
 4. Gym comparison.
 
 **Decisions to confirm:**
@@ -183,11 +194,11 @@ A full **Stats panel** (Profile → Stats, route `/profile/stats`) holds every c
 - Trend line is an exponential moving average on body weight (so a single weigh-in doesn't jump the line); raw points still shown.
 - Charts reuse the Recharts/uPlot choice and the dataviz palette conventions from `GoalChart` (table view and readout for accessibility).
 
-Tests: range bucketing and week boundaries, muscle credit split, plateau detection (flat, rising, too few sessions), tracking-type metrics (assisted, duration), trend smoothing, left/right asymmetry, pin persistence and deleted-target cleanup, gym section hidden with fewer than two gyms.
-Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sparkline and tapping it opens the panel on that chart; unpinning removes it; a body weight entry moves the trend and the Profile card; the Gyms section appears only after logging at two gyms.
+Tests: photo storage and deletion, the 6-photos-per-day limit (including backdated), compare defaults (first vs latest per tag), range bucketing and week boundaries, muscle credit split, plateau detection (flat, rising, too few sessions), tracking-type metrics (assisted, duration), trend smoothing, left/right asymmetry, pin persistence and deleted-target cleanup, gym section hidden with fewer than two gyms.
+Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sparkline and tapping it opens the panel on that chart; unpinning removes it; logging a waist measurement on the Body log screen and pinning it from the panel's Body section shows it on Profile, and tapping it opens that chart; a body weight entry moves the trend and the Profile card; a progress photo logged on the Body log screen shows in the panel's timeline and in compare, and can be pinned; the Gyms section appears only after logging at two gyms.
 
 ### M7: Data safety and sharing
-- JSON export/import, CSV export of sets, persistent storage request.
+- JSON export/import (including progress photos from M6), CSV export of sets, persistent storage request.
 - Optional automatic cloud backup (Google Drive file), restore on a new phone.
 - CSV importer for other apps (Strong, Hevy).
 - Share a routine as a file or link; share a session summary as an image.
@@ -195,7 +206,7 @@ Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sp
 Done when: wipe app, restore from backup, everything is back.
 
 ### M8: Extras (pick and choose)
-Progressive overload hints (using RPE/RIR and failure data), plate calculator, warm-up generator, routine template library, progress photos, deload suggestions, dark mode, cardio polish.
+Progressive overload hints (using RPE/RIR and failure data), plate calculator, warm-up generator, routine template library, deload suggestions, dark mode, cardio polish.
 
 ### M9: Interactive body figure
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
