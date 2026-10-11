@@ -11,7 +11,7 @@ import { useSettings } from '../stores/settings'
 
 /**
  * This week's training days against the goal, plus the weekly streak. Days with a workout are tappable: one
- * workout opens its detail, several open that day in the History calendar. `compact` is the Workout-tab version.
+ * workout opens its detail, several open that day in the History calendar. `compact` is the Workout-tab version: just the week's days and count; the streak lives on Profile only.
  */
 export default function WeekCard({ variant = 'full' }: { variant?: 'full' | 'compact' }) {
   const { t, i18n } = useTranslation()
@@ -68,7 +68,7 @@ export default function WeekCard({ variant = 'full' }: { variant?: 'full' | 'com
           )
         })}
       </div>
-      {streakLine}
+      {variant === 'full' && streakLine}
     </div>
   )
 }
