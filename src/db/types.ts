@@ -178,6 +178,36 @@ export interface Measurement {
   value: number
 }
 
+export interface ProgressPhoto {
+  id: ID
+  /** Local timestamp of the photo's day (the 6-per-day limit counts local calendar days). */
+  date: number
+  /** User-defined label used to compare like with like; absent = untagged. */
+  tag?: string
+  photo: Blob
+  note?: string
+}
+
+export type StatsRange = '4w' | '3m' | '6m' | '1y' | 'all'
+
+/** A metric of one exercise that can be charted (which ones apply depends on the tracking type). */
+export type ExerciseMetric =
+  | 'e1rm' | 'maxWeight' | 'volume' | 'reps' | 'bestReps' | 'minAssist' | 'bestDuration' | 'totalDuration' | 'distance' | 'pace'
+
+/** What a pinned stat shows (not a snapshot of values); see lib/pins. */
+export interface PinSpec {
+  kind: 'weekly' | 'muscles' | 'exercise' | 'bodyweight' | 'measurement' | 'photo'
+  range: StatsRange
+  exerciseId?: ID
+  metric?: ExerciseMetric
+  muscleId?: ID
+  /** Measurement type, e.g. "waist" or "biceps_l". */
+  measurement?: string
+  /** photo: tag of the pinned photos (undefined = untagged) and whether to show the latest or first vs latest. */
+  tag?: string
+  photoMode?: 'latest' | 'compare'
+}
+
 export interface Settings {
   id: 'settings'
   weeklyGoal: number
@@ -194,6 +224,14 @@ export interface Settings {
   streakFreezes: number
   /** Show the full-screen rest countdown whenever a set is finished. */
   restPopup: boolean
+  /** Stats pinned to Profile, in display order (max 6). */
+  pinnedStats: PinSpec[]
+  /** The suggested default pins were dismissed. */
+  pinsDismissed: boolean
+  /** Weekly sets per muscle group below which it is called under-trained. */
+  setsTarget: number
+  /** Sessions without improvement in the best e1RM before an exercise is flagged as plateaued. */
+  plateauSessions: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -208,4 +246,8 @@ export const DEFAULT_SETTINGS: Settings = {
   reminderTime: '18:00',
   streakFreezes: 1,
   restPopup: true,
+  pinnedStats: [],
+  pinsDismissed: false,
+  setsTarget: 10,
+  plateauSessions: 5,
 }

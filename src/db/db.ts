@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type {
   BodyWeight, Exercise, ExerciseGymNote, ExerciseNote, Gym, Measurement,
-  MuscleGroup, Program, Routine, SetLog, Settings, WorkoutSession,
+  MuscleGroup, ProgressPhoto, Program, Routine, SetLog, Settings, WorkoutSession,
 } from './types'
 
 export class GymDB extends Dexie {
@@ -16,6 +16,7 @@ export class GymDB extends Dexie {
   exerciseNotes!: EntityTable<ExerciseNote, 'id'>
   bodyWeights!: EntityTable<BodyWeight, 'id'>
   measurements!: EntityTable<Measurement, 'id'>
+  progressPhotos!: EntityTable<ProgressPhoto, 'id'>
   settings!: EntityTable<Settings, 'id'>
   meta!: EntityTable<{ key: string; value: unknown }, 'key'>
   favorites!: EntityTable<{ exerciseId: string }, 'exerciseId'>
@@ -41,6 +42,8 @@ export class GymDB extends Dexie {
     this.version(2).stores({ meta: 'key' })
     // v3: favorite exercises, kept apart from exercises so re-seeding the library never wipes them.
     this.version(3).stores({ favorites: 'exerciseId' })
+    // v4: progress photos (resized blobs), indexed by date and tag.
+    this.version(4).stores({ progressPhotos: 'id, date, tag' })
   }
 }
 
