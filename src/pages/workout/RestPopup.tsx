@@ -35,7 +35,7 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
         <div className="ring">
           <svg viewBox="0 0 200 200" aria-hidden>
             <circle cx="100" cy="100" r={R} className="ring-track" />
-            <circle cx="100" cy="100" r={R} className="ring-fill" strokeDasharray={C} strokeDashoffset={C * (1 - frac)} transform="rotate(-90 100 100)" />
+            <circle cx="100" cy="100" r={R} className="ring-fill" strokeDasharray={C} strokeDashoffset={C * (1 - frac)} transform="translate(200 0) scale(-1 1) rotate(-90 100 100)" />
           </svg>
           <div className="ring-text" role="timer">
             <strong>{over ? t('workout.restOverShort') : formatClock(remaining)}</strong>
