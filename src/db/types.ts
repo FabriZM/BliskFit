@@ -82,6 +82,25 @@ export interface PausedInterval {
   end?: number
 }
 
+/** One exercise in a session's plan: copied from the routine at start, then freely editable mid-workout. */
+export interface SessionExercise {
+  id: ID
+  exerciseId: ID
+  targetSets: number
+  repMin?: number
+  repMax?: number
+  restSec?: number
+  supersetGroup?: string
+  skipped?: boolean
+}
+
+/** Timestamps, not a countdown, so it survives the phone sleeping or the app reloading. */
+export interface RestTimer {
+  startedAt: number
+  endsAt: number
+  exerciseId: ID
+}
+
 export interface WorkoutSession {
   id: ID
   startedAt: number
@@ -91,14 +110,21 @@ export interface WorkoutSession {
   notes?: string
   status: SessionStatus
   pausedIntervals: PausedInterval[]
+  exercises: SessionExercise[]
+  rest?: RestTimer
+  /** Set when the user chooses "keep going" on the forgotten-session prompt. */
+  forgotAckAt?: number
 }
 
 export interface SetLog {
   id: ID
   sessionId: ID
+  /** The SessionExercise this set belongs to (an exercise may appear twice in one session). */
+  itemId?: ID
   exerciseId: ID
   order: number
   setType: SetType
+  /** Always stored in kg; converted for display (see lib/units). */
   weight?: number
   /** Added (weighted) or assist (assisted) weight, depending on tracking type. */
   extraWeight?: number

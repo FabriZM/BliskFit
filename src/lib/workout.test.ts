@@ -1,0 +1,136 @@
+import { describe, expect, it } from 'vitest'
+import type { Exercise, SessionExercise, SetLog, WorkoutSession } from '../db/types'
+import {
+  FORGOTTEN_MS, elapsedMs, finalizeSession, forgottenDueAt, forgottenEndTime, isFilled, isForgotten, learnRest,
+  muscleSetCounts, pauseSession, pickLastTime, restFor, restGaps, resumeSession, sessionStats, shouldStartRest,
+} from './workout'
+
+const MIN = 60_000, H = 60 * MIN
+const session = (extra: Partial<WorkoutSession> = {}): WorkoutSession =>
+  ({ id: 's', startedAt: 0, status: 'active', pausedIntervals: [], exercises: [], ...extra })
+const set = (extra: Partial<SetLog> = {}): SetLog =>
+  ({ id: Math.random().toString(), sessionId: 's', exerciseId: 'e', order: 0, setType: 'working', ...extra })
+
+describe('session time', () => {
+  it('excludes paused time from the duration', () => {
+    let s = session()
+    s = pauseSession(s, 10 * MIN)
+    expect(elapsedMs(s, 25 * MIN)).toBe(10 * MIN) // frozen while paused
+    s = resumeSession(s, 30 * MIN)
+    expect(elapsedMs(s, 40 * MIN)).toBe(20 * MIN)
+    expect(s.status).toBe('active')
+  })
+  it('finishing while paused closes the interval', () => {
+    const s = finalizeSession(pauseSession(session(), 10 * MIN), 50 * MIN)
+    expect(s.pausedIntervals).toEqual([{ start: 10 * MIN, end: 50 * MIN }])
+    expect(elapsedMs(s, 999 * MIN)).toBe(10 * MIN)
+  })
+  it('handles multiple pauses and a pause-after-end edge', () => {
+    let s = session({ pausedIntervals: [{ start: 10 * MIN, end: 20 * MIN }, { start: 30 * MIN, end: 35 * MIN }] })
+    expect(elapsedMs(s, 60 * MIN)).toBe(45 * MIN)
+    s = finalizeSession(pauseSession(session(), 90 * MIN), 60 * MIN)
+    expect(elapsedMs(s, 0)).toBe(60 * MIN)
+  })
+})
+
+describe('forgotten session', () => {
+  it('fires 2h after the last set, not the start', () => {
+    const s = session()
+    const sets = [set({ doneAt: 30 * MIN })]
+    expect(isForgotten(s, sets, 30 * MIN + FORGOTTEN_MS - 1)).toBe(false)
+    expect(isForgotten(s, sets, 30 * MIN + FORGOTTEN_MS)).toBe(true)
+    expect(forgottenEndTime(s, sets)).toBe(30 * MIN)
+    expect(forgottenEndTime(s, [])).toBe(0)
+  })
+  it('does not count paused time', () => {
+    const s = session({ pausedIntervals: [{ start: 10 * MIN, end: 10 * MIN + 3 * H }] })
+    expect(isForgotten(s, [], 3 * H)).toBe(false)
+    expect(isForgotten(s, [], 10 * MIN + 3 * H + 2 * H - 10 * MIN)).toBe(true)
+  })
+  it('"keep going" restarts the clock; finished sessions never prompt', () => {
+    const s = session({ forgotAckAt: 3 * H })
+    expect(isForgotten(s, [], 4 * H)).toBe(false)
+    expect(isForgotten(s, [], 5 * H)).toBe(true)
+    expect(isForgotten(session({ status: 'finished' }), [], 99 * H)).toBe(false)
+  })
+  it('computes when a notification is due', () => {
+    expect(forgottenDueAt(session(), [set({ doneAt: 10 * MIN })], 40 * MIN)).toBe(10 * MIN + FORGOTTEN_MS)
+    expect(forgottenDueAt(pauseSession(session(), 5), [], 10)).toBeUndefined()
+  })
+})
+
+describe('sets', () => {
+  it('requires the right fields per tracking type', () => {
+    expect(isFilled(set({ weight: 0, reps: 5 }), 'weight_reps')).toBe(true)
+    expect(isFilled(set({ reps: 5 }), 'weight_reps')).toBe(false)
+    expect(isFilled(set({ reps: 5 }), 'bodyweight_added')).toBe(true)
+    expect(isFilled(set({ reps: 0 }), 'bodyweight_reps')).toBe(false)
+    expect(isFilled(set({ durationSec: 30 }), 'duration')).toBe(true)
+    expect(isFilled(set({ distanceM: 1000 }), 'cardio')).toBe(false)
+  })
+  it('stats skip warm-ups and undone sets; volume follows tracking type', () => {
+    const sets = [
+      set({ exerciseId: 'bench', weight: 100, reps: 5, doneAt: 1 }),
+      set({ exerciseId: 'bench', weight: 60, reps: 10, doneAt: 2, setType: 'warmup' }),
+      set({ exerciseId: 'bench', weight: 100, reps: 5 }),
+      set({ exerciseId: 'pull', extraWeight: 10, reps: 6, doneAt: 3 }),
+      set({ exerciseId: 'plank', durationSec: 60, doneAt: 4 }),
+    ]
+    const t = (id: string) => (id === 'bench' ? 'weight_reps' : id === 'pull' ? 'bodyweight_added' : 'duration') as 'weight_reps'
+    expect(sessionStats(sets, t)).toEqual({ sets: 3, volume: 500 + 60, exercises: 3 })
+  })
+  it('counts primary fully and secondary partially, ignoring warm-ups', () => {
+    const ex = new Map<string, Exercise>([['b', { id: 'b', name: 'Bench', trackingType: 'weight_reps', primaryMuscleIds: ['chest'], secondaryMuscleIds: ['triceps'], source: 'seeded' }]])
+    const c = muscleSetCounts([set({ exerciseId: 'b', doneAt: 1 }), set({ exerciseId: 'b', doneAt: 2 }), set({ exerciseId: 'b', doneAt: 3, setType: 'warmup' }), set({ exerciseId: 'b' })], ex)
+    expect(c.get('chest')).toBe(2)
+    expect(c.get('triceps')).toBe(1)
+  })
+})
+
+describe('pickLastTime', () => {
+  const fin = (id: string, startedAt: number, gymId?: string): WorkoutSession => session({ id, startedAt, status: 'finished', gymId })
+  const sessions = new Map([['a', fin('a', 100, 'gym1')], ['b', fin('b', 200, 'gym2')], ['c', fin('c', 300)], ['live', session({ id: 'live', startedAt: 400 })]])
+  const logs = ['a', 'b', 'c', 'live'].flatMap((sid, i) => [
+    set({ sessionId: sid, order: 1, weight: 10 + i, reps: 5, doneAt: 1 }),
+    set({ sessionId: sid, order: 0, weight: 20 + i, reps: 5, doneAt: 1 }),
+  ])
+  it('with no gym uses the most recent finished session, in set order', () => {
+    const l = pickLastTime({ logs, sessions, excludeSessionId: 'live' })!
+    expect(l.sessionId).toBe('c')
+    expect(l.sets.map((x) => x.weight)).toEqual([22, 12])
+    expect(l.gymMatched).toBe(false)
+  })
+  it('prefers the same gym, falls back to any gym when it has no history', () => {
+    expect(pickLastTime({ logs, sessions, gymId: 'gym1', excludeSessionId: 'live' })).toMatchObject({ sessionId: 'a', gymMatched: true })
+    expect(pickLastTime({ logs, sessions, gymId: 'gym3', excludeSessionId: 'live' })).toMatchObject({ sessionId: 'c', gymMatched: false })
+  })
+  it('ignores warm-ups, undone sets and unfinished sessions', () => {
+    const only = [set({ sessionId: 'a', doneAt: 1, setType: 'warmup' }), set({ sessionId: 'b' }), set({ sessionId: 'live', doneAt: 1 })]
+    expect(pickLastTime({ logs: only, sessions })).toBeUndefined()
+  })
+})
+
+describe('rest', () => {
+  const item = (extra: Partial<SessionExercise> = {}): SessionExercise => ({ id: 'i', exerciseId: 'e', targetSets: 3, ...extra })
+  const ex = (extra: Partial<Exercise> = {}): Exercise => ({ id: 'e', name: 'x', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom', ...extra })
+  it('resolves routine > learned > exercise > default', () => {
+    expect(restFor(item({ restSec: 45 }), ex({ learnedRestSec: 100 }), 90)).toEqual({ sec: 45, source: 'routine' })
+    expect(restFor(item(), ex({ learnedRestSec: 100, defaultRestSec: 60 }), 90)).toEqual({ sec: 100, source: 'learned' })
+    expect(restFor(item(), ex({ defaultRestSec: 60 }), 90)).toEqual({ sec: 60, source: 'exercise' })
+    expect(restFor(item(), undefined, 90)).toEqual({ sec: 90, source: 'default' })
+  })
+  it('rests once per round of a superset, after its last member', () => {
+    const items = [item({ id: 'a', supersetGroup: 'g' }), item({ id: 'b', supersetGroup: 'g' }), item({ id: 'c' })]
+    expect(shouldStartRest(items, 'a')).toBe(false)
+    expect(shouldStartRest(items, 'b')).toBe(true)
+    expect(shouldStartRest(items, 'c')).toBe(true)
+    expect(shouldStartRest([items[0], { ...items[1], skipped: true }], 'a')).toBe(true)
+  })
+  it('learns from plausible gaps only and blends with history', () => {
+    const at = (...secs: number[]) => secs.map((s) => set({ doneAt: s * 1000 }))
+    expect(restGaps(at(0, 90, 95, 200, 2000))).toEqual([90, 105])
+    expect(learnRest(undefined, [90, 105, 120])).toBe(105)
+    expect(learnRest(120, [60])).toBe(100)
+    expect(learnRest(120, [])).toBe(120)
+  })
+})

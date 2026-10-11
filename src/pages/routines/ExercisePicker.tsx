@@ -8,7 +8,9 @@ import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
 
 const PAGE = 50
 
-export default function ExercisePicker({ onAdd, onClose }: { onAdd: (exs: Exercise[]) => void; onClose: () => void }) {
+export default function ExercisePicker({ onAdd, onClose, single = false, title }: {
+  onAdd: (exs: Exercise[]) => void; onClose: () => void; single?: boolean; title?: string
+}) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [muscle, setMuscle] = useState('')
@@ -23,16 +25,16 @@ export default function ExercisePicker({ onAdd, onClose }: { onAdd: (exs: Exerci
     return filterExercises(exercises, { query, muscleIds: ids, equipment: '' })
   }, [exercises, muscles, query, muscle])
 
-  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : single ? [id] : [...p, id]))
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('routines.addExercises')}>
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={title ?? t('routines.addExercises')}>
       <div className="overlay-head">
         <button onClick={onClose}>{t('common.cancel')}</button>
-        <strong>{t('routines.addExercises')}</strong>
+        <strong>{title ?? t('routines.addExercises')}</strong>
         <button className="primary" disabled={!picked.length}
           onClick={() => { const set = new Set(picked); onAdd(picked.map((id) => exercises!.find((e) => e.id === id)!).filter((e) => set.has(e.id))) }}>
-          {t('routines.addN', { count: picked.length })}
+          {single ? t('common.select') : t('routines.addN', { count: picked.length })}
         </button>
       </div>
       <div className="overlay-body">

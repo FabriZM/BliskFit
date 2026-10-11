@@ -100,7 +100,7 @@ export function setRepRange(e: RoutineExercise, patch: { repMin?: number; repMax
 
 export type GroupPos = { pos: 'single' | 'start' | 'middle' | 'end'; size: number }
 
-export function groupPositions(exs: RoutineExercise[]): GroupPos[] {
+export function groupPositions(exs: { supersetGroup?: string }[]): GroupPos[] {
   return exs.map((e, i) => {
     const g = e.supersetGroup
     if (!g) return { pos: 'single', size: 1 }
@@ -124,6 +124,22 @@ export function duplicateRoutine(r: Routine, name: string): Routine {
         copy.supersetGroup = groups.get(e.supersetGroup)
       }
       return copy
+    }),
+  }
+}
+
+/** Replace an exercise in a routine (first occurrence, or every occurrence with `all`), keeping sets/rest/group. */
+export function replaceExercise(r: Routine, oldId: string, next: Exercise, all = false): Routine {
+  let done = false
+  return {
+    ...r,
+    exercises: r.exercises.map((e) => {
+      if (e.exerciseId !== oldId || (done && !all)) return e
+      done = true
+      const d = defaultsFor(next)
+      const out: RoutineExercise = { ...e, exerciseId: next.id }
+      if (d.repMin === undefined) { delete out.repMin; delete out.repMax } else if (out.repMin === undefined) { out.repMin = d.repMin; out.repMax = d.repMax }
+      return out
     }),
   }
 }

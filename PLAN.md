@@ -70,6 +70,8 @@ Unlimited routines: create, rename, duplicate, archive. Add exercises, drag to r
 Done when: a full push/pull/legs split can be built and scheduled.
 
 ### M3: Live workout
+**Status: built and checked in a desktop browser; needs a real gym session on the phone.** Notes: sets belong to a session exercise (`itemId`), so one exercise can appear twice. Weights are stored in kg and converted for display. The finish summary shows duration, sets, volume and exercises; the PR count joins it in M4 with PR detection. The forgotten-session prompt appears when the app is opened or visible; a closed PWA cannot fire the 2h notification, so true background reminders and rest-end alerts with the screen locked are M3b. Rest and learned rest: a set's rest is the routine override, else the exercise's learned rest (blended with each finished session's typical gap), else the exercise default, else the global default.
+
 - Start from routine or empty, persistent session timer. Gym selection is optional and tucked away (e.g. in the session's overflow menu or defaulting to the last used gym); never required to start.
 - Set logging adapted to tracking type: weight, reps, RPE, reps in reserve / failure flag, set type, done.
 - Quick-repeat: one tap copies the previous set.

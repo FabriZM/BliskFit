@@ -16,7 +16,7 @@ describe('GymDB v1', () => {
   it('stores sessions with pause intervals and settings', async () => {
     const db = new GymDB('test-' + newId())
     const id = newId()
-    await db.sessions.add({ id, startedAt: 1, status: 'paused', pausedIntervals: [{ start: 2 }] })
+    await db.sessions.add({ id, startedAt: 1, status: 'paused', pausedIntervals: [{ start: 2 }], exercises: [] })
     expect((await db.sessions.get(id))?.pausedIntervals[0].start).toBe(2)
     await db.settings.put(DEFAULT_SETTINGS)
     expect((await db.settings.get('settings'))?.units).toBe('kg')

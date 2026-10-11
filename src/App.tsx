@@ -5,6 +5,9 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
 import Placeholder from './pages/Placeholder'
 import Home from './pages/Home'
+import WorkoutPage from './pages/workout/WorkoutPage'
+import Summary from './pages/workout/Summary'
+import ForgottenGuard from './components/ForgottenGuard'
 import RoutineList from './pages/routines/RoutineList'
 import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
@@ -52,10 +55,12 @@ export default function App() {
       )}
       <main>
         <Routes>
-          {TABS.filter((x) => !['profile', 'exercises', 'home', 'routines'].includes(x.key)).map((tab) => (
+          {TABS.filter((x) => !['profile', 'exercises', 'home', 'routines', 'workout'].includes(x.key)).map((tab) => (
             <Route key={tab.key} path={tab.path} element={<Placeholder title={t(`tabs.${tab.key}`)} />} />
           ))}
           <Route path="/" element={<Home />} />
+          <Route path="/workout" element={<WorkoutPage />} />
+          <Route path="/workout/summary/:id" element={<Summary />} />
           <Route path="/routines" element={<RoutineList />} />
           <Route path="/routines/programs" element={<ProgramList />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />
@@ -69,6 +74,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      <ForgottenGuard />
       <nav className="tabbar">
         {TABS.map((tab) => (
           <NavLink key={tab.key} to={tab.path} end={tab.path === '/'}>

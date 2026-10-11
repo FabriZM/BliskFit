@@ -1,14 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { getActiveProgramId } from '../db/programs'
+import { getActiveSession, startSession } from '../db/workout'
 import { suggestToday } from '../lib/programs'
 import { useSettings } from '../stores/settings'
 
-/** "Today's workout" suggestion from the active program. Starting a session arrives with M3. */
+/** "Today's workout" suggestion from the active program. Start / resume buttons live here too. */
 export default function TodayCard() {
   const { t, i18n } = useTranslation()
+  const nav = useNavigate()
   const weekStartDay = useSettings((s) => s.settings.weekStartDay)
   const data = useLiveQuery(async () => {
     const pid = await getActiveProgramId()
@@ -18,11 +20,11 @@ export default function TodayCard() {
       db.sessions.where('status').equals('finished').toArray(),
       db.exercises.toArray(),
     ])
-    return { program, routines, sessions, exercises }
+    return { program, routines, sessions, exercises, active: await getActiveSession() }
   }, [])
   if (!data) return null
 
-  const { program, routines, sessions, exercises } = data
+  const { program, routines, sessions, exercises, active } = data
   const valid = new Set(routines.filter((r) => !r.archived).map((r) => r.id))
   const s = suggestToday({ program, sessions, today: new Date(), weekStartDay, validRoutineIds: valid })
 
@@ -41,6 +43,7 @@ export default function TodayCard() {
         <p className="muted">{s.mode === 'rotation' ? t('today.nextInRotation') : t('today.scheduled')}{s.trainedToday ? ` · ${t('today.trainedToday')}` : ''}</p>
         <Link to={`/routines/${r.id}`}><strong>{r.name}</strong></Link>
         <p className="muted small">{r.exercises.map((e) => names.get(e.exerciseId)).filter(Boolean).join(' · ') || t('routines.emptyRoutine')}</p>
+        {!active && <button className="primary" onClick={async () => { await startSession(r.id); nav('/workout') }}>{t('workout.start')}</button>}
       </>
     )
   }
@@ -48,6 +51,7 @@ export default function TodayCard() {
     <div className="card">
       <h2>{t('today.title')}{program ? <span className="muted small"> · {program.name}</span> : null}</h2>
       {body}
+      {active && <button className="primary" onClick={() => nav('/workout')}>{t('workout.resumeWorkout')}</button>}
     </div>
   )
 }

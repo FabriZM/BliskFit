@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Routine, RoutineExercise } from '../db/types'
 import {
-  addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise,
+  addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise, replaceExercise,
   normalizeGroups, removeExercise, setRepRange, setRest, unlinkFromNext,
 } from './routines'
 
@@ -90,5 +90,18 @@ describe('routine helpers', () => {
     expect(groups(d.exercises)).toBe('GG-')
     expect(d.exercises[0].supersetGroup).not.toBe(r.exercises[0].supersetGroup)
     expect(d.exercises[0].supersetGroup).toBe(d.exercises[1].supersetGroup)
+  })
+})
+
+describe('replaceExercise', () => {
+  const base = { name: 'n', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom' as const }
+  const r: Routine = { id: 'r', name: 'R', archived: false, exercises: [ex('a', { exerciseId: 'old', repMin: 5, repMax: 8 }), ex('b', { exerciseId: 'old' })] }
+  it('replaces the first occurrence, or all', () => {
+    expect(replaceExercise(r, 'old', { ...base, id: 'new', trackingType: 'weight_reps' }).exercises.map((e) => e.exerciseId)).toEqual(['new', 'old'])
+    expect(replaceExercise(r, 'old', { ...base, id: 'new', trackingType: 'weight_reps' }, true).exercises.map((e) => e.exerciseId)).toEqual(['new', 'new'])
+  })
+  it('drops the rep range for time-based exercises', () => {
+    const out = replaceExercise(r, 'old', { ...base, id: 'plank', trackingType: 'duration' }).exercises[0]
+    expect(out.repMin).toBeUndefined()
   })
 })
