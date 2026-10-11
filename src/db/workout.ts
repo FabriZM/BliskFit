@@ -1,6 +1,8 @@
 import { db, newId } from './db'
 import type { Exercise, ID, SessionExercise, SetLog, SetType, WorkoutSession } from './types'
 import { defaultsFor, replaceExercise } from '../lib/routines'
+import { getActiveProgramId } from './programs'
+import { programIncludesRoutine } from '../lib/gymVisits'
 import { finalizeSession, learnRest, pauseSession, restGaps, resumeSession, valuesOf } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
@@ -13,6 +15,21 @@ const blankSets = (sessionId: ID, item: SessionExercise, count: number, startOrd
     id: newId(), sessionId, itemId: item.id, exerciseId: item.exerciseId, order: startOrder + i, setType: 'working' as SetType,
   }))
 
+/**
+ * The gym a new session starts with (never required, always changeable from the session menu): the active
+ * program's default gym when the routine belongs to that program, otherwise the gym used last time. Only gyms
+ * that still exist are used.
+ */
+export async function defaultGymFor(routineId?: ID): Promise<ID | undefined> {
+  if (routineId) {
+    const programId = await getActiveProgramId()
+    const program = programId ? await db.programs.get(programId) : undefined
+    if (program?.gymId && programIncludesRoutine(program, routineId) && (await db.gyms.get(program.gymId))) return program.gymId
+  }
+  const prev = await db.sessions.orderBy('startedAt').reverse().first()
+  return prev?.gymId && (await db.gyms.get(prev.gymId)) ? prev.gymId : undefined
+}
+
 /** Starts a session from a routine (or empty). If one is already running, returns it instead. */
 export async function startSession(routineId?: ID): Promise<ID> {
   const existing = await getActiveSession()
@@ -22,9 +39,7 @@ export async function startSession(routineId?: ID): Promise<ID> {
     id: newId(), exerciseId: e.exerciseId, targetSets: e.targetSets, repMin: e.repMin, repMax: e.repMax,
     restSec: e.restSec, supersetGroup: e.supersetGroup,
   }))
-  // Default to the gym used last time (only if it still exists); the user never has to pick one.
-  const prev = await db.sessions.orderBy('startedAt').reverse().first()
-  const gymId = prev?.gymId && (await db.gyms.get(prev.gymId)) ? prev.gymId : undefined
+  const gymId = await defaultGymFor(routineId)
   const session: WorkoutSession = {
     id: newId(), startedAt: Date.now(), routineId, gymId, status: 'active', pausedIntervals: [], exercises: items,
   }
@@ -165,5 +180,23 @@ export async function discardSession(id: ID): Promise<void> {
   await db.transaction('rw', db.sessions, db.setLogs, async () => {
     await db.setLogs.where('sessionId').equals(id).delete()
     await db.sessions.delete(id)
+  })
+}
+
+/** Moves a (finished) session to a new start time, shifting everything inside it by the same amount. */
+export async function shiftSession(id: ID, newStartedAt: number): Promise<void> {
+  await db.transaction('rw', db.sessions, db.setLogs, async () => {
+    const s = await db.sessions.get(id)
+    if (!s) return
+    const delta = newStartedAt - s.startedAt
+    if (!delta) return
+    await db.sessions.put({
+      ...s,
+      startedAt: s.startedAt + delta,
+      endedAt: s.endedAt === undefined ? undefined : s.endedAt + delta,
+      forgotAckAt: s.forgotAckAt === undefined ? undefined : s.forgotAckAt + delta,
+      pausedIntervals: s.pausedIntervals.map((p) => ({ start: p.start + delta, end: p.end === undefined ? undefined : p.end + delta })),
+    })
+    await db.setLogs.where('sessionId').equals(id).modify((l) => { if (l.doneAt !== undefined) l.doneAt += delta })
   })
 }

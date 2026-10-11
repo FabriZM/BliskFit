@@ -202,7 +202,9 @@
     "weeksSummary_one": "{{count}} week",
     "weeksSummary_other": "{{count}} weeks",
     "rotationSummary_one": "Rotation · {{count}} routine",
-    "rotationSummary_other": "Rotation · {{count}} routines"
+    "rotationSummary_other": "Rotation · {{count}} routines",
+    "defaultGym": "Default gym",
+    "noDefaultGym": "None (last used)"
   },
   "today": {
     "title": "Today's workout",
@@ -359,7 +361,8 @@
     "confirmDelete": "Delete this workout and all its sets? This can't be undone.",
     "notes": "Notes",
     "notesPlaceholder": "How did it go?",
-    "noSets": "No sets in this workout."
+    "noSets": "No sets in this workout.",
+    "dateTime": "Date and time"
   },
   "records": {
     "title": "Records",
@@ -382,5 +385,35 @@
     "week": "Week of",
     "days": "Days",
     "goalCol": "Goal"
+  },
+  "gymplan": {
+    "title": "Gym visits",
+    "optional": "Visit plan (optional)",
+    "summaryMonth_one": "Visit plan: {{count}} visit per month",
+    "summaryMonth_other": "Visit plan: {{count}} visits per month",
+    "summaryDay_one": "Visit plan: {{count}} visit, periods start on day {{day}}",
+    "summaryDay_other": "Visit plan: {{count}} visits, periods start on day {{day}}",
+    "visits": "Visits per period",
+    "startDay": "Period starts on",
+    "calendarMonth": "1st (calendar month)",
+    "dayN": "Day {{day}}",
+    "rollover": "Carry unused visits over to the next period",
+    "help": "Each day you finish a workout at this gym counts as one visit, however many workouts you do that day. Days past the end of a short month use its last day.",
+    "save": "Save plan",
+    "remove": "Remove plan",
+    "usedOf": "{{used}} of {{total}} visits",
+    "left_one": "{{count}} left",
+    "left_other": "{{count}} left",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left",
+    "carried_one": "includes {{count}} carried over",
+    "carried_other": "includes {{count}} carried over",
+    "lastPeriod": "Last period: {{used}} of {{total}}",
+    "pace_done": "You've used them all.",
+    "pace_every_one": "Go most days to use them all.",
+    "pace_every_other": "About every {{count}} days to use them all.",
+    "pace_daily": "Every remaining day to use them all.",
+    "pace_tooMany_one": "{{count}} visit more than days left.",
+    "pace_tooMany_other": "{{count}} visits more than days left."
   }
 }

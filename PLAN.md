@@ -27,9 +27,9 @@ Stay with web + Capacitor rather than full native Kotlin: one codebase gives the
 | MuscleGroup | id, name, parent (e.g. Calves > Gastrocnemius, Soleus) |
 | Exercise | name, tracking type (see below), equipment, primary muscles, secondary muscles, photo, demo image/animation URL, user video link, default rest, learned rest, source (seeded/custom) |
 | ExerciseGymNote | exercise, gym (optional), setup note (seat height, pin, grip width), photo |
-| Gym | id, name (optional feature; app works fully without any gym) |
+| Gym | id, name, optional visit allowance (none by default; if set: visits per period, billing day, rollover); app works fully without any gym or allowance |
 | Routine | name, ordered RoutineExercise (target sets, rep range, rest override, superset group), archived |
-| Program | name, weeks, schedule (routine per weekday) or rotation (A/B/C cycle) |
+| Program | name, weeks, schedule (routine per weekday) or rotation (A/B/C cycle), optional default gym |
 | WorkoutSession | start, end, routine ref, optional gym ref, notes, status (active/paused/finished), paused intervals |
 | SetLog | session, exercise, weight, added/assist weight, reps, duration, distance, RPE, reps in reserve, failure flag, done time, set type (warm-up/working/drop) |
 | ExerciseNote | exercise, text, pinned for next time |
@@ -132,6 +132,28 @@ Two progress views:
 1. **Week strip (linear):** a single row of the week's days (starting on the configured week start). Trained days are marked (filled dot/check, tappable to open that day's session), today is outlined, and future days are empty. Shown on the Workout tab (days and count only), and a larger version with the streak on Profile.
 2. **Weekly goal graph:** a bar chart of workouts per week over the last 8-12 weeks, with a goal line. Bars that reach the goal are highlighted and misses are muted; the current week is shown as in progress. It uses the goal that applied in each past week (hence the per-week goal snapshot), and a range switch (8 weeks / 6 months / year).
 Both are built from pure, tested functions over finished sessions, so they also reflect edits and deletes made in History..
+
+### M5b: Gym visit plan (optional)
+**Status: done.** Notes on decisions the spec left open:
+- **Where:** the plan is configured per gym under Profile → Settings → Gyms (collapsed "Visit plan (optional)" on each gym; Save plan / Remove plan). The Profile "Gym visits" section only exists while at least one gym has a plan.
+- **Rollover:** unused visits carry forward and never expire (they accumulate across periods), counted from the period the plan was set up in (`allowance.since`, set when the plan is first saved). Visits before that period are ignored; visits earlier in the *same* period still count, so setting a plan mid-month stays honest. Changing the visit count re-derives every period (nothing per period is stored).
+- **Periods:** start on the billing day each month, clamped to short months (31 → last day of Feb/Apr...), 1 = calendar month. "Days left" includes today.
+- **Pace hint:** "about every N days" (rounded down so you don't undershoot), "most days", "every remaining day", or "N visits more than days left".
+- **Default gym:** a program has an optional default gym (Program editor). It applies to routines in the *active* program (schedule or rotation) however they are started; everything else uses the last used gym; deleted gyms are never used. The gym stays optional and changeable from the session menu.
+- **Fixing a visit afterwards:** History → workout → Edit now has the date/time and gym (shifting a session moves its sets and pauses with it), since the count follows both.
+- **Not done:** the optional "visits unused near period end" notification.
+
+For gyms that include a limited number of visits per period (e.g. 12 per month). Entirely optional: with no plan configured, nothing about it appears anywhere.
+- **No allowance by default:** a new gym has none and behaves exactly like today. Setting an allowance is a deliberate, optional step in Profile > Gyms (visits per period, billing day or calendar month, rollover on/off), and it can be cleared again at any time without losing session history.
+- **Tied to a gym:** the allowance is a property of the Gym, and only gyms that have one get a card.
+- **Shown only on Profile, and only for gyms with an allowance:** a compact card, e.g. "Gym X: 7 of 12 visits · 5 left · 9 days left", with a thin progress bar, plus past periods ("last period: 11 of 12"). Not shown on the Workout tab.
+- **Gym selection in a workout:** stays optional and tucked away. The gym is preselected automatically: the program's default gym if the session comes from a program that has one, otherwise the last used gym. It can be changed or cleared from the session menu.
+- **What counts as a visit:** each calendar day with at least one finished working session at that gym counts once. A session needs at least one completed non-warm-up set; empty or warm-up-only sessions don't count. Two sessions on the same day count as one.
+- **Derived, not stored:** used and remaining visits are calculated from history for the current period window, so edits and deletes in History keep it correct. Period windows follow the billing day (handle short months, e.g. a billing day of 31), not just the calendar month.
+- **Pace hint:** remaining visits vs. days left ("about every 2 days to use them all").
+- Optional later: a notification a few days before the period ends with unused visits.
+Tests: period boundaries, billing-day edge cases, same-day sessions, sessions without a gym, editing a past session's gym or date.
+Done when: a gym with no allowance shows nothing; with a 12-visit allowance, finishing a working session at that gym moves the Profile card from N to N+1 once per day.
 
 ### M6: Stats and body tracking
 Per-exercise charts (max weight, e1RM, volume, reps) with date range, muscle-group weekly sets/volume, muscle balance (push/pull ratio, left/right measurement asymmetry), plateau detector, weekly summary (sessions, volume, new PRs, under-trained muscles), body weight log with trend, body measurements (standard + custom, left/right) with charts and change summaries. Gym comparison for the same exercise (only shown if gyms are used).

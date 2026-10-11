@@ -18,6 +18,7 @@ export default function ProgramEditor() {
   const [program, setProgram] = useState<Program | null | undefined>()
   const routines = (useLiveQuery(() => db.routines.toArray(), []) ?? []).filter((r) => !r.archived).sort((a, b) => a.name.localeCompare(b.name))
   const active = useLiveQuery(() => getActiveProgramId(), [])
+  const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
 
   useEffect(() => { void db.programs.get(id).then((p) => setProgram(p ?? null)) }, [id])
   if (program === undefined) return <p className="muted">…</p>
@@ -45,6 +46,17 @@ export default function ProgramEditor() {
           ? <button onClick={() => void setActiveProgramId(undefined)}>{t('programs.deactivate')}</button>
           : <button className="primary" onClick={() => void setActiveProgramId(id)}>{t('programs.setActive')}</button>}
       </div>
+
+      {gyms.length > 0 && (
+        <label className="row">
+          {t('programs.defaultGym')}
+          <select value={program.gymId && gyms.some((g) => g.id === program.gymId) ? program.gymId : ''}
+            onChange={(e) => save({ ...program, gymId: e.target.value || undefined })}>
+            <option value="">{t('programs.noDefaultGym')}</option>
+            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+        </label>
+      )}
 
       <div className="segmented" role="group" aria-label={t('programs.mode')}>
         <button aria-pressed={program.mode === 'weekday'} className={program.mode === 'weekday' ? 'on' : ''}

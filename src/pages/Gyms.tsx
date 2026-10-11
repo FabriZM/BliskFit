@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../db/db'
+import GymPlanEditor from '../components/GymPlanEditor'
 
 /** Optional feature, reachable only from Profile. The app works fully without any gym. */
 export default function Gyms() {
@@ -31,10 +32,13 @@ export default function Gyms() {
       <p className="muted">{t('gyms.help')}</p>
       <ul className="list">
         {gyms.map((g) => (
-          <li key={g.id}><div className="row">
-            <input defaultValue={g.name} onBlur={(e) => e.target.value.trim() && void db.gyms.update(g.id, { name: e.target.value.trim() })} />
-            <button className="danger" onClick={() => void remove(g.id)}>{t('common.delete')}</button>
-          </div></li>
+          <li key={g.id}>
+            <div className="row">
+              <input defaultValue={g.name} onBlur={(e) => e.target.value.trim() && void db.gyms.update(g.id, { name: e.target.value.trim() })} />
+              <button className="danger" onClick={() => void remove(g.id)}>{t('common.delete')}</button>
+            </div>
+            <GymPlanEditor key={`${g.id}-${g.allowance?.visits}-${g.allowance?.startDay}-${g.allowance?.rollover}`} gym={g} />
+          </li>
         ))}
       </ul>
       <div className="row">

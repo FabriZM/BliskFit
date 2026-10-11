@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SetLog } from '../../db/types'
 import { discardSession } from '../../db/workout'
-import { deleteSet, updateSet } from '../../db/workout'
+import { deleteSet, setGym, shiftSession, updateSet } from '../../db/workout'
 import PRBadge from '../../components/PRBadge'
 import { formatSet } from '../../lib/format'
 import { computeAllPRs } from '../../lib/prs'
@@ -25,6 +25,12 @@ function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; i
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only the text drives saving
   }, [text])
   return <textarea rows={3} value={text} placeholder={placeholder} onChange={(e) => setText(e.target.value)} onBlur={() => save(text)} />
+}
+
+/** Value for <input type="datetime-local"> (local time, minute precision). */
+const toLocalInput = (ms: number) => {
+  const d = new Date(ms), p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
 const PREFIX = { warmup: 'W ', drop: 'D ', working: '' } as const
@@ -51,13 +57,15 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
     const exercises = new Map((await db.exercises.bulkGet(exIds)).filter((e): e is Exercise => !!e).map((e) => [e.id, e]))
     const history = (await Promise.all(exIds.map((e) => db.setLogs.where('exerciseId').equals(e).filter((s) => s.doneAt !== undefined).toArray()))).flat()
     const routine = session.routineId ? await db.routines.get(session.routineId) : undefined
-    return { session, sets, exercises, history, routineName: routine?.name }
+    const gyms = await db.gyms.toArray()
+    return { session, sets, exercises, history, routineName: routine?.name, gyms }
   }, [id])
 
   if (!data) return <p className="muted">…</p>
   const { session } = data
   if (!session) return <section><p>{t('workout.notFound')}</p><Link to="/workout/history">{t('history.title')}</Link></section>
-  const { sets, exercises, history, routineName } = data as Required<typeof data>
+  const { sets, exercises, history, routineName, gyms } = data as Required<typeof data>
+  const gymName = gyms.find((g) => g.id === session.gymId)?.name
 
   const trackingOf = (eid: string) => exercises.get(eid)?.trackingType ?? 'weight_reps'
   const prs = computeAllPRs(history, trackingOf)
@@ -73,7 +81,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
       <p><Link to={justFinished ? '/workout' : '/workout/history'}>← {justFinished ? t('tabs.workout') : t('history.title')}</Link></p>
       <h1>{justFinished ? t('summary.title') : dayFmt.format(session.startedAt)}</h1>
       <p className="muted">
-        {routineName ?? t('workout.empty')} · {timeFmt.format(session.startedAt)}{session.endedAt ? `–${timeFmt.format(session.endedAt)}` : ''}
+        {routineName ?? t('workout.empty')}{gymName ? ` · ${gymName}` : ''} · {timeFmt.format(session.startedAt)}{session.endedAt ? `–${timeFmt.format(session.endedAt)}` : ''}
       </p>
 
       <div className="stats">
@@ -84,6 +92,23 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
           ? <div className={prCount ? 'pr-tile' : ''}><strong>{prCount}</strong><span>{t('summary.prs')}</span></div>
           : <div><strong>{stats.exercises}</strong><span>{t('summary.exercises')}</span></div>}
       </div>
+
+      {editing && (
+        <div className="edit-meta form">
+          <label>{t('detail.dateTime')}
+            <input type="datetime-local" value={toLocalInput(session.startedAt)}
+              onChange={(e) => { const ms = new Date(e.target.value).getTime(); if (Number.isFinite(ms)) void shiftSession(id, ms) }} />
+          </label>
+          {gyms.length > 0 && (
+            <label>{t('gyms.gym')}
+              <select value={session.gymId && gyms.some((g) => g.id === session.gymId) ? session.gymId : ''} onChange={(e) => void setGym(id, e.target.value || undefined)}>
+                <option value="">{t('workout.noGym')}</option>
+                {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
 
       {(editing || session.notes) && (
         <div className="notes-block">

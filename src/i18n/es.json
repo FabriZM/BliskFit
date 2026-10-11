@@ -202,7 +202,9 @@
     "weeksSummary_one": "{{count}} semana",
     "weeksSummary_other": "{{count}} semanas",
     "rotationSummary_one": "Rotación · {{count}} rutina",
-    "rotationSummary_other": "Rotación · {{count}} rutinas"
+    "rotationSummary_other": "Rotación · {{count}} rutinas",
+    "defaultGym": "Gimnasio por defecto",
+    "noDefaultGym": "Ninguno (el último usado)"
   },
   "today": {
     "title": "Entreno de hoy",
@@ -359,7 +361,8 @@
     "confirmDelete": "¿Eliminar este entreno y todas sus series? No se puede deshacer.",
     "notes": "Notas",
     "notesPlaceholder": "¿Cómo fue?",
-    "noSets": "No hay series en este entreno."
+    "noSets": "No hay series en este entreno.",
+    "dateTime": "Fecha y hora"
   },
   "records": {
     "title": "Récords",
@@ -382,5 +385,35 @@
     "week": "Semana del",
     "days": "Días",
     "goalCol": "Meta"
+  },
+  "gymplan": {
+    "title": "Visitas al gimnasio",
+    "optional": "Plan de visitas (opcional)",
+    "summaryMonth_one": "Plan: {{count}} visita al mes",
+    "summaryMonth_other": "Plan: {{count}} visitas al mes",
+    "summaryDay_one": "Plan: {{count}} visita, los periodos empiezan el día {{day}}",
+    "summaryDay_other": "Plan: {{count}} visitas, los periodos empiezan el día {{day}}",
+    "visits": "Visitas por periodo",
+    "startDay": "El periodo empieza el",
+    "calendarMonth": "1 (mes calendario)",
+    "dayN": "Día {{day}}",
+    "rollover": "Pasar las visitas sin usar al siguiente periodo",
+    "help": "Cada día que terminas un entreno en este gimnasio cuenta como una visita, sin importar cuántos hagas ese día. En meses cortos se usa su último día.",
+    "save": "Guardar plan",
+    "remove": "Quitar plan",
+    "usedOf": "{{used}} de {{total}} visitas",
+    "left_one": "queda {{count}}",
+    "left_other": "quedan {{count}}",
+    "daysLeft_one": "{{count}} día restante",
+    "daysLeft_other": "{{count}} días restantes",
+    "carried_one": "incluye {{count}} acumulada",
+    "carried_other": "incluye {{count}} acumuladas",
+    "lastPeriod": "Periodo anterior: {{used}} de {{total}}",
+    "pace_done": "Ya usaste todas.",
+    "pace_every_one": "Ve casi todos los días para usarlas todas.",
+    "pace_every_other": "Más o menos cada {{count}} días para usarlas todas.",
+    "pace_daily": "Todos los días que quedan para usarlas todas.",
+    "pace_tooMany_one": "{{count}} visita más que días restantes.",
+    "pace_tooMany_other": "{{count}} visitas más que días restantes."
   }
 }

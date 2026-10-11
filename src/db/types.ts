@@ -39,6 +39,19 @@ export interface Exercise {
 export interface Gym {
   id: ID
   name: string
+  /** Optional visit plan (e.g. 12 visits per month). Absent = no plan, and nothing about it is shown anywhere. */
+  allowance?: GymAllowance
+}
+
+export interface GymAllowance {
+  /** Visits included per period. */
+  visits: number
+  /** Day of month a period starts on (1 = calendar month); clamped to short months, so 31 means "last day". */
+  startDay: number
+  /** Unused visits carry into the next period. */
+  rollover: boolean
+  /** YYYY-MM-DD the plan was set up; periods before it aren't counted. */
+  since: string
 }
 
 export interface ExerciseGymNote {
@@ -77,6 +90,8 @@ export interface Program {
   startDate?: number
   /** rotation mode: ordered routine ids (A/B/C), no duplicates (position is inferred from history) */
   rotation?: ID[]
+  /** Optional default gym for workouts started from this program. */
+  gymId?: ID
 }
 
 export interface PausedInterval {

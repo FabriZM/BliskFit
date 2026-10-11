@@ -130,3 +130,7 @@ button.wd { background: transparent; padding: 0; border: 0; color: inherit; curs
 .chart-table table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 6px; } .chart-table th, .chart-table td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--chart-grid); } .chart-table th { color: var(--muted); font-weight: 500; }
 .reminder-days { padding: 12px 0 4px; display: flex; flex-direction: column; gap: 8px; }
 .time-input { width: auto; } .help { margin: 0 0 8px; }
+.plan-editor { margin: 0 0 8px; background: var(--card); border-radius: 10px; padding: 8px 12px; } .plan-editor summary { font-size: .9rem; color: var(--muted); font-weight: 500; cursor: pointer; } .plan-editor .form { padding-top: 10px; }
+.gym-card .row.head { padding: 0 0 6px; border: 0; } .gym-line { margin: 0 0 8px; } .gym-card p.muted { margin: 6px 0 0; }
+.meter { height: 6px; border-radius: 3px; background: var(--chart-grid); overflow: hidden; } .meter i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.edit-meta { margin: 8px 0 12px; }
