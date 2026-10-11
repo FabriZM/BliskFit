@@ -20,7 +20,7 @@ export default function Summary() {
   }, [id])
   if (!data) return <p className="muted">…</p>
   const { session, sets, exercises } = data
-  if (!session) return <section><p>{t('workout.notFound')}</p><Link to="/">{t('tabs.home')}</Link></section>
+  if (!session) return <section><p>{t('workout.notFound')}</p><Link to="/workout">{t('tabs.workout')}</Link></section>
 
   const stats = sessionStats(sets, (eid) => exercises.get(eid)?.trackingType ?? 'weight_reps')
   const items = session.exercises.filter((it) => sets.some((s) => s.itemId === it.id))
@@ -44,7 +44,7 @@ export default function Summary() {
           )
         })}
       </ul>
-      <Link className="btn wide-link" to="/">{t('common.done')}</Link>
+      <Link className="btn wide-link" to="/workout">{t('common.done')}</Link>
     </section>
   )
 }

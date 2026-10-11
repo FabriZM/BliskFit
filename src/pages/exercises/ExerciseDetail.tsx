@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
+import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { compressImage } from '../../lib/image'
 import { muscleLabel } from '../../lib/muscles'
 import { demoImageUrls } from '../../lib/seed'
@@ -22,6 +23,7 @@ export default function ExerciseDetail() {
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
   const photoUrl = useBlobUrl(ex?.photo)
+  const favorites = useFavorites()
 
   const [text, setText] = useState('')
   const [gymId, setGymId] = useState('')
@@ -43,7 +45,8 @@ export default function ExerciseDetail() {
   const remove = async () => {
     if (await db.setLogs.where('exerciseId').equals(id).count()) return alert(t('exercises.inUse'))
     if (!confirm(t('exercises.confirmDelete'))) return
-    await db.transaction('rw', db.exercises, db.exerciseGymNotes, db.exerciseNotes, async () => {
+    await db.transaction('rw', db.exercises, db.exerciseGymNotes, db.exerciseNotes, db.favorites, async () => {
+      await db.favorites.delete(id)
       await db.exerciseGymNotes.where('exerciseId').equals(id).delete()
       await db.exerciseNotes.where('exerciseId').equals(id).delete()
       await db.exercises.delete(id)
@@ -54,7 +57,13 @@ export default function ExerciseDetail() {
   return (
     <section>
       <p><Link to="/exercises">← {t('tabs.exercises')}</Link></p>
-      <h1>{ex.name}</h1>
+      <div className="row head">
+        <h1>{ex.name}</h1>
+        <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}
+          aria-label={favorites.has(id) ? t('exercises.unfavorite') : t('exercises.favorite')} onClick={() => void toggleFavorite(id)}>
+          {favorites.has(id) ? '★' : '☆'}
+        </button>
+      </div>
       <p className="muted">
         {t(`tracking.${ex.trackingType}`)} · {t(`equipment.${ex.equipment ?? 'none'}`, { defaultValue: ex.equipment ?? '' })}
       </p>

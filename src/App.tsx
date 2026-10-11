@@ -1,14 +1,11 @@
 import { useEffect } from 'react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useSettings } from './stores/settings'
-import Placeholder from './pages/Placeholder'
-import Home from './pages/Home'
 import WorkoutPage from './pages/workout/WorkoutPage'
 import Summary from './pages/workout/Summary'
 import ForgottenGuard from './components/ForgottenGuard'
-import RoutineList from './pages/routines/RoutineList'
 import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
 import ProgramEditor from './pages/programs/ProgramEditor'
@@ -17,20 +14,20 @@ import Gyms from './pages/Gyms'
 import ExerciseList from './pages/exercises/ExerciseList'
 import ExerciseDetail from './pages/exercises/ExerciseDetail'
 import ExerciseForm from './pages/exercises/ExerciseForm'
+import { ExercisesIcon, ProfileIcon, WorkoutIcon } from './components/TabIcons'
 import { db } from './db/db'
 import { ensureSeed } from './db/seed'
 
+// Three tabs. Routines and programs live under Workout, so those routes keep the Workout tab highlighted.
 const TABS = [
-  { path: '/', key: 'home', icon: '🏠' },
-  { path: '/workout', key: 'workout', icon: '🏋️' },
-  { path: '/routines', key: 'routines', icon: '📋' },
-  { path: '/exercises', key: 'exercises', icon: '💪' },
-  { path: '/stats', key: 'stats', icon: '📈' },
-  { path: '/profile', key: 'profile', icon: '👤' },
+  { path: '/profile', key: 'profile', Icon: ProfileIcon, match: ['/profile'] },
+  { path: '/workout', key: 'workout', Icon: WorkoutIcon, match: ['/workout', '/routines'] },
+  { path: '/exercises', key: 'exercises', Icon: ExercisesIcon, match: ['/exercises'] },
 ] as const
 
 export default function App() {
   const { t, i18n } = useTranslation()
+  const { pathname } = useLocation()
   const { settings, loaded, load } = useSettings()
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW()
 
@@ -55,13 +52,10 @@ export default function App() {
       )}
       <main>
         <Routes>
-          {TABS.filter((x) => !['profile', 'exercises', 'home', 'routines', 'workout'].includes(x.key)).map((tab) => (
-            <Route key={tab.key} path={tab.path} element={<Placeholder title={t(`tabs.${tab.key}`)} />} />
-          ))}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/workout" replace />} />
           <Route path="/workout" element={<WorkoutPage />} />
           <Route path="/workout/summary/:id" element={<Summary />} />
-          <Route path="/routines" element={<RoutineList />} />
+          <Route path="/routines" element={<Navigate to="/workout" replace />} />
           <Route path="/routines/programs" element={<ProgramList />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />
           <Route path="/routines/:id" element={<RoutineEditor />} />
@@ -71,17 +65,20 @@ export default function App() {
           <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/gyms" element={<Gyms />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/workout" replace />} />
         </Routes>
       </main>
       <ForgottenGuard />
       <nav className="tabbar">
-        {TABS.map((tab) => (
-          <NavLink key={tab.key} to={tab.path} end={tab.path === '/'}>
-            <span aria-hidden>{tab.icon}</span>
-            <span>{t(`tabs.${tab.key}`)}</span>
-          </NavLink>
-        ))}
+        {TABS.map(({ path, key, Icon, match }) => {
+          const active = match.some((m) => pathname === m || pathname.startsWith(m + '/'))
+          return (
+            <Link key={key} to={path} className={active ? 'active' : undefined} aria-current={active ? 'page' : undefined}>
+              <Icon />
+              <span>{t(`tabs.${key}`)}</span>
+            </Link>
+          )
+        })}
       </nav>
     </div>
   )

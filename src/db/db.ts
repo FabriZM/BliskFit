@@ -18,6 +18,7 @@ export class GymDB extends Dexie {
   measurements!: EntityTable<Measurement, 'id'>
   settings!: EntityTable<Settings, 'id'>
   meta!: EntityTable<{ key: string; value: unknown }, 'key'>
+  favorites!: EntityTable<{ exerciseId: string }, 'exerciseId'>
 
   constructor(name = 'gymapp') {
     super(name)
@@ -38,6 +39,8 @@ export class GymDB extends Dexie {
     })
     // v2: key/value table (seed version, future flags).
     this.version(2).stores({ meta: 'key' })
+    // v3: favorite exercises, kept apart from exercises so re-seeding the library never wipes them.
+    this.version(3).stores({ favorites: 'exerciseId' })
   }
 }
 

@@ -23,7 +23,7 @@ export default function ProgramList() {
 
   return (
     <section>
-      <p><Link to="/routines">← {t('tabs.routines')}</Link></p>
+      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
       <div className="row head">
         <h1>{t('programs.title')}</h1>
         <button className="primary" onClick={() => void create()}>+ {t('programs.new')}</button>

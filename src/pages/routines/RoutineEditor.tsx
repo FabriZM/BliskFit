@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -10,7 +10,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { db } from '../../db/db'
 import type { Exercise, Routine, RoutineExercise } from '../../db/types'
 import {
-  addExercises, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
+  addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
 } from '../../lib/routines'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
@@ -73,6 +73,7 @@ function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRe
 export default function RoutineEditor() {
   const { t } = useTranslation()
   const id = useParams().id!
+  const nav = useNavigate()
   const defaultRest = useSettings((s) => s.settings.defaultRestSec)
   const [routine, setRoutine] = useState<Routine | null | undefined>()
   const [picking, setPicking] = useState(false)
@@ -97,7 +98,7 @@ export default function RoutineEditor() {
   const positions = useMemo(() => groupPositions(routine?.exercises ?? []), [routine])
 
   if (routine === undefined) return <p className="muted">…</p>
-  if (routine === null) return <section><p>{t('routines.notFound')}</p><Link to="/routines">{t('tabs.routines')}</Link></section>
+  if (routine === null) return <section><p>{t('routines.notFound')}</p><Link to="/workout">{t('tabs.workout')}</Link></section>
 
   const save = (next: Routine) => { setRoutine(next); void db.routines.put(next) }
   const setExercises = (exs: RoutineExercise[]) => save({ ...routine, exercises: exs })
@@ -110,7 +111,7 @@ export default function RoutineEditor() {
 
   return (
     <section>
-      <p><Link to="/routines">← {t('tabs.routines')}</Link></p>
+      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
       <input className="title-input" aria-label={t('routines.name')} value={routine.name} placeholder={t('routines.name')}
         onChange={(e) => save({ ...routine, name: e.target.value })}
         onBlur={() => !routine.name.trim() && save({ ...routine, name: t('routines.untitled') })} />
@@ -130,6 +131,16 @@ export default function RoutineEditor() {
         </SortableContext>
       </DndContext>
       <button className="primary wide" onClick={() => setPicking(true)}>+ {t('routines.addExercises')}</button>
+      <div className="actions">
+        <button onClick={async () => {
+          const copy = duplicateRoutine(routine, `${routine.name} ${t('routines.copySuffix')}`)
+          await db.routines.add(copy)
+          nav(`/routines/${copy.id}`)
+        }}>{t('routines.duplicate')}</button>
+        <button onClick={() => { save({ ...routine, archived: !routine.archived }); if (!routine.archived) nav('/workout') }}>
+          {routine.archived ? t('routines.restore') : t('routines.archive')}
+        </button>
+      </div>
       {picking && <ExercisePicker onClose={() => setPicking(false)} onAdd={(exs) => { save(addExercises(routine, exs)); setPicking(false) }} />}
     </section>
   )

@@ -16,7 +16,11 @@
     "persistDenied": "Not granted",
     "updateAvailable": "Update available",
     "reload": "Reload",
-    "restPopup": "Rest timer popup"
+    "restPopup": "Rest timer popup",
+    "stats": "Stats",
+    "measurements": "Body measurements",
+    "settings": "Settings",
+    "comingSoon": "Coming soon."
   },
   "muscles": {
     "chest": "Chest",
@@ -103,7 +107,10 @@
     "notePlaceholder": "e.g. seat height 4, pin at 6, wide grip",
     "addNote": "Add note",
     "confirmDelete": "Delete this exercise and its notes?",
-    "inUse": "This exercise has logged sets and can't be deleted."
+    "inUse": "This exercise has logged sets and can't be deleted.",
+    "favorites": "Favorites",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites"
   },
   "gyms": {
     "title": "Gyms (optional)",
@@ -254,7 +261,8 @@
     "restNotification": "Time for your next set.",
     "notifyRest": "Notify me when rest ends (screen off)",
     "swapShort": "Swap",
-    "skipShort": "Skip"
+    "skipShort": "Skip",
+    "routines": "Routines"
   },
   "summary": {
     "title": "Workout complete",

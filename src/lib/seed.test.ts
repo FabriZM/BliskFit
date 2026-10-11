@@ -46,6 +46,20 @@ describe('seed + filter', () => {
     expect(hits.every((e) => /calf/i.test(e.name))).toBe(true)
   })
 
+  it('favorites sort first, filter, and survive a re-seed', async () => {
+    const db = new GymDB('test-' + newId())
+    await ensureSeed(db)
+    await db.favorites.put({ exerciseId: 'x:Plank' })
+    await db.meta.put({ key: 'seedVersion', value: 0 })
+    await ensureSeed(db) // forces the library to be rewritten
+    const favorites = new Set((await db.favorites.toArray()).map((r) => r.exerciseId))
+    expect(favorites.has('x:Plank')).toBe(true)
+    const all = filterExercises(await db.exercises.toArray(), { query: '', muscleIds: new Set(), equipment: '', favorites })
+    expect(all[0].id).toBe('x:Plank')
+    const only = filterExercises(await db.exercises.toArray(), { query: '', muscleIds: new Set(), equipment: '', favorites, favoritesOnly: true })
+    expect(only.map((e) => e.id)).toEqual(['x:Plank'])
+  })
+
   it('search ignores accents and case', () => {
     const e: Exercise = { id: '1', name: 'Sentadilla Búlgara', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom' as const }
     expect(filterExercises([e], { query: 'BULGARA', muscleIds: new Set(), equipment: '' })).toHaveLength(1)

@@ -15,6 +15,11 @@ export default function Profile() {
   return (
     <section>
       <h1>{t('tabs.profile')}</h1>
+      <h2>{t('profile.stats')}</h2>
+      <div className="card muted">{t('profile.comingSoon')}</div>
+      <h2>{t('profile.measurements')}</h2>
+      <div className="card muted">{t('profile.comingSoon')}</div>
+      <h2>{t('profile.settings')}</h2>
       <label className="row">
         {t('profile.language')}
         <select value={settings.language} onChange={(e) => void update({ language: e.target.value as 'en' | 'es' })}>

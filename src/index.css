@@ -8,9 +8,10 @@ h1 { margin: 0 0 12px; font-size: 1.5rem; }
 .muted { color: var(--muted); }
 .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card); }
 select, button { font: inherit; padding: 8px 12px; border-radius: 8px; border: 0; background: var(--card); color: var(--fg); }
-.tabbar { display: flex; background: var(--card); padding-bottom: env(safe-area-inset-bottom); }
-.tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; font-size: .7rem; color: var(--muted); text-decoration: none; }
+.tabbar { display: flex; background: var(--card); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid #374151; }
+.tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 0 8px; font-size: .78rem; font-weight: 600; color: var(--muted); text-decoration: none; min-height: 68px; position: relative; }
 .tabbar a.active { color: var(--accent); }
+.tabbar a.active::before { content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
 .update-banner { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: var(--accent); color: #064e3b; }
 input, textarea { font: inherit; padding: 8px 12px; border-radius: 8px; border: 1px solid #374151; background: var(--card); color: var(--fg); width: 100%; }
 .row.head { border: 0; padding: 0 0 8px; }
@@ -87,3 +88,6 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 .menu.icons button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 64px; padding: 6px 10px; background: var(--bg); }
 .menu.icons button span { font-size: 1.3rem; line-height: 1; } .menu.icons button small { font-size: .65rem; color: var(--muted); }
 .set.swiping.dir-r .swipe-bg { justify-content: flex-start; padding-left: 18px; } .set.swiping.dir-l .swipe-bg { justify-content: flex-end; padding-right: 18px; }
+
+.ex-row { display: flex; align-items: center; } .ex-row a { flex: 1; min-width: 0; } .star { background: transparent; font-size: 1.5rem; padding: 6px 10px; color: var(--muted); } .star.on { color: #fbbf24; }
+.link-card { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: var(--fg); } .row.head h2 { margin: 0; }

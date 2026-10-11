@@ -3,7 +3,12 @@
 Personal gym tracker for Android. Built web-first as an offline PWA (installable from Chrome, shareable through a free static host), then wrapped as an APK with Capacitor once the live workout needs reliable timers/notifications. Same codebase for both. Data stays local on each device, with optional cloud backup.
 
 ## Stack
-React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, bottom tabs: Home, Workout, Routines, Exercises, Stats, Profile. UI available in English and Spanish; kg/lb switchable.
+React + TypeScript + Vite, Dexie (IndexedDB), vite-plugin-pwa, Recharts or uPlot, Zustand, Vitest, Capacitor (from M3b). Mobile-first, four bottom tabs:
+- **Home:** today's workout + Start, Resume card, week progress, streak, recent PRs.
+- **Workout:** segmented switch **Routines** (incl. programs) | **History** (sessions, calendar).
+- **Exercises:** library, search/filters, add exercise; later the interactive body figure.
+- **Profile:** Stats first (charts, muscle volume, PRs), then body weight and measurements, goals, settings, backup, gyms.
+An active session is a full-screen view; a persistent "workout in progress" bar sits above the tab bar on every screen. UI available in English and Spanish; kg/lb switchable.
 
 ## Tooling and supply chain security
 - **Package manager: pnpm.** M0 was scaffolded with npm (`package-lock.json`, exact versions already pinned), so migrating is a small one-time task now, before more dependencies pile up: `pnpm import` from the lockfile, delete `package-lock.json`, set the `packageManager` field, update the Pages workflow in `.github/` to use pnpm.

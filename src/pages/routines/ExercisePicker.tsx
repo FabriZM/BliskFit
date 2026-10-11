@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
+import { useFavorites } from '../../db/favorites'
 import type { Exercise } from '../../db/types'
 import { filterExercises } from '../../lib/exerciseFilter'
 import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
@@ -16,14 +17,16 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title }
   const [muscle, setMuscle] = useState('')
   const [picked, setPicked] = useState<string[]>([])
   const [shown, setShown] = useState(PAGE)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const favorites = useFavorites()
   const exercises = useLiveQuery(() => db.exercises.toArray(), [])
   const muscles = useLiveQuery(() => db.muscleGroups.toArray(), []) ?? []
 
   const results = useMemo(() => {
     if (!exercises) return []
     const ids = muscle ? withDescendants(muscles, muscle) : new Set<string>()
-    return filterExercises(exercises, { query, muscleIds: ids, equipment: '' })
-  }, [exercises, muscles, query, muscle])
+    return filterExercises(exercises, { query, muscleIds: ids, equipment: '', favorites, favoritesOnly })
+  }, [exercises, muscles, query, muscle, favorites, favoritesOnly])
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : single ? [id] : [...p, id]))
 
@@ -44,13 +47,16 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title }
             <option value="">{t('exercises.allMuscles')}</option>
             {orderMuscles(muscles).map((m) => <option key={m.id} value={m.id}>{(m.parentId ? '  ' : '') + muscleLabel(m, t)}</option>)}
           </select>
+          <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => { setFavoritesOnly(!favoritesOnly); setShown(PAGE) }}>
+            ★ {t('exercises.favorites')}
+          </button>
         </div>
         <ul className="list">
           {results.slice(0, shown).map((e) => (
             <li key={e.id}>
               <label className="pick">
                 <input type="checkbox" checked={picked.includes(e.id)} onChange={() => toggle(e.id)} />
-                <span>{e.name}</span>
+                <span>{favorites.has(e.id) ? '★ ' : ''}{e.name}</span>
               </label>
             </li>
           ))}

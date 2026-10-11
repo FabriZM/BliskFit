@@ -16,7 +16,11 @@
     "persistDenied": "No concedido",
     "updateAvailable": "Actualización disponible",
     "reload": "Recargar",
-    "restPopup": "Ventana del temporizador de descanso"
+    "restPopup": "Ventana del temporizador de descanso",
+    "stats": "Estadísticas",
+    "measurements": "Medidas corporales",
+    "settings": "Ajustes",
+    "comingSoon": "Próximamente."
   },
   "muscles": {
     "chest": "Pecho",
@@ -103,7 +107,10 @@
     "notePlaceholder": "ej. asiento en 4, pin en 6, agarre ancho",
     "addNote": "Añadir nota",
     "confirmDelete": "¿Eliminar este ejercicio y sus notas?",
-    "inUse": "Este ejercicio tiene series registradas y no se puede eliminar."
+    "inUse": "Este ejercicio tiene series registradas y no se puede eliminar.",
+    "favorites": "Favoritos",
+    "favorite": "Añadir a favoritos",
+    "unfavorite": "Quitar de favoritos"
   },
   "gyms": {
     "title": "Gimnasios (opcional)",
@@ -254,7 +261,8 @@
     "restNotification": "Hora de tu siguiente serie.",
     "notifyRest": "Avisarme al terminar el descanso (pantalla apagada)",
     "swapShort": "Cambiar",
-    "skipShort": "Saltar"
+    "skipShort": "Saltar",
+    "routines": "Rutinas"
   },
   "summary": {
     "title": "Entreno completado",
