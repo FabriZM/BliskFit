@@ -167,6 +167,8 @@ export interface Settings {
   prBadges: boolean
   reminderDays: number[]
   streakFreezes: number
+  /** Show the full-screen rest countdown whenever a set is finished. */
+  restPopup: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -179,4 +181,5 @@ export const DEFAULT_SETTINGS: Settings = {
   prBadges: true,
   reminderDays: [],
   streakFreezes: 1,
+  restPopup: true,
 }

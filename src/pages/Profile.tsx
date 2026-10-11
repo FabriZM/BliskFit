@@ -29,6 +29,10 @@ export default function Profile() {
           <option value="lb">lb</option>
         </select>
       </label>
+      <label className="row">
+        {t('profile.restPopup')}
+        <input type="checkbox" className="toggle" checked={settings.restPopup} onChange={(e) => void update({ restPopup: e.target.checked })} />
+      </label>
       <p className="row">
         {t('profile.persist')}
         <span className="muted">{persisted ? t('profile.persistGranted') : t('profile.persistDenied')}</span>

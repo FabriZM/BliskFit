@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
-import {
-  addSet, completeSet, deleteSet, moveItem, removeItem, toggleSkip, uncompleteSet, updateSet,
-} from '../../db/workout'
+import { addSet, completeSet, deleteSet, removeItem, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
 import { primeAudio } from '../../lib/alerts'
 import { formatSet } from '../../lib/format'
 import type { GroupPos } from '../../lib/routines'
@@ -14,14 +12,12 @@ import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '..
 import ExerciseNotes from './ExerciseNotes'
 import SetRow from './SetRow'
 
-export default function ExerciseCard({ session, item, exercise, sets, pos, index, count, units, defaultRest, onSwap }: {
+export default function ExerciseCard({ session, item, exercise, sets, pos, units, defaultRest, onSwap }: {
   session: WorkoutSession
   item: SessionExercise
   exercise?: Exercise
   sets: SetLog[]
   pos: GroupPos
-  index: number
-  count: number
   units: Units
   defaultRest: number
   onSwap: () => void
@@ -30,10 +26,13 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, index
   const [menu, setMenu] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [addingNote, setAddingNote] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const [dx, setDx] = useState(0)
+  const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
   const tracking = exercise?.trackingType ?? 'weight_reps'
   const sorted = [...sets].sort((a, b) => a.order - b.order)
   const rest = restFor(item, exercise, defaultRest)
-  const hasDone = sorted.some((s) => s.doneAt !== undefined)
+  const doneCount = sorted.filter((s) => s.doneAt !== undefined).length
 
   const last = useLiveQuery(async () => {
     const logs = await db.setLogs.where('exerciseId').equals(item.exerciseId).filter((x) => x.doneAt !== undefined).toArray()
@@ -54,14 +53,43 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, index
     })
   }
 
+  // Swipe either way to remove (confirmed). Only starts on non-interactive areas, and vertical scrolling wins.
+  const SWIPE_AT = 100
+  const onPointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('input,button,select,textarea,label,a')) return
+    drag.current = { x: e.clientX, y: e.clientY, active: false }
+  }
+  const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    const d = drag.current
+    if (!d) return
+    const ddx = e.clientX - d.x, ddy = e.clientY - d.y
+    if (!d.active) {
+      if (Math.abs(ddy) > 10 && Math.abs(ddy) > Math.abs(ddx)) { drag.current = null; return }
+      if (Math.abs(ddx) > 10) {
+        d.active = true
+        try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* pointer already gone */ }
+      }
+    }
+    if (d.active) setDx(ddx)
+  }
+  const endSwipe = () => {
+    if (drag.current?.active && Math.abs(dx) > SWIPE_AT) setConfirmRemove(true)
+    drag.current = null
+    setDx(0)
+  }
+
   return (
-    <li className={`rx ex-card ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}`}>
+    <li className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}`}>
+      <div className="swipe-bg" aria-hidden>🗑 {t('workout.removeExercise')}</div>
+      <div className="swipe-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={endSwipe}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
         <strong className="rx-name">{exercise?.name ?? '…'}</strong>
         <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}>⋯</button>
       </div>
-      <p className="muted small">
+      <p className="muted small meta">
+        <button className="icon tiny" aria-label={t('workout.addNote')} title={t('workout.addNote')} onClick={() => setAddingNote(true)}>📝</button>
         {item.targetSets} × {item.repMin ? (item.repMax && item.repMax !== item.repMin ? `${item.repMin}–${item.repMax}` : item.repMin) : '—'}
         {' · '}{t('workout.rest')} {formatClock(rest.sec * 1000)}{rest.source === 'learned' ? ` (${t('workout.learned')})` : ''}
         {item.skipped ? ` · ${t('workout.skipped')}` : ''}
@@ -69,13 +97,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, index
 
       {menu && (
         <div className="menu">
-          <button onClick={() => { void addSet(session.id, item.id); setMenu(false) }}>{t('workout.addSet')}</button>
           <button onClick={() => { onSwap(); setMenu(false) }}>{t('workout.swap')}</button>
           <button onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>{item.skipped ? t('workout.unskip') : t('workout.skip')}</button>
-          <button onClick={() => { setAddingNote(true); setMenu(false) }}>{t('workout.addNote')}</button>
-          <button disabled={index === 0} onClick={() => void moveItem(session.id, item.id, -1)}>▲ {t('workout.moveUp')}</button>
-          <button disabled={index === count - 1} onClick={() => void moveItem(session.id, item.id, 1)}>▼ {t('workout.moveDown')}</button>
-          <button className="danger" disabled={hasDone} onClick={() => { void removeItem(session.id, item.id); setMenu(false) }}>{t('workout.removeExercise')}</button>
         </div>
       )}
 
@@ -109,6 +132,17 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, index
           </ul>
           <button className="link" onClick={() => void addSet(session.id, item.id)}>+ {t('workout.addSet')}</button>
         </>
+      )}
+      </div>
+      {confirmRemove && (
+        <div className="modal" role="alertdialog" aria-modal="true">
+          <div className="modal-card">
+            <h2>{t('workout.removeTitle', { name: exercise?.name ?? '' })}</h2>
+            {doneCount > 0 && <p className="muted">{t('workout.removeBody', { count: doneCount })}</p>}
+            <button className="danger" onClick={() => { void removeItem(session.id, item.id) }}>{t('workout.removeExercise')}</button>
+            <button onClick={() => setConfirmRemove(false)}>{t('common.cancel')}</button>
+          </div>
+        </div>
       )}
     </li>
   )

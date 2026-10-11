@@ -23,6 +23,18 @@ describe('live workout flow', () => {
     })
   })
 
+  it('removing an exercise also deletes its logged sets', async () => {
+    const id = await startSession(routineId)
+    const item = (await db.sessions.get(id))!.exercises[0]
+    const first = (await sets(id)).find((x) => x.itemId === item.id)!
+    await db.setLogs.update(first.id, { weight: 50, reps: 5 })
+    await completeSet(first.id, null)
+    await removeItem(id, item.id)
+    expect((await sets(id)).some((x) => x.itemId === item.id)).toBe(false)
+    expect((await db.sessions.get(id))!.exercises.some((x) => x.id === item.id)).toBe(false)
+    await discardSession(id)
+  })
+
   it('starts from a routine with blank sets, one session at a time', async () => {
     const id = await startSession(routineId)
     expect((await sets(id)).length).toBe(5)
@@ -63,10 +75,9 @@ describe('live workout flow', () => {
     expect(s.exercises[1].exerciseId).toBe('x:Plank')
     await toggleSkip(id, press.id)
     expect((await db.sessions.get(id))!.exercises.find((x) => x.id === press.id)!.skipped).toBe(true)
-    await removeItem(id, bench.id) // has done sets: refused
-    expect((await db.sessions.get(id))!.exercises.some((x) => x.id === bench.id)).toBe(true)
-    await removeItem(id, s.exercises[1].id) // plank, nothing done: removed
+    await removeItem(id, s.exercises[1].id) // plank removed along with its blank sets
     expect((await db.sessions.get(id))!.exercises).toHaveLength(2)
+    expect((await sets(id)).some((x) => x.exerciseId === 'x:Plank')).toBe(false)
 
     // swap the unlogged exercise for the whole routine
     const dips = (await db.exercises.toArray()).find((e) => /^Bench Dips/.test(e.name))!
@@ -82,7 +93,12 @@ describe('live workout flow', () => {
     expect(s.exercises.map((x) => x.exerciseId)).toEqual(['x:Barbell_Bench_Press_-_Medium_Grip', dips.id, dips.id])
     expect((await sets(id)).filter((x) => x.itemId === bench.id && x.doneAt !== undefined)).toHaveLength(3)
 
+    await db.setLogs.update(benchSets[2].id, { weight: 90, reps: 6, rir: 2 })
     await addSet(id, bench.id)
+    const copied = (await sets(id)).filter((x) => x.itemId === bench.id).sort((a, b) => a.order - b.order).at(-1)!
+    expect(copied).toMatchObject({ weight: 90, reps: 6, order: 3, setType: 'working' })
+    expect(copied.doneAt).toBeUndefined() // a copy is a suggestion, never logged for you
+    expect(copied.rir).toBeUndefined()
     await finishSession(id)
     const fin = (await db.sessions.get(id))!
     expect(fin.status).toBe('finished')
@@ -94,6 +110,6 @@ describe('live workout flow', () => {
     const sessions = new Map((await db.sessions.toArray()).map((x) => [x.id, x]))
     const last = pickLastTime({ logs, sessions })!
     expect(last.sessionId).toBe(id)
-    expect(last.sets.map((x) => x.weight)).toEqual([100, 100, undefined])
+    expect(last.sets.map((x) => x.weight)).toEqual([100, 100, 90])
   })
 })

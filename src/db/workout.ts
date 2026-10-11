@@ -1,7 +1,7 @@
 import { db, newId } from './db'
 import type { Exercise, ID, SessionExercise, SetLog, SetType, WorkoutSession } from './types'
 import { defaultsFor, replaceExercise } from '../lib/routines'
-import { finalizeSession, learnRest, pauseSession, restGaps, resumeSession } from '../lib/workout'
+import { finalizeSession, learnRest, pauseSession, restGaps, resumeSession, valuesOf } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
 
@@ -69,21 +69,23 @@ export const moveItem = (id: ID, itemId: ID, dir: -1 | 1) =>
 export const toggleSkip = (id: ID, itemId: ID) =>
   mutate(id, (s) => ({ ...s, exercises: s.exercises.map((x) => (x.id === itemId ? { ...x, skipped: !x.skipped } : x)) }))
 
-/** Removing is only offered for items with no done sets; their blank sets go with them. */
+/** Removes the exercise and every set logged for it; the UI confirms first. */
 export const removeItem = (id: ID, itemId: ID) =>
   mutate(id, async (s) => {
     const sets = await db.setLogs.where('sessionId').equals(id).filter((x) => x.itemId === itemId).toArray()
-    if (sets.some((x) => x.doneAt !== undefined)) return
     await db.setLogs.bulkDelete(sets.map((x) => x.id))
     return { ...s, exercises: s.exercises.filter((x) => x.id !== itemId) }
   })
 
+/** Adds a set pre-filled with the previous set's values (not done, never silently logged). */
 export const addSet = (id: ID, itemId: ID) =>
   mutate(id, async (s) => {
     const item = s.exercises.find((x) => x.id === itemId)
     if (!item) return
     const sets = await db.setLogs.where('sessionId').equals(id).filter((x) => x.itemId === itemId).toArray()
-    await db.setLogs.bulkAdd(blankSets(id, item, 1, Math.max(-1, ...sets.map((x) => x.order)) + 1))
+    const last = sets.reduce<SetLog | undefined>((m, x) => (!m || x.order > m.order ? x : m), undefined)
+    const [row] = blankSets(id, item, 1, (last?.order ?? -1) + 1)
+    await db.setLogs.add(last ? { ...row, ...valuesOf(last), setType: last.setType === 'warmup' ? 'working' : last.setType } : row)
   })
 
 export const deleteSet = (setId: ID) => db.setLogs.delete(setId)

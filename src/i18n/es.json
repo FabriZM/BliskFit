@@ -15,7 +15,8 @@
     "persistGranted": "Concedido",
     "persistDenied": "No concedido",
     "updateAvailable": "Actualización disponible",
-    "reload": "Recargar"
+    "reload": "Recargar",
+    "restPopup": "Ventana del temporizador de descanso"
   },
   "muscles": {
     "chest": "Pecho",
@@ -231,8 +232,6 @@
     "skip": "Saltar ejercicio",
     "unskip": "Quitar salto",
     "skipped": "saltado",
-    "moveUp": "Subir",
-    "moveDown": "Bajar",
     "removeExercise": "Quitar ejercicio",
     "addNote": "Añadir nota",
     "pinNote": "Fijar para la próxima",
@@ -246,7 +245,12 @@
     "scopeSession": "Solo este entreno",
     "scopeRoutine": "También en esta rutina",
     "scopeAll": "Todas las rutinas (entrenos futuros)",
-    "notFound": "Entreno no encontrado"
+    "notFound": "Entreno no encontrado",
+    "removeTitle": "¿Quitar {{name}}?",
+    "removeBody_one": "También se elimina {{count}} serie registrada.",
+    "removeBody_other": "También se eliminan {{count}} series registradas.",
+    "restOverShort": "¡Vamos!",
+    "dismiss": "Ocultar"
   },
   "summary": {
     "title": "Entreno completado",

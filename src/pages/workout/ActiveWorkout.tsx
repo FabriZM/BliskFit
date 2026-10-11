@@ -18,11 +18,12 @@ import ExercisePicker from '../routines/ExercisePicker'
 import ExerciseCard from './ExerciseCard'
 import MuscleCounter from './MuscleCounter'
 import RestBar from './RestBar'
+import RestPopup from './RestPopup'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { units, defaultRestSec } = useSettings((s) => s.settings)
+  const { units, defaultRestSec, restPopup } = useSettings((s) => s.settings)
   const now = useNow(1000)
   const [adding, setAdding] = useState(false)
   const [swapping, setSwapping] = useState<string | null>(null)
@@ -93,13 +94,14 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       <ul className="rx-list">
         {session.exercises.map((item, i) => (
           <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
-            sets={byItem.get(item.id) ?? []} pos={positions[i]} index={i} count={session.exercises.length}
+            sets={byItem.get(item.id) ?? []} pos={positions[i]}
             units={units} defaultRest={defaultRestSec} onSwap={() => setSwapping(item.id)} />
         ))}
       </ul>
       <button className="primary wide" onClick={() => setAdding(true)}>+ {t('routines.addExercises')}</button>
 
       <RestBar session={session} />
+      {restPopup && <RestPopup session={session} />}
 
       {adding && <ExercisePicker onClose={() => setAdding(false)} onAdd={(exs) => { void addExercisesToSession(session.id, exs); setAdding(false) }} />}
       {swapping && !swapTo && <ExercisePicker single title={t('workout.swap')} onClose={() => setSwapping(null)}

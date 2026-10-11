@@ -15,7 +15,8 @@
     "persistGranted": "Granted",
     "persistDenied": "Not granted",
     "updateAvailable": "Update available",
-    "reload": "Reload"
+    "reload": "Reload",
+    "restPopup": "Rest timer popup"
   },
   "muscles": {
     "chest": "Chest",
@@ -231,8 +232,6 @@
     "skip": "Skip exercise",
     "unskip": "Un-skip",
     "skipped": "skipped",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
     "removeExercise": "Remove exercise",
     "addNote": "Add note",
     "pinNote": "Pin for next time",
@@ -246,7 +245,12 @@
     "scopeSession": "This session only",
     "scopeRoutine": "This routine too",
     "scopeAll": "All routines (future sessions)",
-    "notFound": "Workout not found"
+    "notFound": "Workout not found",
+    "removeTitle": "Remove {{name}}?",
+    "removeBody_one": "This also deletes {{count}} logged set.",
+    "removeBody_other": "This also deletes {{count}} logged sets.",
+    "restOverShort": "Go!",
+    "dismiss": "Hide"
   },
   "summary": {
     "title": "Workout complete",
