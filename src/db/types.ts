@@ -167,7 +167,11 @@ export interface Settings {
   language: Language
   defaultRestSec: number
   prBadges: boolean
+  /** Weekdays (0 = Sunday) with a training reminder; empty = reminders off. */
   reminderDays: number[]
+  /** Local time of day for those reminders, HH:MM. */
+  reminderTime: string
+  /** Missed weeks per calendar month that may be bridged without breaking the streak (0 = off). */
   streakFreezes: number
   /** Show the full-screen rest countdown whenever a set is finished. */
   restPopup: boolean
@@ -182,6 +186,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultRestSec: 90,
   prBadges: true,
   reminderDays: [],
+  reminderTime: '18:00',
   streakFreezes: 1,
   restPopup: true,
 }

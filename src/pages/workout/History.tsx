@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import CalendarMonth from '../../components/CalendarMonth'
@@ -15,9 +15,14 @@ import { useSettings } from '../../stores/settings'
 export default function History() {
   const { t, i18n } = useTranslation()
   const { units, weekStartDay, prBadges } = useSettings((s) => s.settings)
-  const [view, setView] = useState<'list' | 'calendar'>('list')
-  const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
-  const [day, setDay] = useState<string | null>(null)
+  // ?day=YYYY-MM-DD (from a tapped day in the week strip) opens the calendar on that day.
+  const dayParam = useSearchParams()[0].get('day')
+  const [view, setView] = useState<'list' | 'calendar'>(dayParam ? 'calendar' : 'list')
+  const [month, setMonth] = useState(() => {
+    const d = dayParam ? new Date(`${dayParam}T12:00:00`) : new Date()
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+  })
+  const [day, setDay] = useState<string | null>(dayParam)
 
   const data = useLiveQuery(async () => {
     const sessions = (await db.sessions.where('status').equals('finished').toArray()).sort((a, b) => b.startedAt - a.startedAt)

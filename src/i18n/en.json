@@ -34,7 +34,13 @@
     "goalDays_other": "{{count}} days",
     "weekStart": "Week starts on",
     "version": "Version",
-    "prBadges": "Show PR badges"
+    "prBadges": "Show PR badges",
+    "freezesUsed_one": "{{count}} freeze used",
+    "freezesUsed_other": "{{count}} freezes used",
+    "openWorkout": "open workout",
+    "streakFreezes": "Streak freezes per month",
+    "freezeOff": "Off",
+    "freezeHelp": "A missed week is bridged automatically, up to this many per month, so one off week doesn't end your streak."
   },
   "muscles": {
     "chest": "Chest",
@@ -329,7 +335,13 @@
       "denied": "Blocked",
       "prompt": "Off",
       "unsupported": "Not available"
-    }
+    },
+    "trainingDays": "Remind me to train on",
+    "time": "Reminder time",
+    "trainHelp": "You get a reminder on these days, except on a day you've already trained.",
+    "webNote": "In the browser reminders only fire while the app is open; the Android app delivers them reliably.",
+    "trainTitle": "Time to train",
+    "trainBody": "Your workout is waiting in BliskFit."
   },
   "pr": {
     "kind": {
@@ -355,5 +367,20 @@
     "mostReps": "Most reps",
     "repsAtWeight": "Best reps at a weight",
     "history": "PR history"
+  },
+  "chart": {
+    "title": "Workouts per week",
+    "range": "Range",
+    "range_8w": "8 weeks",
+    "range_6m": "6 months",
+    "range_1y": "Year",
+    "goal": "Goal {{count}}",
+    "goalMet": "Goal met",
+    "goalMissed": "Missed",
+    "inProgress": "This week",
+    "table": "Table view",
+    "week": "Week of",
+    "days": "Days",
+    "goalCol": "Goal"
   }
 }

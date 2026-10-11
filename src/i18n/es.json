@@ -34,7 +34,13 @@
     "goalDays_other": "{{count}} días",
     "weekStart": "La semana empieza el",
     "version": "Versión",
-    "prBadges": "Mostrar insignias de récord"
+    "prBadges": "Mostrar insignias de récord",
+    "freezesUsed_one": "{{count}} congelación usada",
+    "freezesUsed_other": "{{count}} congelaciones usadas",
+    "openWorkout": "abrir entreno",
+    "streakFreezes": "Congelaciones de racha por mes",
+    "freezeOff": "Desactivado",
+    "freezeHelp": "Una semana fallada se cubre automáticamente, hasta este número por mes, para que una mala semana no termine tu racha."
   },
   "muscles": {
     "chest": "Pecho",
@@ -329,7 +335,13 @@
       "denied": "Bloqueadas",
       "prompt": "Desactivadas",
       "unsupported": "No disponible"
-    }
+    },
+    "trainingDays": "Recordarme entrenar los",
+    "time": "Hora del recordatorio",
+    "trainHelp": "Recibes un recordatorio estos días, salvo si ya entrenaste ese día.",
+    "webNote": "En el navegador los recordatorios solo suenan con la app abierta; la app de Android los entrega de forma fiable.",
+    "trainTitle": "Hora de entrenar",
+    "trainBody": "Tu entreno te espera en BliskFit."
   },
   "pr": {
     "kind": {
@@ -355,5 +367,20 @@
     "mostReps": "Más repeticiones",
     "repsAtWeight": "Mejores repeticiones por peso",
     "history": "Historial de récords"
+  },
+  "chart": {
+    "title": "Entrenos por semana",
+    "range": "Rango",
+    "range_8w": "8 semanas",
+    "range_6m": "6 meses",
+    "range_1y": "Año",
+    "goal": "Meta {{count}}",
+    "goalMet": "Meta cumplida",
+    "goalMissed": "No cumplida",
+    "inProgress": "Esta semana",
+    "table": "Ver tabla",
+    "week": "Semana del",
+    "days": "Días",
+    "goalCol": "Meta"
   }
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { weekdayNames } from '../lib/dates'
+import { setWeeklyGoal } from '../db/goals'
+import { orderedWeekdays, weekdayNames } from '../lib/dates'
 import { platform } from '../lib/platform'
 import { useNotificationState } from '../lib/platform/hooks'
 import { useSettings } from '../stores/settings'
@@ -22,10 +23,18 @@ export default function Settings() {
       <h1>{t('profile.settings')}</h1>
       <label className="row">
         {t('profile.weeklyGoal')}
-        <select value={settings.weeklyGoal} onChange={(e) => void update({ weeklyGoal: Number(e.target.value) })}>
+        <select value={settings.weeklyGoal} onChange={(e) => void setWeeklyGoal(Number(e.target.value))}>
           {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{t('profile.goalDays', { count: n })}</option>)}
         </select>
       </label>
+      <label className="row">
+        {t('profile.streakFreezes')}
+        <select value={settings.streakFreezes} onChange={(e) => void update({ streakFreezes: Number(e.target.value) })}>
+          <option value={0}>{t('profile.freezeOff')}</option>
+          {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </label>
+      <p className="muted small help">{t('profile.freezeHelp')}</p>
       <label className="row">
         {t('profile.weekStart')}
         <select value={settings.weekStartDay} onChange={(e) => void update({ weekStartDay: Number(e.target.value) })}>
@@ -71,6 +80,29 @@ export default function Settings() {
           </span>
         </div>
       )}
+      <div className="reminder-days">
+        <span>{t('reminders.trainingDays')}</span>
+        <div className="chips">
+          {orderedWeekdays(settings.weekStartDay).map((d) => {
+            const on = settings.reminderDays.includes(d)
+            return (
+              <button key={d} className={`chip${on ? ' on' : ''}`} aria-pressed={on} onClick={async () => {
+                // Read the latest value, not this render's snapshot: quick consecutive taps must not overwrite each other.
+                const current = useSettings.getState().settings.reminderDays
+                const turningOn = !current.includes(d)
+                await update({ reminderDays: turningOn ? [...current, d].sort() : current.filter((x) => x !== d) })
+                if (turningOn && rem.permission === 'prompt') void rem.request() // asked when you actually turn one on
+              }}>{weekdayNames(i18n.language, 'short')[d].slice(0, 3)}</button>
+            )
+          })}
+        </div>
+      </div>
+      <label className="row">
+        {t('reminders.time')}
+        <input type="time" className="time-input" value={settings.reminderTime} disabled={settings.reminderDays.length === 0}
+          onChange={(e) => e.target.value && void update({ reminderTime: e.target.value })} />
+      </label>
+      <p className="muted small help">{t('reminders.trainHelp')}{platform.isNative ? '' : ` ${t('reminders.webNote')}`}</p>
       <p className="row">
         {t('profile.persist')}
         <span className="muted">{persisted ? t('profile.persistGranted') : t('profile.persistDenied')}</span>
