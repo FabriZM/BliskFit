@@ -222,7 +222,7 @@ Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sp
   - **Web:** unchanged; the service worker's "Update available" bar. Settings says so.
   - **Not done:** web-bundle live updates inside the APK (every app update is a new APK for now; revisit if releases get frequent). Verified app links (Android opening shared links in the app with no setup) need `assetlinks.json` at the site root, i.e. a `FabriZM.github.io` repo or a custom domain.
   - **Shared links and the Android app (checked on the emulator):** the app handles `bliskfit://import?d=…` (cold and warm start go to the import screen, via `@capacitor/app` and `platform.onOpenUrl`). On Android, the web import page shows "Open in the BliskFit app", an `intent://` link that opens the app or, if it isn't installed, `INSTALL.md`. The app also declares `https://fabrizm.github.io/BliskFit` links; unverified, so Android 12+ opens them in the app only after the user enables it under the app's "Open by default" settings (older versions offer a choice).
-- **Next:** automatic cloud backup, distribution and updates. The Android app doesn't open shared links itself yet (they open the web app); an app link for `fabrizm.github.io` would fix that.
+- **Next:** automatic cloud backup (needs a Google Cloud OAuth client).
 - JSON export/import (including progress photos from M6), CSV export of sets, persistent storage request.
 - Optional automatic cloud backup (Google Drive file), restore on a new phone.
 - ~~CSV importer for other apps (Strong, Hevy).~~ Skipped.
