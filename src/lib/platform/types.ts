@@ -22,6 +22,8 @@ export interface Platform {
    * send it, ...). Resolves false if the user dismissed the share sheet.
    */
   saveFile(name: string, data: Blob): Promise<boolean>
+  /** Shares a link through the system share sheet, or copies it where there's none. */
+  shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'dismissed'>
   notifications: {
     permission(): Promise<PermissionState>
     request(): Promise<PermissionState>

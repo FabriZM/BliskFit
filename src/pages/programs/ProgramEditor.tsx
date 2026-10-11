@@ -9,6 +9,8 @@ import { fromDateInput, orderedWeekdays, toDateInput, weekdayNames } from '../..
 import { copyWeekToAll, resizeSchedule } from '../../lib/programs'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
+import ShareButtons from '../../components/ShareButtons'
+import { packProgramById } from '../../db/share'
 
 export default function ProgramEditor() {
   const { t, i18n } = useTranslation()
@@ -120,6 +122,9 @@ export default function ProgramEditor() {
         </>
       )}
 
+      <div className="actions">
+        <ShareButtons name={program.name} pack={() => packProgramById(id)} />
+      </div>
       <div className="actions">
         <button className="danger" onClick={async () => {
           if (!confirm(t('programs.confirmDelete'))) return

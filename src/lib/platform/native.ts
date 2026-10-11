@@ -49,6 +49,10 @@ export const nativePlatform: Platform = {
       return false // dismissed
     }
   },
+  async shareLink(title, url) {
+    const { Share } = await import('@capacitor/share')
+    try { await Share.share({ title, text: title, url }); return 'shared' } catch { return 'dismissed' }
+  },
   async keepAwake(on) {
     const { KeepAwake } = await import('@capacitor-community/keep-awake')
     if (on) await KeepAwake.keepAwake()

@@ -19,6 +19,7 @@ import StatsPanel from './pages/stats/StatsPanel'
 import Gyms from './pages/Gyms'
 import Settings from './pages/Settings'
 import Backup from './pages/Backup'
+import Import from './pages/Import'
 import ExerciseList from './pages/exercises/ExerciseList'
 import ExerciseDetail from './pages/exercises/ExerciseDetail'
 import ExerciseForm from './pages/exercises/ExerciseForm'
@@ -29,7 +30,7 @@ import { ensureSeed } from './db/seed'
 // Three tabs. Routines and programs live under Workout, so those routes keep the Workout tab highlighted.
 const TABS = [
   { path: '/profile', key: 'profile', Icon: ProfileIcon, match: ['/profile'] },
-  { path: '/workout', key: 'workout', Icon: WorkoutIcon, match: ['/workout', '/routines'] },
+  { path: '/workout', key: 'workout', Icon: WorkoutIcon, match: ['/workout', '/routines', '/import'] },
   { path: '/exercises', key: 'exercises', Icon: ExercisesIcon, match: ['/exercises'] },
 ] as const
 
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/workout/summary/:id" element={<SessionDetail justFinished />} />
           <Route path="/workout/history/:id" element={<SessionDetail />} />
           <Route path="/routines" element={<Navigate to="/workout" replace />} />
+          <Route path="/import" element={<Import />} />
           <Route path="/routines/programs" element={<ProgramList />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />
           <Route path="/routines/:id" element={<RoutineEditor />} />

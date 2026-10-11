@@ -14,6 +14,8 @@ import {
 } from '../../lib/routines'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
+import ShareButtons from '../../components/ShareButtons'
+import { packRoutineById } from '../../db/share'
 import ExercisePicker from './ExercisePicker'
 
 interface RowProps {
@@ -141,6 +143,7 @@ export default function RoutineEditor() {
           {routine.archived ? t('routines.restore') : t('routines.archive')}
         </button>
       </div>
+      {list.length > 0 && <div className="actions"><ShareButtons name={routine.name} pack={() => packRoutineById(routine.id)} /></div>}
       {picking && <ExercisePicker onClose={() => setPicking(false)} onAdd={(exs) => { save(addExercises(routine, exs)); setPicking(false) }} />}
     </section>
   )

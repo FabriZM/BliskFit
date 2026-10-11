@@ -606,5 +606,33 @@
       "newer": "This backup was made by a newer version of the app. Update the app first.",
       "failed": "Something went wrong. Nothing was changed."
     }
+  },
+  "share": {
+    "link": "Share link",
+    "file": "Share file",
+    "linkTitle": "{{name}} (BliskFit)",
+    "copied": "Link copied.",
+    "failed": "Couldn't share. Try again.",
+    "import": "Import",
+    "importTitle": "Add a shared routine or program",
+    "importHelp": "Open a link someone sent you, or choose a routine or program file they shared.",
+    "chooseFile": "Choose file",
+    "pastePlaceholder": "Paste a link",
+    "open": "Open",
+    "programSummary_one": "Program with {{count}} routine",
+    "programSummary_other": "Program with {{count}} routines",
+    "newExercises_one": "Adds {{count}} custom exercise: {{names}}",
+    "newExercises_other": "Adds {{count}} custom exercises: {{names}}",
+    "missing_one": "{{count}} exercise isn't available in this version of the app and will be left out.",
+    "missing_other": "{{count}} exercises aren't available in this version of the app and will be left out.",
+    "addRoutine": "Add to my routines",
+    "addProgram": "Add program",
+    "addRoutineHelp": "It's added as a new routine; your own routines aren't changed.",
+    "addProgramHelp": "Its routines are added as new ones. The program isn't made active; week 1 starts this week.",
+    "error": {
+      "invalid": "That isn't a valid shared routine or program.",
+      "newer": "This was shared from a newer version of the app. Update the app first.",
+      "backup": "That's a full backup. Restore it from Settings → Backup and data."
+    }
   }
 }

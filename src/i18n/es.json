@@ -606,5 +606,33 @@
       "newer": "Esta copia la hizo una versión más nueva de la app. Actualiza la app primero.",
       "failed": "Algo salió mal. No se cambió nada."
     }
+  },
+  "share": {
+    "link": "Compartir enlace",
+    "file": "Compartir archivo",
+    "linkTitle": "{{name}} (BliskFit)",
+    "copied": "Enlace copiado.",
+    "failed": "No se pudo compartir. Inténtalo de nuevo.",
+    "import": "Importar",
+    "importTitle": "Agregar una rutina o programa compartido",
+    "importHelp": "Abre un enlace que te enviaron o elige un archivo de rutina o programa que te compartieron.",
+    "chooseFile": "Elegir archivo",
+    "pastePlaceholder": "Pega un enlace",
+    "open": "Abrir",
+    "programSummary_one": "Programa con {{count}} rutina",
+    "programSummary_other": "Programa con {{count}} rutinas",
+    "newExercises_one": "Agrega {{count}} ejercicio personalizado: {{names}}",
+    "newExercises_other": "Agrega {{count}} ejercicios personalizados: {{names}}",
+    "missing_one": "{{count}} ejercicio no está disponible en esta versión de la app y se omitirá.",
+    "missing_other": "{{count}} ejercicios no están disponibles en esta versión de la app y se omitirán.",
+    "addRoutine": "Agregar a mis rutinas",
+    "addProgram": "Agregar programa",
+    "addRoutineHelp": "Se agrega como una rutina nueva; tus rutinas no cambian.",
+    "addProgramHelp": "Sus rutinas se agregan como nuevas. El programa no se activa; la semana 1 empieza esta semana.",
+    "error": {
+      "invalid": "No es una rutina o programa compartido válido.",
+      "newer": "Se compartió desde una versión más nueva de la app. Actualiza la app primero.",
+      "backup": "Es una copia de seguridad completa. Restáurala desde Ajustes → Copia de seguridad y datos."
+    }
   }
 }

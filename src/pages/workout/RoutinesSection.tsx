@@ -26,7 +26,10 @@ export default function RoutinesSection() {
     <>
       <div className="row head">
         <h2>{t('workout.routines')}</h2>
-        <button onClick={() => void create()}>+ {t('routines.new')}</button>
+        <span>
+          <button onClick={() => nav('/import')}>{t('share.import')}</button>{' '}
+          <button onClick={() => void create()}>+ {t('routines.new')}</button>
+        </span>
       </div>
       {routines && visible.length === 0 && <p className="muted">{showArchived ? t('routines.noArchived') : t('routines.none')}</p>}
       <ul className="list">

@@ -35,6 +35,15 @@ export const webPlatform: Platform = {
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
     return true
   },
+  async shareLink(title, url) {
+    if (navigator.share) {
+      try { await navigator.share({ title, url }); return 'shared' } catch (e) {
+        if ((e as DOMException).name === 'AbortError') return 'dismissed'
+      }
+    }
+    await navigator.clipboard.writeText(url)
+    return 'copied'
+  },
   async keepAwake(on) {
     wantLock = on
     if (on) await acquire()
