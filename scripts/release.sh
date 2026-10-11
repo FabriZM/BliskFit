@@ -2,8 +2,8 @@
 # Builds the signed release APK and publishes it as a GitHub Release, which the app's update check and Obtainium
 # pick up. Tag: v<package.json version>-<build>, where build = git commit count = Android versionCode.
 #   pnpm release                      build, then publish with the GitHub CLI (gh) if it's installed
-#   pnpm release -- --notes "Fixes"   release notes shown in the app's update prompt
-#   pnpm release -- --build-only      build and name the APK, don't publish
+#   pnpm release --notes "Fixes"      release notes shown in the app's update prompt
+#   pnpm release --build-only         build and name the APK, don't publish
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -13,6 +13,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --notes) notes="$2"; shift 2 ;;
     --build-only) publish=0; shift ;;
+    --) shift ;; # pnpm passes its separator through
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
