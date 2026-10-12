@@ -58,6 +58,8 @@ export default function App() {
     if (loaded) void i18n.changeLanguage(settings.language)
   }, [loaded, settings.language, i18n])
 
+  const activeTab = TABS.findIndex(({ match }) => match.some((m) => pathname === m || pathname.startsWith(m + '/')))
+
   return (
     <div className="app">
       {needRefresh && (
@@ -99,9 +101,22 @@ export default function App() {
       <TimerNotifications />
       <TrainingReminders />
       <InProgressBar />
-      <nav className="tabbar">
-        {TABS.map(({ path, key, Icon, match }) => {
-          const active = match.some((m) => pathname === m || pathname.startsWith(m + '/'))
+      <nav className="tabbar" style={{ '--i': Math.max(0, activeTab) } as React.CSSProperties}>
+        {/* Bar surface with a notch under the active tab (slides as one strip), and the bubble sitting in it. */}
+        <div className="tabbar-bg" aria-hidden>
+          <div className="tabbar-fill" />
+          <div className="tabbar-notch">
+            <svg viewBox="0 0 112 40" width="112" height="40" preserveAspectRatio="none">
+              <path className="notch-fill" d="M0 0H10C24 0 26 40 56 40S88 0 102 0H112V40H0Z" />
+              <path className="notch-edge" d="M0 .5H10C24 .5 26 40.5 56 40.5S88 .5 102 .5H112" />
+            </svg>
+            <div className="tabbar-fill" />
+          </div>
+          <div className="tabbar-fill" />
+        </div>
+        {activeTab >= 0 && <span className="tabbar-bubble" aria-hidden><i key={activeTab} /></span>}
+        {TABS.map(({ path, key, Icon }, i) => {
+          const active = i === activeTab
           return (
             <Link key={key} to={path} className={active ? 'active' : undefined} aria-current={active ? 'page' : undefined}>
               <Icon />
