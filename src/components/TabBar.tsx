@@ -12,7 +12,7 @@ const TABS = [
 
 /**
  * Bottom navigation. The active tab sits in a bubble raised in a notch of the bar. Switching tabs: the bubble dives
- * into the bar, the notch slides to the new tab, and the bubble rises there (timings in index.css).
+ * into the bar, the notch snaps to the new tab, and the bubble rises there (timings in index.css).
  */
 export default function TabBar() {
   const { t } = useTranslation()
