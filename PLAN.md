@@ -237,7 +237,18 @@ Done when: pinning "Bench press e1RM" in the panel shows it on Profile with a sp
 Done when: wipe app, restore from backup, everything is back.
 
 ### M8: Extras (pick and choose)
-Progressive overload hints (using RPE/RIR and failure data), plate calculator, warm-up generator, routine template library, deload suggestions, dark mode, cardio polish.
+Progressive overload hints (using RPE/RIR and failure data), plate calculator, warm-up generator, routine template library, deload suggestions, dark mode, cardio polish. Done one at a time, in this order: plate calculator, warm-up generator, overload hints + deload, cardio polish (+ assisted PRs), light theme, routine templates.
+
+**Plate calculator and equipment units (done, web-checked):**
+- **Per-exercise equipment** (`Exercise.weightUnit`, `plateLoaded`, `barKg`; optional fields, no schema change, kept on re-seed like rest times, carried by backups, not by shared routines). Set from the exercise page (Equipment section) or the workout's exercise menu (⚖️). Works on seeded exercises too.
+- **Units are kept per set** (`SetLog.unit`, optional, no schema change): each set remembers the unit it was typed in (what was printed on the equipment that day) and always shows as typed, so earlier workouts never change, even if the dumbbells were different. Weights are still stored in kg, so PRs, e1RM and volume compare across units. Sets from before this have no unit and show in the app's units.
+  - **Exercise unit** (`Exercise.weightUnit`): only the default for new sets (a lb machine in a kg app). A blank set takes the unit of the set it would be filled from (last time's, which prefers the same gym), else the exercise's. "Use last" and "Copy previous set" copy the number and its unit.
+  - **One set:** set details → Unit (kg/lb) keeps the number and changes its unit.
+  - **Changing the exercise unit mid-workout:** what was typed wins. Sets in the running workout keep their numbers in the new unit (270 typed while it said kg becomes 270 lb, never 122.5 kg → 270.1 lb), blank ones take the new unit; finished workouts are never touched (`db/equipment.ts`, tested).
+  - **Display:** single sets show as typed, with the unit when it isn't the app's (`100lb×8`): last-time line, History, recent PRs, gym comparison, share image. Values that compare sets (Records, the exercise's charts and pinned cards, gym e1RM) read in the exercise's unit; totals (session volume, Muscles, CSV) in the app's.
+- **Plates** (`lib/plates.ts`, tested): on by default for barbell (20 kg / 45 lb) and EZ bar (10 kg / 25 lb); can be turned on for plate-loaded machines (bar 0 = no bar) or off. The logged weight always includes the bar. Standard plates: kg 25-1.25, lb 45-2.5; heaviest first, unlimited of each, math in hundredths so quarter plates add up exactly.
+- **In the workout:** the next set to do (and any expanded set) shows "🏋 20 + 10 + 1.25 each side" for its weight, or last time's (greyed); "≈" when it can't be loaded exactly. Tapping it opens the plate sheet: tap plates to load the bar and see the total, or type a total to get the plates (closest below if not exact); change the bar (saved on the exercise); "Use" fills the set. Nothing is logged automatically.
+- **Not done:** per-gym units or plates (the same machine type in lb at one gym and kg at another); custom plate sets (e.g. no 1.25s, or 0.5 kg change plates); mixed kg bar with lb plates.
 
 ### M9: Interactive body figure
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.

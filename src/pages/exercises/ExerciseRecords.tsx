@@ -5,6 +5,7 @@ import { db } from '../../db/db'
 import type { Exercise, SetLog } from '../../db/types'
 import { formatSet } from '../../lib/format'
 import { computePRs, exerciseRecords, type PRKind } from '../../lib/prs'
+import { weightUnitFor } from '../../lib/plates'
 import { formatNum, kgToDisplay } from '../../lib/units'
 import { useSettings } from '../../stores/settings'
 
@@ -14,7 +15,9 @@ const MAX_REP_ROWS = 5
 /** Current records for an exercise plus the history of when each PR was set. Always derived from the logged sets. */
 export default function ExerciseRecords({ exercise }: { exercise: Exercise }) {
   const { t, i18n } = useTranslation()
-  const units = useSettings((s) => s.settings.units)
+  const appUnits = useSettings((s) => s.settings.units)
+  // Records compare sets typed in different units, so they read in the exercise's unit; single sets show as typed.
+  const units = weightUnitFor(exercise, appUnits)
   const sets = useLiveQuery(() => db.setLogs.where('exerciseId').equals(exercise.id).filter((s) => s.doneAt !== undefined).toArray(), [exercise.id])
   const tracking = exercise.trackingType
   const derived = useMemo(() => {
@@ -68,7 +71,7 @@ export default function ExerciseRecords({ exercise }: { exercise: Exercise }) {
             {events.map(({ set, kinds }) => (
               <li key={set.id}>
                 <div className="row">
-                  <span><span className="pr-badge inline">PR</span> {formatSet(set, tracking, units)}</span>
+                  <span><span className="pr-badge inline">PR</span> {formatSet(set, tracking, appUnits)}</span>
                   <span className="muted small">{kinds.map((k: PRKind) => t(`pr.kind.${k}`)).join(' · ')} · {date(set)}</span>
                 </div>
               </li>

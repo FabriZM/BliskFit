@@ -4,6 +4,7 @@ import DecimalInput from '../../components/DecimalInput'
 import type { SetLog, SetType, TrackingType, Units } from '../../db/types'
 import PRBadge from '../../components/PRBadge'
 import type { PRKind } from '../../lib/prs'
+import { describeSide, formatPlate, loadFor, PLATES, retypeKg, setUnit, usesWeight } from '../../lib/plates'
 import { formatNum, displayToKg, kgToDisplay } from '../../lib/units'
 import { isFilled } from '../../lib/workout'
 
@@ -28,11 +29,15 @@ const fromDisplay = (f: Field, v: number | undefined, units: Units) =>
 const RPE = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 const SET_TYPES: SetType[] = ['working', 'warmup', 'drop']
 
-/** The number inputs for one set, by tracking type. Shared by the live workout and the history editor. */
-export function SetFields({ set, tracking, units, hint, onChange }: {
+/**
+ * The number inputs for one set, by tracking type. Shared by the live workout and the history editor. Weights are
+ * typed and shown in the set's own unit (see `setUnit`; `units` is the fallback) and saved with it.
+ */
+export function SetFields({ set, tracking, units: fallback, hint, onChange }: {
   set: SetLog; tracking: TrackingType; units: Units; hint?: SetLog; onChange: (patch: Partial<SetLog>) => void
 }) {
   const { t } = useTranslation()
+  const units = setUnit(set, fallback, hint)
   const unitLabel = (f: Field) =>
     f.kind === 'weight' ? (tracking === 'assisted_bodyweight' ? `−${units}` : tracking === 'bodyweight_added' ? `+${units}` : units)
       : f.kind === 'reps' ? t('workout.repsUnit') : f.kind === 'sec' ? t('workout.secUnit') : f.kind === 'min' ? t('workout.minUnit') : t('workout.kmUnit')
@@ -44,7 +49,7 @@ export function SetFields({ set, tracking, units, hint, onChange }: {
           <label key={f.key} className="field">
             <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
               value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
-              onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units) })} />
+              onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units), ...(f.kind === 'weight' && { unit: units }) })} />
             <span>{unitLabel(f)}</span>
           </label>
         )
@@ -53,9 +58,10 @@ export function SetFields({ set, tracking, units, hint, onChange }: {
   )
 }
 
-export default function SetRow({ set, tracking, units, label, hint, pr, expanded, canRepeat, canUseLast, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete }: {
+export default function SetRow({ set, tracking, units: fallback, label, hint, pr, expanded, canRepeat, canUseLast, barOf, showPlates, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete, onPlates }: {
   set: SetLog
   tracking: TrackingType
+  /** The exercise's weight unit (its own, else the app's), for sets with no unit of their own yet. */
   units: Units
   label: string
   /** Last time's matching set, shown as greyed placeholders (never applied silently). */
@@ -65,6 +71,10 @@ export default function SetRow({ set, tracking, units, label, hint, pr, expanded
   expanded: boolean
   canRepeat: boolean
   canUseLast: boolean
+  /** Bar weight in a unit, when the exercise is loaded with plates (else no plate line). */
+  barOf?: (unit: Units) => number
+  /** Show the plates line (the next set to do, or an expanded one). */
+  showPlates?: boolean
   onToggle: () => void
   onChange: (patch: Partial<SetLog>) => void
   onDone: () => void
@@ -72,9 +82,15 @@ export default function SetRow({ set, tracking, units, label, hint, pr, expanded
   onRepeat: () => void
   onUseLast: () => void
   onDelete: () => void
+  onPlates?: () => void
 }) {
   const { t } = useTranslation()
   const done = set.doneAt !== undefined
+  const units = setUnit(set, fallback, hint)
+  const bar = barOf?.(units)
+  // Plates per side for the typed weight, else for the hinted one (greyed, like the field's placeholder).
+  const plateKg = set.weight ?? hint?.weight
+  const plateLoad = bar !== undefined && plateKg !== undefined ? loadFor(kgToDisplay(plateKg, units), bar, PLATES[units]) : undefined
   const ready = isFilled(set, tracking)
 
   // Swipe either way to delete the set (no confirmation). Works from anywhere on the row, including fields;
@@ -117,11 +133,20 @@ export default function SetRow({ set, tracking, units, label, hint, pr, expanded
           <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
           {done && pr && pr.length > 0 && <PRBadge kinds={pr} />}
         </span>
-        <SetFields set={set} tracking={tracking} units={units} hint={hint} onChange={onChange} />
+        <SetFields set={set} tracking={tracking} units={fallback} hint={hint} onChange={onChange} />
         <button className="icon" disabled={!canRepeat || done} aria-label={t('workout.repeat')} title={t('workout.repeat')} onClick={onRepeat}>⟲</button>
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
           onClick={done ? onUndo : onDone}>✓</button>
       </div>
+      {bar !== undefined && showPlates && !done && onPlates && (
+        <button className={`plates-line${set.weight === undefined ? ' muted' : ''}`} onClick={onPlates}>
+          <span aria-hidden>🏋</span>{' '}
+          {!plateLoad ? t('plates.open')
+            : plateLoad.perSide.length === 0 ? t('plates.barOnly')
+              : t('plates.line', { plates: describeSide(plateLoad.perSide) })}
+          {plateLoad && !plateLoad.exact ? ` (≈ ${formatPlate(plateLoad.total)})` : ''}
+        </button>
+      )}
       {expanded && (
         <div className="set-more">
           <label>{t('workout.setType')}
@@ -129,6 +154,18 @@ export default function SetRow({ set, tracking, units, label, hint, pr, expanded
               {SET_TYPES.map((x) => <option key={x} value={x}>{t(`workout.type.${x}`)}</option>)}
             </select>
           </label>
+          {usesWeight(tracking) && (
+            <label>{t('workout.unit')}
+              <select value={units} onChange={(e) => {
+                // Same number, other unit: the plates said lb, not kg.
+                const to = e.target.value as Units
+                onChange({ unit: to, weight: retypeKg(set.weight, units, to), extraWeight: retypeKg(set.extraWeight, units, to) })
+              }}>
+                <option value="kg">kg</option>
+                <option value="lb">lb</option>
+              </select>
+            </label>
+          )}
           <label>{t('workout.rpe')}
             <select value={set.rpe ?? ''} onChange={(e) => onChange({ rpe: e.target.value ? Number(e.target.value) : undefined })}>
               <option value="">—</option>

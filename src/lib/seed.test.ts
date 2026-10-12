@@ -46,6 +46,18 @@ describe('seed + filter', () => {
     expect(hits.every((e) => /calf/i.test(e.name))).toBe(true)
   })
 
+  it('a re-seed keeps rest times and equipment settings on seeded exercises', async () => {
+    const db = new GymDB('test-' + newId())
+    await ensureSeed(db)
+    const id = 'x:Barbell_Bench_Press_-_Medium_Grip'
+    const mine = { learnedRestSec: 100, customRestSec: 0, weightUnit: 'lb', plateLoaded: false, barKg: 15 } as const
+    await db.exercises.update(id, mine)
+    await db.meta.put({ key: 'seedVersion', value: 0 })
+    await ensureSeed(db)
+    expect(await db.exercises.get(id)).toMatchObject(mine)
+    expect((await db.exercises.get('x:Plank'))?.weightUnit).toBeUndefined()
+  })
+
   it('favorites sort first, filter, and survive a re-seed', async () => {
     const db = new GymDB('test-' + newId())
     await ensureSeed(db)

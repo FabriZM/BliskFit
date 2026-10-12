@@ -155,10 +155,10 @@ export function pickLastTime(args: {
   }
 }
 
-export type SetValues = Pick<SetLog, 'weight' | 'extraWeight' | 'reps' | 'durationSec' | 'distanceM'>
+export type SetValues = Pick<SetLog, 'weight' | 'extraWeight' | 'unit' | 'reps' | 'durationSec' | 'distanceM'>
 
 export function valuesOf(s: SetLog): SetValues {
-  return { weight: s.weight, extraWeight: s.extraWeight, reps: s.reps, durationSec: s.durationSec, distanceM: s.distanceM }
+  return { weight: s.weight, extraWeight: s.extraWeight, unit: s.unit, reps: s.reps, durationSec: s.durationSec, distanceM: s.distanceM }
 }
 
 /** Source set for the n-th planned set: same index, or the last one if last time had fewer sets. */

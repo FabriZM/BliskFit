@@ -308,7 +308,8 @@
     "restSource_custom": "tu valor guardado",
     "restSource_learned": "aprendido",
     "restSource_exercise": "valor del ejercicio",
-    "restSource_default": "valor de la app"
+    "restSource_default": "valor de la app",
+    "unit": "Unidad"
   },
   "summary": {
     "title": "Entreno completado",
@@ -680,5 +681,30 @@
       "failed": "La última copia automática no se pudo hacer. Se volverá a intentar; o toca “Copiar ahora”."
     },
     "popupBlocked": "El navegador bloqueó la ventana de inicio de sesión de Google. Permite las ventanas emergentes para este sitio e inténtalo de nuevo."
+  },
+  "equipmentSettings": {
+    "title": "Equipo",
+    "short": "Equipo",
+    "unit": "Pesos de este equipo",
+    "unitDefault": "Ajuste de la app ({{units}})",
+    "plateLoaded": "Se carga con discos (calculadora de discos)",
+    "bar": "Barra o carro ({{unit}})",
+    "hint": "Las series nuevas se ingresan en esta unidad. Cada serie guarda la unidad en que se ingresó, así que los entrenamientos anteriores no cambian; los números ya ingresados en el entrenamiento en curso mantienen su valor. Una serie se puede cambiar en sus detalles.",
+    "hintPlates": "Las series nuevas se ingresan en esta unidad y siempre incluyen la barra. Cada serie guarda la unidad en que se ingresó, así que los entrenamientos anteriores no cambian; los números ya ingresados en el entrenamiento en curso mantienen su valor. Deja la barra vacía para la habitual; 0 para una máquina sin barra."
+  },
+  "plates": {
+    "title": "Discos",
+    "perSide": "Cada lado",
+    "empty": "Sin discos: solo la barra",
+    "remove": "Quitar {{plate}}",
+    "add": "Agregar a cada lado",
+    "addPlate": "Agregar {{plate}} a cada lado",
+    "bar": "Barra",
+    "total": "Total",
+    "notExact": "No se puede cargar {{target}} con estos discos; lo más cercano por debajo es {{total}}.",
+    "use": "Usar {{weight}}",
+    "open": "Discos",
+    "barOnly": "Solo la barra",
+    "line": "{{plates}} por lado"
   }
 }

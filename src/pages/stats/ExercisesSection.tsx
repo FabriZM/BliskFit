@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import SeriesCard from '../../components/stats/SeriesCard'
+import { weightUnitFor } from '../../lib/plates'
 import { exerciseSeries, isPlateau, metricsFor } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import ExerciseRecords from '../exercises/ExerciseRecords'
@@ -39,6 +40,8 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
 
   const points = selected ? exerciseSeries(data.sets, data.sessions, selected.id, selected.trackingType) : []
   const metrics = selected ? metricsFor(selected.trackingType) : []
+  // Charts of an exercise whose equipment is in other units than the app's read in that unit.
+  const exCtx = { ...ctx, units: weightUnitFor(selected, ctx.units) }
   const plateau = selected && (selected.trackingType === 'weight_reps' || selected.trackingType === 'bodyweight_added') && isPlateau(points, 'e1rm', plateauSessions)
 
   return (
@@ -60,7 +63,7 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
           <h2 className="stats-ex-name">{selected.name}</h2>
           {plateau && <p className="plateau" role="status">⚠ {t('stats.plateau', { count: Math.max(3, plateauSessions) })}</p>}
           {metrics.map((metric) => (
-            <SeriesCard key={metric} ctx={ctx} title={t(`stats.metric_${metric}`)}
+            <SeriesCard key={metric} ctx={exCtx} title={t(`stats.metric_${metric}`)}
               pin={{ kind: 'exercise', exerciseId: selected.id, metric, range: ctx.range }} />
           ))}
           <div className="card" id="card-records">

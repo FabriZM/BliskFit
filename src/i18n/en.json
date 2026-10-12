@@ -308,7 +308,8 @@
     "restSource_custom": "your saved value",
     "restSource_learned": "learned",
     "restSource_exercise": "exercise default",
-    "restSource_default": "app default"
+    "restSource_default": "app default",
+    "unit": "Unit"
   },
   "summary": {
     "title": "Workout complete",
@@ -680,5 +681,30 @@
       "failed": "The last automatic backup didn't go through. It will try again; or tap “Back up now”."
     },
     "popupBlocked": "Your browser blocked Google’s sign-in window. Allow pop-ups for this site and try again."
+  },
+  "equipmentSettings": {
+    "title": "Equipment",
+    "short": "Equip.",
+    "unit": "Weights on this equipment",
+    "unitDefault": "App setting ({{units}})",
+    "plateLoaded": "Loaded with plates (plate calculator)",
+    "bar": "Bar or sled ({{unit}})",
+    "hint": "New sets are typed in this unit. Each set keeps the unit it was typed in, so earlier workouts never change; numbers already typed in the running workout keep their value. A single set can be switched in its details.",
+    "hintPlates": "New sets are typed in this unit and always include the bar. Each set keeps the unit it was typed in, so earlier workouts never change; numbers already typed in the running workout keep their value. Leave the bar empty for the usual one; 0 for a machine with no bar."
+  },
+  "plates": {
+    "title": "Plates",
+    "perSide": "Each side",
+    "empty": "No plates: just the bar",
+    "remove": "Remove {{plate}}",
+    "add": "Add to each side",
+    "addPlate": "Add {{plate}} to each side",
+    "bar": "Bar",
+    "total": "Total",
+    "notExact": "{{target}} can't be loaded with these plates; closest below is {{total}}.",
+    "use": "Use {{weight}}",
+    "open": "Plates",
+    "barOnly": "Just the bar",
+    "line": "{{plates}} each side"
   }
 }

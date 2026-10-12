@@ -9,6 +9,7 @@ import { muscleLabel } from '../lib/muscles'
 import { formatDelta, formatValue, pinSeries, statsLink } from '../lib/pinCards'
 import { SUGGESTED_PINS, movePin, validPins } from '../lib/pins'
 import { changeOver } from '../lib/stats'
+import { weightUnitFor } from '../lib/plates'
 import { displayToKg } from '../lib/units'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
@@ -37,7 +38,7 @@ function AddWeight() {
 /** The stats you pinned in the Stats panel, as compact cards: value, change over the range, sparkline. */
 export default function PinnedStats() {
   const { t } = useTranslation()
-  const { units, weekStartDay, pinsDismissed } = useSettings((s) => s.settings)
+  const { units: appUnits, weekStartDay, pinsDismissed } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   const stored = useSettings((s) => s.settings.pinnedStats)
   const data = useStatsData()
@@ -88,6 +89,7 @@ export default function PinnedStats() {
     const weekly = s.unit === 'sessions' || s.unit === 'sets'
     const ch = weekly ? undefined : changeOver(s.points)
     const avg = weekly ? s.points.reduce((a, x) => a + x.value, 0) / s.points.length : undefined
+    const units = p.kind === 'exercise' ? weightUnitFor(derived.exById.get(p.exerciseId!), appUnits) : appUnits
     return (
       <>
         <div className="pin-value">

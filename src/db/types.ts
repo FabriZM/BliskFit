@@ -35,6 +35,12 @@ export interface Exercise {
   learnedRestSec?: number
   /** Set by the user from a workout ("always for this exercise"); wins over learned and default rest. 0 = no timer. */
   customRestSec?: number
+  /** Unit printed on this exercise's equipment (e.g. a machine in lb); absent = the app's units. Weights stay stored in kg. */
+  weightUnit?: Units
+  /** Plate calculator on or off; absent = on for barbells and EZ bars (see lib/plates). */
+  plateLoaded?: boolean
+  /** Bar or sled weight, in kg; absent = the usual bar for the equipment. Logged weights always include it. */
+  barKg?: number
   source: 'seeded' | 'custom'
 }
 
@@ -149,6 +155,11 @@ export interface SetLog {
   setType: SetType
   /** Always stored in kg; converted for display (see lib/units). */
   weight?: number
+  /**
+   * Unit the weights of this set were typed in (what was printed on the equipment that day), so it always shows
+   * as typed. Absent on sets from before this existed: those show in the app's units.
+   */
+  unit?: Units
   /** Added (weighted) or assist (assisted) weight, depending on tracking type. */
   extraWeight?: number
   reps?: number

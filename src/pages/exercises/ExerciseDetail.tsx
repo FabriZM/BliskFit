@@ -8,6 +8,8 @@ import { compressImage } from '../../lib/image'
 import { muscleLabel } from '../../lib/muscles'
 import { demoImageUrls } from '../../lib/seed'
 import { useBlobUrl } from '../../lib/useBlobUrl'
+import EquipmentSettings from '../../components/EquipmentSettings'
+import { usesWeight } from '../../lib/plates'
 import ExerciseRecords from './ExerciseRecords'
 
 function NotePhoto({ blob }: { blob: Blob }) {
@@ -75,6 +77,13 @@ export default function ExerciseDetail() {
       {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener">▶ {t('exercises.video')}</a></p>}
 
       <ExerciseRecords exercise={ex} />
+
+      {usesWeight(ex.trackingType) && (
+        <>
+          <h2>{t('equipmentSettings.title')}</h2>
+          <EquipmentSettings exercise={ex} />
+        </>
+      )}
 
       <h2>{t('exercises.setupNotes')}</h2>
       <ul className="list">

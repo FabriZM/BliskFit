@@ -8,19 +8,23 @@ import { primeAudio } from '../../lib/alerts'
 import { formatSet } from '../../lib/format'
 import type { GroupPos } from '../../lib/routines'
 import { computePRs } from '../../lib/prs'
-import { formatClock } from '../../lib/units'
+import { barWeight, isPlateLoaded, setUnit, usesWeight, weightUnitFor } from '../../lib/plates'
+import { displayToKg, formatClock, kgToDisplay } from '../../lib/units'
+import EquipmentSettings from '../../components/EquipmentSettings'
 import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
 import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
+import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
 import SetRow from './SetRow'
 
-export default function ExerciseCard({ session, item, exercise, sets, pos, units, defaultRest, onSwap }: {
+export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, defaultRest, onSwap }: {
   session: WorkoutSession
   item: SessionExercise
   exercise?: Exercise
   sets: SetLog[]
   pos: GroupPos
+  /** The app's units; the exercise's own unit wins for its weights. */
   units: Units
   defaultRest: number
   onSwap: () => void
@@ -31,9 +35,14 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const [addingNote, setAddingNote] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [editingRest, setEditingRest] = useState(false)
+  const [editingEquipment, setEditingEquipment] = useState(false)
+  const [platesFor, setPlatesFor] = useState<string | null>(null)
   const [dx, setDx] = useState(0)
   const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
   const tracking = exercise?.trackingType ?? 'weight_reps'
+  // New sets are typed in the unit on this exercise's equipment (e.g. a machine in lb); every set keeps its own.
+  const units = weightUnitFor(exercise, appUnits)
+  const barOf = exercise && isPlateLoaded(exercise) ? (u: Units) => barWeight(exercise, u) : undefined
   const sorted = [...sets].sort((a, b) => a.order - b.order)
   const rest = restFor(item, exercise, defaultRest)
   const doneCount = sorted.filter((s) => s.doneAt !== undefined).length
@@ -57,23 +66,33 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const suggestedSet = useMemo(() => {
     if (!suggestion) return undefined
     const base = { weight: tracking === 'weight_reps' ? suggestion.weightKg : undefined, extraWeight: tracking === 'bodyweight_added' ? suggestion.weightKg : undefined, reps: suggestion.reps, durationSec: suggestion.durationSec }
-    return base as SetLog
-  }, [suggestion, tracking])
+    return { ...base, unit: base.weight !== undefined || base.extraWeight !== undefined ? units : undefined } as SetLog
+  }, [suggestion, tracking, units])
+
+  // Copying a set copies what was typed, unit included; sets from before units were kept were typed in the app's.
+  const copyOf = (src: SetLog) => {
+    const { unit, ...v } = valuesOf(src)
+    return v.weight !== undefined || v.extraWeight !== undefined ? { ...v, unit: unit ?? appUnits } : v
+  }
 
   // Index among non-warm-up sets: "set 2 last time" lines up with set 2 now.
   let w = 0
   const workingIdx = sorted.map((s) => (s.setType === 'warmup' ? -1 : w++))
   const labelOf = (s: SetLog, i: number) => (s.setType === 'warmup' ? 'W' : s.setType === 'drop' ? 'D' : String(workingIdx[i] + 1))
+  const hintFor = (i: number) => (workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) ?? suggestedSet : undefined)
+  const nextId = sorted.find((s) => s.doneAt === undefined)?.id
+  const plateSet = sorted.findIndex((s) => s.id === platesFor)
+  const plateUnit = plateSet >= 0 ? setUnit(sorted[plateSet], units, hintFor(plateSet)) : units
 
   const useSuggestion = () => {
     if (!suggestedSet) return
-    sorted.forEach((s, i) => { if (s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, valuesOf(suggestedSet)) })
+    sorted.forEach((s, i) => { if (s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, copyOf(suggestedSet)) })
   }
 
   const useLast = () => {
     sorted.forEach((s, i) => {
       const src = lastSetFor(last, workingIdx[i])
-      if (src && s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, valuesOf(src))
+      if (src && s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, copyOf(src))
     })
   }
 
@@ -128,6 +147,11 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <button role="menuitem" title={t('workout.restTimer')} aria-label={t('workout.restTimer')} onClick={() => { setEditingRest(true); setMenu(false) }}>
             <span aria-hidden>⏱️</span><small>{t('workout.restShort')}</small>
           </button>
+          {exercise && usesWeight(tracking) && (
+            <button role="menuitem" title={t('equipmentSettings.title')} aria-label={t('equipmentSettings.title')} onClick={() => { setEditingEquipment(true); setMenu(false) }}>
+              <span aria-hidden>⚖️</span><small>{t('equipmentSettings.short')}</small>
+            </button>
+          )}
           <button role="menuitem" title={item.skipped ? t('workout.unskip') : t('workout.skip')} aria-label={item.skipped ? t('workout.unskip') : t('workout.skip')}
             onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>
             <span aria-hidden>{item.skipped ? '↩️' : '⏭️'}</span><small>{item.skipped ? t('workout.unskip') : t('workout.skipShort')}</small>
@@ -144,7 +168,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
               <span className="muted small">
                 {t('workout.lastTime', { date: new Intl.DateTimeFormat(i18n.language, { month: 'short', day: 'numeric' }).format(last.startedAt) })}
                 {session.gymId && !last.gymMatched ? ` · ${t('workout.otherGym')}` : ''}
-                {': '}{last.sets.map((s) => formatSet(s, tracking, units)).join(' · ')}
+                {': '}{last.sets.map((s) => formatSet(s, tracking, appUnits)).join(' · ')}
               </span>
               <button onClick={useLast}>{t('workout.useLast')}</button>
             </div>
@@ -152,7 +176,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           {!last && suggestion && suggestedSet && (
             <div className="last-hint suggest">
               <span className="muted small">
-                💡 {t('workout.suggested')}: {formatSet(suggestedSet, tracking, units)}
+                💡 {t('workout.suggested')}: {formatSet(suggestedSet, tracking, appUnits)}
                 {' · '}{t('workout.basedOn', { names: suggestion.basedOn.slice(0, 2).map((b) => b.name).join(', ') })}
                 {suggestion.confidence === 'rough' ? ` (${t('workout.rough')})` : ''}
               </span>
@@ -162,14 +186,15 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}
-                hint={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) ?? suggestedSet : undefined} pr={prs.get(s.id)}
+                hint={hintFor(i)} pr={prs.get(s.id)} barOf={barOf} showPlates={s.id === nextId || expanded === s.id}
+                onPlates={() => setPlatesFor(s.id)}
                 expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
                 onDone={() => { primeAudio(); void completeSet(s.id, shouldStartRest(session.exercises, item.id) && rest.sec > 0 ? rest.sec : null) }}
                 onUndo={() => void uncompleteSet(s.id)}
-                onRepeat={() => void updateSet(s.id, valuesOf(sorted[i - 1]))}
-                onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, valuesOf(src)) }}
+                onRepeat={() => void updateSet(s.id, copyOf(sorted[i - 1]))}
+                onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, copyOf(src)) }}
                 onDelete={() => void deleteSet(s.id)} />
             ))}
           </ul>
@@ -177,6 +202,21 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         </>
       )}
       </div>
+      {plateSet >= 0 && exercise && (
+        <PlateSheet exercise={exercise} unit={plateUnit} onClose={() => setPlatesFor(null)}
+          weight={(() => { const kg = sorted[plateSet].weight ?? hintFor(plateSet)?.weight; return kg === undefined ? undefined : kgToDisplay(kg, plateUnit) })()}
+          onUse={(total) => void updateSet(sorted[plateSet].id, { weight: displayToKg(total, plateUnit), unit: plateUnit })} />
+      )}
+      {editingEquipment && exercise && (
+        <div className="modal" role="dialog" aria-modal="true" aria-label={t('equipmentSettings.title')} onClick={() => setEditingEquipment(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2>{t('equipmentSettings.title')}</h2>
+            <p className="muted small">{exercise.name}</p>
+            <EquipmentSettings exercise={exercise} />
+            <button className="primary" onClick={() => setEditingEquipment(false)}>{t('common.done')}</button>
+          </div>
+        </div>
+      )}
       {editingRest && <RestEditor session={session} item={item} exercise={exercise} defaultRest={defaultRest} onClose={() => setEditingRest(false)} />}
       {confirmRemove && (
         <div className="modal" role="alertdialog" aria-modal="true">
