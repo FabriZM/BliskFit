@@ -8,6 +8,8 @@ export interface ExerciseFilter {
   /** Favorite ids; they sort first, and `favoritesOnly` hides everything else. */
   favorites?: Set<ID>
   favoritesOnly?: boolean
+  /** Match the muscle filter on primary muscles only (e.g. swapping: same main target, not just a helper). */
+  primaryOnly?: boolean
 }
 
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -20,7 +22,7 @@ export function filterExercises(list: Exercise[], f: ExerciseFilter): Exercise[]
       if (f.equipment && (e.equipment ?? 'none') !== f.equipment) return false
       if (f.favoritesOnly && !f.favorites?.has(e.id)) return false
       if (f.muscleIds.size) {
-        const hit = [...e.primaryMuscleIds, ...e.secondaryMuscleIds].some((id) => f.muscleIds.has(id))
+        const hit = [...e.primaryMuscleIds, ...(f.primaryOnly ? [] : e.secondaryMuscleIds)].some((id) => f.muscleIds.has(id))
         if (!hit) return false
       }
       return true

@@ -106,6 +106,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
 
       {adding && <ExercisePicker onClose={() => setAdding(false)} onAdd={(exs) => { void addExercisesToSession(session.id, exs); setAdding(false) }} />}
       {swapping && !swapTo && <ExercisePicker single title={t('workout.swap')} onClose={() => setSwapping(null)}
+        replacing={exMap.get(session.exercises.find((e) => e.id === swapping)?.exerciseId ?? '')}
         onAdd={(exs) => { if (!session.routineId) { void swapExercise(session.id, swapping, exs[0], 'session'); setSwapping(null) } else setSwapTo(exs[0]) }} />}
       {swapping && swapTo && (
         <div className="modal" role="dialog" aria-modal="true">
