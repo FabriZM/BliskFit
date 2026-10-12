@@ -101,6 +101,8 @@
     "done": "Done"
   },
   "exercises": {
+    "noResults": "No exercises match your search.",
+    "clearFilters": "Clear filters",
     "new": "New exercise",
     "edit": "Edit exercise",
     "search": "Search exercises",

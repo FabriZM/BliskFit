@@ -11,6 +11,8 @@ import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
 import { BackLink } from '../../components/PageHeader'
+import EmptyState from '../../components/EmptyState'
+import { HistoryIcon } from '../../components/TabIcons'
 
 /** Finished workouts as a list or a calendar of training days; each opens its detail (edit, delete, PRs). */
 export default function History() {
@@ -59,7 +61,7 @@ export default function History() {
           {day && shown.length === 0 && <p className="muted">{t('history.noWorkoutDay')}</p>}
         </>
       )}
-      {view === 'list' && data.sessions.length === 0 && <p className="muted">{t('history.empty')}</p>}
+      {view === 'list' && data.sessions.length === 0 && <EmptyState icon={<HistoryIcon />}>{t('history.empty')}</EmptyState>}
       <ul className="list">
         {shown.map((s) => {
           const sets = data.sets.filter((x) => x.sessionId === s.id)

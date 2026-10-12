@@ -68,6 +68,8 @@ export default function App() {
       )}
       {platform.isNative && <><UpdateBanner /><IncomingLinks /></>}
       <main>
+        {/* Keyed by path so each screen change replays the short fade-in. */}
+        <div className="page" key={pathname}>
         <Routes>
           <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/workout" element={<WorkoutPage />} />
@@ -91,6 +93,7 @@ export default function App() {
           <Route path="/profile/body" element={<BodyLog />} />
           <Route path="*" element={<Navigate to="/profile" replace />} />
         </Routes>
+        </div>
       </main>
       <ForgottenGuard />
       <TimerNotifications />

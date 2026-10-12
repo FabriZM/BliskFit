@@ -101,6 +101,8 @@
     "done": "Listo"
   },
   "exercises": {
+    "noResults": "Ningún ejercicio coincide con la búsqueda.",
+    "clearFilters": "Quitar filtros",
     "new": "Nuevo ejercicio",
     "edit": "Editar ejercicio",
     "search": "Buscar ejercicios",

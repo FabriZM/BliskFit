@@ -5,6 +5,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
 import { getActiveProgramId } from '../../db/programs'
 import { startSession } from '../../db/workout'
+import EmptyState from '../../components/EmptyState'
+import { WorkoutIcon } from '../../components/TabIcons'
 
 /** Routines (start / open / create) and the entry to programs: the heart of the Workout tab. */
 export default function RoutinesSection() {
@@ -31,7 +33,9 @@ export default function RoutinesSection() {
           <button onClick={() => void create()}>+ {t('routines.new')}</button>
         </span>
       </div>
-      {routines && visible.length === 0 && <p className="muted">{showArchived ? t('routines.noArchived') : t('routines.none')}</p>}
+      {routines && visible.length === 0 && (showArchived
+        ? <p className="muted">{t('routines.noArchived')}</p>
+        : <EmptyState icon={<WorkoutIcon />} action={<button className="primary" onClick={() => void create()}>+ {t('routines.new')}</button>}>{t('routines.none')}</EmptyState>)}
       {visible.length > 0 && <ul className="list grouped">
         {visible.map((r) => (
           <li key={r.id}>

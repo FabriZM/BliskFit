@@ -6,6 +6,8 @@ import { getActiveProgramId, setActiveProgramId } from '../../db/programs'
 import { weekStart } from '../../lib/programs'
 import { useSettings } from '../../stores/settings'
 import { BackLink } from '../../components/PageHeader'
+import EmptyState from '../../components/EmptyState'
+import { CalendarIcon } from '../../components/TabIcons'
 
 export default function ProgramList() {
   const { t } = useTranslation()
@@ -29,7 +31,7 @@ export default function ProgramList() {
         <h1>{t('programs.title')}</h1>
         <button className="primary" onClick={() => void create()}>+ {t('programs.new')}</button>
       </div>
-      {data && data.programs.length === 0 && <p className="muted">{t('programs.none')}</p>}
+      {data && data.programs.length === 0 && <EmptyState icon={<CalendarIcon />}>{t('programs.none')}</EmptyState>}
       <ul className="list">
         {data?.programs.map((p) => (
           <li key={p.id}>

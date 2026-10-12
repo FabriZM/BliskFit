@@ -7,6 +7,8 @@ import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { filterExercises } from '../../lib/exerciseFilter'
 import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
 import PageHeader from '../../components/PageHeader'
+import EmptyState from '../../components/EmptyState'
+import { SearchIcon } from '../../components/TabIcons'
 
 const PAGE = 60
 
@@ -80,7 +82,13 @@ export default function ExerciseList() {
       {!exercises ? <p className="muted">…</p> : (
         <>
           <p className="muted small list-count">{t('exercises.count', { count: results.length })}</p>
-          <ul className="list grouped">
+          {results.length === 0 && (
+            <EmptyState icon={<SearchIcon />}
+              action={(query || muscle || equipment || favoritesOnly) && <button onClick={() => reset(() => { setQuery(''); setMuscle(''); setEquipment(''); setFavoritesOnly(false) })}>{t('exercises.clearFilters')}</button>}>
+              {t('exercises.noResults')}
+            </EmptyState>
+          )}
+          {results.length > 0 && <ul className="list grouped">
             {results.slice(0, shown).map((e) => (
               <li key={e.id} className="ex-row">
                 <Link to={`/exercises/${encodeURIComponent(e.id)}`}>
@@ -96,7 +104,7 @@ export default function ExerciseList() {
                 </button>
               </li>
             ))}
-          </ul>
+          </ul>}
           {shown < results.length && <button onClick={() => setShown(shown + PAGE)}>{t('exercises.more')}</button>}
         </>
       )}

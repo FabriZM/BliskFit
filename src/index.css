@@ -321,3 +321,21 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .ring-text strong { font-size: 3.4rem; font-weight: 800; letter-spacing: -.03em; } .ring-text span { text-transform: uppercase; letter-spacing: .12em; font-size: var(--text-xs); font-weight: 600; }
 .rest-actions button { border-radius: var(--radius-pill); padding: 12px 8px; }
 .rest-card .primary { padding: 14px 16px; border-radius: var(--radius-pill); }
+
+/* ---- Finishing touches: screen fade, press feedback, empty states ---- */
+/* Opacity only: a transform here would make the page the containing block for fixed overlays. */
+.page { animation: page-in .2s var(--ease); }
+@keyframes page-in { from { opacity: 0; } }
+.list a, .link-card, .pin-link, .icon-link, .back-link, .star, .pin { transition: background-color var(--dur) var(--ease), opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.list:not(.grouped) a:active { opacity: .6; }
+.link-card:active, .pin-card:active { background: var(--surface-2); }
+.star:active, .pin:active, button.wd:active span, .cal-day:active { transform: scale(.88); }
+.link-card { transition: background-color var(--dur) var(--ease); }
+@media (hover: hover) {
+  .list.grouped > li:hover, .link-card:hover, .pin-card:hover { background: var(--surface-2); }
+  button:not(:disabled):hover { filter: brightness(1.08); }
+}
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); padding: var(--space-6) var(--space-4); margin: var(--space-2) 0; border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); }
+.empty p { margin: 0; color: var(--muted); max-width: 30ch; }
+.empty-icon { width: 56px; height: 56px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
+.empty-icon svg { width: 26px; height: 26px; }

@@ -20,6 +20,8 @@ import MuscleCounter from './MuscleCounter'
 import RestBar from './RestBar'
 import ReminderSetup from '../../components/ReminderSetup'
 import RestPopup from './RestPopup'
+import EmptyState from '../../components/EmptyState'
+import { WorkoutIcon } from '../../components/TabIcons'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
@@ -89,7 +91,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
 
       <MuscleCounter sets={sets} exercises={exMap} />
 
-      {session.exercises.length === 0 && <p className="muted">{t('workout.emptyHint')}</p>}
+      {session.exercises.length === 0 && <EmptyState icon={<WorkoutIcon />}>{t('workout.emptyHint')}</EmptyState>}
       <ul className="rx-list">
         {session.exercises.map((item, i) => (
           <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
