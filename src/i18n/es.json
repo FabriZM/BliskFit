@@ -309,7 +309,9 @@
     "restSource_learned": "aprendido",
     "restSource_exercise": "valor del ejercicio",
     "restSource_default": "valor de la app",
-    "unit": "Unidad"
+    "unit": "Unidad",
+    "addWarmup": "Series de calentamiento",
+    "redoWarmup": "Rehacer calentamiento"
   },
   "summary": {
     "title": "Entreno completado",

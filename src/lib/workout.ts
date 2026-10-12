@@ -187,9 +187,12 @@ export function shouldStartRest(items: SessionExercise[], itemId: ID): boolean {
   return members[members.length - 1]?.id === itemId
 }
 
-/** Seconds between consecutive done sets of one exercise that look like rests (20s–10min). */
+/**
+ * Seconds between consecutive done sets of one exercise that look like rests (20s–10min). Warm-ups are left out:
+ * their short rests would pull the learned rest of the working sets down.
+ */
 export function restGaps(sets: SetLog[]): number[] {
-  const t = sets.filter((x) => x.doneAt !== undefined).map((x) => x.doneAt!).sort((a, b) => a - b)
+  const t = sets.filter((x) => x.doneAt !== undefined && x.setType !== 'warmup').map((x) => x.doneAt!).sort((a, b) => a - b)
   const gaps: number[] = []
   for (let i = 1; i < t.length; i++) {
     const g = (t[i] - t[i - 1]) / SEC

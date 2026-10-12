@@ -250,6 +250,12 @@ Progressive overload hints (using RPE/RIR and failure data), plate calculator, w
 - **In the workout:** the next set to do (and any expanded set) shows "🏋 20 + 10 + 1.25 each side" for its weight, or last time's (greyed); "≈" when it can't be loaded exactly. Tapping it opens the plate sheet: tap plates to load the bar and see the total, or type a total to get the plates (closest below if not exact); change the bar (saved on the exercise); "Use" fills the set. Nothing is logged automatically.
 - **Not done:** per-gym units or plates (the same machine type in lb at one gym and kg at another); custom plate sets (e.g. no 1.25s, or 0.5 kg change plates); mixed kg bar with lb plates.
 
+**Warm-up generator (done, web-checked):**
+- **Button** "🔥 Warm-up sets" next to "+ Add set", offered for weight × reps and weighted bodyweight until a working set is done, when the first working set has a weight (typed, else the one it would be filled from). Inserts warm-up sets ("W") before it, not done and editable; pressing again ("Redo warm-up") replaces the warm-ups not done yet, so a changed working weight gives a fresh ramp. Unused ones are dropped at finish like any blank set. Never added automatically.
+- **Ramp** (`lib/warmup.ts`, tested), in the first working set's unit: empty bar ×10 (barbells), then 40% ×5, 60% ×3, 80% ×2, plus 90% ×1 from 140 kg / 300 lb. Isolation lifts: 50% ×8, 75% ×3, no bar set. Weighted bodyweight: bodyweight ×5, then half the added weight ×3. Weights are loadable: through the plate calculator (exercise's bar, that unit's plates) on bars and plate-loaded machines, else rounded down to 2.5 kg / 5 lb. A step closer than max(one step, 5% of the work) to the previous one or to the work is dropped, so light work gets fewer sets (60 kg bench: bar ×10, 35 ×3, 47.5 ×2); at most 5.
+- **Rest:** 45 s between warm-ups (never longer than the usual rest), the usual rest after the last one. Learned rest ignores warm-ups.
+- **Not done:** a per-exercise "no warm-ups" setting, warm-ups planned in routines, custom ramps.
+
 ### M9: Interactive body figure
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 

@@ -3,7 +3,7 @@ import { db, newId } from './db'
 import { ensureSeed } from './seed'
 import {
   addExercisesToSession, addSet, completeSet, discardSession, finishSession, getActiveSession, moveItem, pause,
-  removeItem, resume, startSession, swapExercise, toggleSkip,
+  removeItem, resume, setWarmups, startSession, swapExercise, toggleSkip,
 } from './workout'
 import { pickLastTime } from '../lib/workout'
 
@@ -32,6 +32,28 @@ describe('live workout flow', () => {
     await removeItem(id, item.id)
     expect((await sets(id)).some((x) => x.itemId === item.id)).toBe(false)
     expect((await db.sessions.get(id))!.exercises.some((x) => x.id === item.id)).toBe(false)
+    await discardSession(id)
+  })
+
+  it('warm-ups go before the first working set; asking again replaces the ones not done yet', async () => {
+    const id = await startSession(routineId)
+    const item = (await db.sessions.get(id))!.exercises[0]
+    const mine = async () => (await sets(id)).filter((x) => x.itemId === item.id).sort((a, b) => a.order - b.order)
+    const working = (await mine()).map((x) => x.id)
+
+    await setWarmups(id, item.id, [{ weight: 20, unit: 'kg', reps: 10 }, { weight: 40, unit: 'kg', reps: 5 }])
+    let all = await mine()
+    expect(all.map((x) => x.setType)).toEqual(['warmup', 'warmup', 'working', 'working', 'working'])
+    expect(all.map((x) => x.order)).toEqual([0, 1, 2, 3, 4])
+    expect(all.slice(2).map((x) => x.id)).toEqual(working)
+    expect(all[1]).toMatchObject({ weight: 40, unit: 'kg', reps: 5 })
+    expect(all[0].doneAt).toBeUndefined() // suggested, never logged for you
+
+    await completeSet(all[0].id, null)
+    await setWarmups(id, item.id, [{ weight: 50, unit: 'kg', reps: 3 }])
+    all = await mine()
+    expect(all.map((x) => [x.setType, x.weight])).toEqual([['warmup', 20], ['warmup', 50], ['working', undefined], ['working', undefined], ['working', undefined]])
+    expect(all[0].doneAt).toBeDefined() // a done warm-up stays
     await discardSession(id)
   })
 

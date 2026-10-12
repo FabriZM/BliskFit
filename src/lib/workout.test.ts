@@ -134,6 +134,8 @@ describe('rest', () => {
   it('learns from plausible gaps only and blends with history', () => {
     const at = (...secs: number[]) => secs.map((s) => set({ doneAt: s * 1000 }))
     expect(restGaps(at(0, 90, 95, 200, 2000))).toEqual([90, 105])
+    const warm = (sec: number) => set({ doneAt: sec * 1000, setType: 'warmup' })
+    expect(restGaps([warm(0), warm(40), ...at(100, 220)])).toEqual([120])
     expect(learnRest(undefined, [90, 105, 120])).toBe(105)
     expect(learnRest(120, [60])).toBe(100)
     expect(learnRest(120, [])).toBe(120)

@@ -103,6 +103,25 @@ export const addSet = (id: ID, itemId: ID) =>
     await db.setLogs.add(last ? { ...row, ...valuesOf(last), setType: last.setType === 'warmup' ? 'working' : last.setType } : row)
   })
 
+/**
+ * Puts warm-up sets before the first working set of an exercise in the session (not done; editable like any
+ * set). Warm-ups not done yet are replaced, so asking again after changing the working weight gives a fresh ramp.
+ */
+export const setWarmups = (id: ID, itemId: ID, warmups: Pick<SetLog, 'weight' | 'extraWeight' | 'unit' | 'reps'>[]) =>
+  mutate(id, async (s) => {
+    const item = s.exercises.find((x) => x.id === itemId)
+    if (!item) return
+    const sets = (await db.setLogs.where('sessionId').equals(id).filter((x) => x.itemId === itemId).toArray()).sort((a, b) => a.order - b.order)
+    const stale = sets.filter((x) => x.setType === 'warmup' && x.doneAt === undefined)
+    const kept = sets.filter((x) => !stale.includes(x))
+    // Right before the first set that isn't a warm-up (after any warm-ups already done).
+    const at = kept.findIndex((x) => x.setType !== 'warmup')
+    const fresh: SetLog[] = blankSets(id, item, warmups.length).map((row, i) => ({ ...row, ...warmups[i], setType: 'warmup' }))
+    const ordered = [...kept.slice(0, at < 0 ? kept.length : at), ...fresh, ...(at < 0 ? [] : kept.slice(at))]
+    await db.setLogs.bulkDelete(stale.map((x) => x.id))
+    await db.setLogs.bulkPut(ordered.map((x, order) => ({ ...x, order })))
+  })
+
 export const deleteSet = (setId: ID) => db.setLogs.delete(setId)
 
 export const updateSet = (setId: ID, patch: Partial<SetLog>) => db.setLogs.update(setId, patch)

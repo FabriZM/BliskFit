@@ -191,3 +191,4 @@ ul.plain { list-style: none; padding: 0; margin: 4px 0; } ul.plain > li.row { pa
 .plate-visual { display: flex; align-items: center; height: 72px; padding: 0 4px; } .plate-visual .plate-bar { width: 32px; height: 8px; background: var(--muted); border-radius: 2px; } .plate-visual .plate { width: 10px; margin-left: 2px; background: var(--accent); border-radius: 2px; } .plate-visual .plate-sleeve { flex: 1; max-width: 40px; height: 12px; background: var(--muted); border-radius: 0 2px 2px 0; margin-left: 2px; }
 .plate-fields { display: flex; align-items: center; gap: 6px; } .plate-fields .plate-op { color: var(--muted); font-size: .85rem; white-space: nowrap; } .plate-fields .plate-side { min-width: 2.5em; text-align: center; }
 .equipment label { display: flex; flex-direction: column; gap: 4px; } .equipment label.inline { flex-direction: row; }
+.set-adds { display: flex; gap: 8px; } .set-adds .link { flex: 1; }

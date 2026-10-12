@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
-import { addSet, completeSet, deleteSet, removeItem, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
+import { addSet, completeSet, deleteSet, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
 import { primeAudio } from '../../lib/alerts'
 import { formatSet } from '../../lib/format'
 import type { GroupPos } from '../../lib/routines'
@@ -12,6 +12,7 @@ import { barWeight, isPlateLoaded, setUnit, usesWeight, weightUnitFor } from '..
 import { displayToKg, formatClock, kgToDisplay } from '../../lib/units'
 import EquipmentSettings from '../../components/EquipmentSettings'
 import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
+import { WARMUP_REST_SEC, warmupSets } from '../../lib/warmup'
 import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
 import PlateSheet from './PlateSheet'
@@ -81,6 +82,21 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const labelOf = (s: SetLog, i: number) => (s.setType === 'warmup' ? 'W' : s.setType === 'drop' ? 'D' : String(workingIdx[i] + 1))
   const hintFor = (i: number) => (workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) ?? suggestedSet : undefined)
   const nextId = sorted.find((s) => s.doneAt === undefined)?.id
+  // Warm-ups ramp up to the first working set (its weight, else the one it would be filled from), in its unit.
+  // Offered until a working set is done; asking again replaces the warm-ups not done yet.
+  const warmup = (() => {
+    if (tracking !== 'weight_reps' && tracking !== 'bodyweight_added') return undefined
+    const first = sorted.findIndex((s) => s.setType !== 'warmup')
+    if (first < 0 || sorted.some((s) => s.setType !== 'warmup' && s.doneAt !== undefined)) return undefined
+    const key = tracking === 'weight_reps' ? 'weight' : 'extraWeight'
+    const hint = hintFor(first)
+    const kg = sorted[first][key] ?? hint?.[key]
+    if (kg === undefined) return undefined
+    const unit = setUnit(sorted[first], units, hint)
+    const plan = warmupSets({ tracking, mechanic: exercise?.mechanic, work: kgToDisplay(kg, unit), unit, bar: barOf?.(unit) })
+    if (!plan.length) return undefined
+    return { redo: sorted.some((s) => s.setType === 'warmup' && s.doneAt === undefined), add: () => void setWarmups(session.id, item.id, plan.map((w) => ({ [key]: displayToKg(w.weight, unit), unit, reps: w.reps }))) }
+  })()
   const plateSet = sorted.findIndex((s) => s.id === platesFor)
   const plateUnit = plateSet >= 0 ? setUnit(sorted[plateSet], units, hintFor(plateSet)) : units
 
@@ -191,14 +207,22 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
-                onDone={() => { primeAudio(); void completeSet(s.id, shouldStartRest(session.exercises, item.id) && rest.sec > 0 ? rest.sec : null) }}
+                onDone={() => {
+                  primeAudio()
+                  // Between warm-ups a short rest; after the last one, the usual rest before the work.
+                  const sec = s.setType === 'warmup' && sorted[i + 1]?.setType === 'warmup' ? Math.min(rest.sec, WARMUP_REST_SEC) : rest.sec
+                  void completeSet(s.id, shouldStartRest(session.exercises, item.id) && sec > 0 ? sec : null)
+                }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onRepeat={() => void updateSet(s.id, copyOf(sorted[i - 1]))}
                 onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, copyOf(src)) }}
                 onDelete={() => void deleteSet(s.id)} />
             ))}
           </ul>
-          <button className="link" onClick={() => void addSet(session.id, item.id)}>+ {t('workout.addSet')}</button>
+          <div className="set-adds">
+            <button className="link" onClick={() => void addSet(session.id, item.id)}>+ {t('workout.addSet')}</button>
+            {warmup && <button className="link" onClick={warmup.add}>🔥 {warmup.redo ? t('workout.redoWarmup') : t('workout.addWarmup')}</button>}
+          </div>
         </>
       )}
       </div>

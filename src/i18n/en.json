@@ -309,7 +309,9 @@
     "restSource_learned": "learned",
     "restSource_exercise": "exercise default",
     "restSource_default": "app default",
-    "unit": "Unit"
+    "unit": "Unit",
+    "addWarmup": "Warm-up sets",
+    "redoWarmup": "Redo warm-up"
   },
   "summary": {
     "title": "Workout complete",
