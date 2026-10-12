@@ -39,7 +39,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
 
   const sets = useLiveQuery(() => db.setLogs.where('sessionId').equals(session.id).toArray(), [session.id]) ?? []
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
-  const routineName = useLiveQuery(() => (session.routineId ? db.routines.get(session.routineId) : undefined), [session.routineId])?.name
+  const routineName = useLiveQuery(() => (session.routineId ? db.routines.get(session.routineId) : undefined), [session.routineId])?.name ?? session.routineName
   const exIds = session.exercises.map((e) => e.exerciseId).join('|')
   const exercises = useLiveQuery(async () => new Map((await db.exercises.bulkGet([...new Set(session.exercises.map((e) => e.exerciseId))])).filter((e): e is Exercise => !!e).map((e) => [e.id, e])), [exIds])
   const exMap = exercises ?? new Map<string, Exercise>()

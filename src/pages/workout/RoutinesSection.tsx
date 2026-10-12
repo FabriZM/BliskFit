@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
 import { getActiveProgramId } from '../../db/programs'
-import { startSession } from '../../db/workout'
+import RoutineItem from './RoutineItem'
 import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
 import { ChevronRightIcon } from '../../components/Icons'
@@ -38,19 +38,7 @@ export default function RoutinesSection() {
         ? <p className="muted">{t('routines.noArchived')}</p>
         : <EmptyState icon={<WorkoutIcon />} action={<button className="primary" onClick={() => void create()}>+ {t('routines.new')}</button>}>{t('routines.none')}</EmptyState>)}
       {visible.length > 0 && <ul className="list grouped">
-        {visible.map((r) => (
-          <li key={r.id}>
-            <div className="routine-row">
-              <Link to={`/routines/${r.id}`}>
-                <strong>{r.name}</strong>
-                <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}</span>
-              </Link>
-              {r.archived
-                ? <button onClick={() => void db.routines.update(r.id, { archived: false })}>{t('routines.restore')}</button>
-                : <button className="primary" onClick={() => void startSession(r.id)}>{t('workout.start')}</button>}
-            </div>
-          </li>
-        ))}
+        {visible.map((r) => <RoutineItem key={r.id} routine={r} />)}
       </ul>}
       {(archivedCount > 0 || showArchived) && (
         <button onClick={() => setShowArchived(!showArchived)}>

@@ -41,7 +41,7 @@ export async function startSession(routineId?: ID): Promise<ID> {
   }))
   const gymId = await defaultGymFor(routineId)
   const session: WorkoutSession = {
-    id: newId(), startedAt: Date.now(), routineId, gymId, status: 'active', pausedIntervals: [], exercises: items,
+    id: newId(), startedAt: Date.now(), routineId, routineName: routine?.name, gymId, status: 'active', pausedIntervals: [], exercises: items,
   }
   await db.transaction('rw', db.sessions, db.setLogs, async () => {
     await db.sessions.add(session)

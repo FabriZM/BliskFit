@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -10,12 +10,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { db } from '../../db/db'
 import type { Exercise, Routine, RoutineExercise } from '../../db/types'
 import {
-  addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
+  addExercises, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
 } from '../../lib/routines'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
-import ShareButtons from '../../components/ShareButtons'
-import { packRoutineById } from '../../db/share'
 import ExercisePicker from './ExercisePicker'
 import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
@@ -79,7 +77,6 @@ function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRe
 export default function RoutineEditor() {
   const { t } = useTranslation()
   const id = useParams().id!
-  const nav = useNavigate()
   const defaultRest = useSettings((s) => s.settings.defaultRestSec)
   const [routine, setRoutine] = useState<Routine | null | undefined>()
   const [picking, setPicking] = useState(false)
@@ -137,17 +134,6 @@ export default function RoutineEditor() {
         </SortableContext>
       </DndContext>
       <button className="primary wide" onClick={() => setPicking(true)}>+ {t('routines.addExercises')}</button>
-      <div className="actions">
-        <button onClick={async () => {
-          const copy = duplicateRoutine(routine, `${routine.name} ${t('routines.copySuffix')}`)
-          await db.routines.add(copy)
-          nav(`/routines/${copy.id}`)
-        }}>{t('routines.duplicate')}</button>
-        <button onClick={() => { save({ ...routine, archived: !routine.archived }); if (!routine.archived) nav('/workout') }}>
-          {routine.archived ? t('routines.restore') : t('routines.archive')}
-        </button>
-      </div>
-      {list.length > 0 && <div className="actions"><ShareButtons name={routine.name} pack={() => packRoutineById(routine.id)} /></div>}
       {picking && <ExercisePicker onClose={() => setPicking(false)} onAdd={(exs) => { save(addExercises(routine, exs)); setPicking(false) }} />}
     </section>
   )

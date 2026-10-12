@@ -68,7 +68,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
     const history = (await Promise.all(exIds.map((e) => db.setLogs.where('exerciseId').equals(e).filter((s) => s.doneAt !== undefined).toArray()))).flat()
     const routine = session.routineId ? await db.routines.get(session.routineId) : undefined
     const gyms = await db.gyms.toArray()
-    return { session, sets, exercises, history, routineName: routine?.name, gyms }
+    return { session, sets, exercises, history, routineName: routine?.name ?? session.routineName, gyms }
   }, [id])
 
   if (!data) return <p className="muted">…</p>

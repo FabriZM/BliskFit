@@ -140,6 +140,8 @@ export interface WorkoutSession {
   startedAt: number
   endedAt?: number
   routineId?: ID
+  /** Name of the routine when the session started; kept so history still names it after the routine is deleted. */
+  routineName?: string
   gymId?: ID
   notes?: string
   status: SessionStatus

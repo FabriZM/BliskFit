@@ -422,3 +422,12 @@ a.rx-name { color: var(--fg); text-decoration: none; } a.rx-name:active { color:
 
 /* ---- Display face: headings and big numbers ---- */
 :where(h1, .wk-timer, .wide-num, .ring-text strong, .restbar strong, .inprogress strong, .stats strong, .pr-tile strong, .summary-tiles strong, .pin-value strong) { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+
+/* Routine rows: swipe right archives, swipe left deletes; the bg shows under the row while swiping */
+.list.grouped > li.rt-item { position: relative; overflow: hidden; padding: 0; touch-action: pan-y; }
+.rt-body { position: relative; background: var(--surface); padding: 0 var(--space-2) 0 var(--space-4); }
+.rt-bg { position: absolute; inset: 0; display: none; align-items: center; gap: 8px; font-weight: 600; background: var(--accent-soft); color: var(--fg); }
+.rt-item.swiping .rt-bg { display: flex; }
+.rt-item.dir-r .rt-bg { justify-content: flex-start; padding-left: 18px; }
+.rt-item.dir-l .rt-bg { justify-content: flex-end; padding-right: 18px; background: var(--danger-bg); color: var(--danger-fg); }
+.rt-menu { margin: 0 0 var(--space-3); }

@@ -55,7 +55,7 @@ export function setsToCsv({ sessions, sets, exercises, routines, gyms, units }: 
     counter.set(key, n)
     return csvRow([
       localDateTime(session.startedAt),
-      session.routineId ? routines.get(session.routineId)?.name : undefined,
+      (session.routineId ? routines.get(session.routineId)?.name : undefined) ?? session.routineName,
       session.gymId ? gyms.get(session.gymId)?.name : undefined,
       exercises.get(s.exerciseId)?.name ?? s.exerciseId,
       n, s.setType, w(s.weight), w(s.extraWeight), s.reps, s.durationSec, s.distanceM, s.rpe, s.rir,
