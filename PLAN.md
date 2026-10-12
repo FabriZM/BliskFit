@@ -273,21 +273,21 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: phases 1–3 and 5 done, phase 4 partly (scale texture); display font and goal arc pending (web-checked).** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phases 1, 2 and 5 done; phase 3 reduced to the share image; phase 4 partly (scale texture), display font and goal arc pending (web-checked).** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. The motif that carries it is **the gaze** (eye, slit pupil), marking focus. Stone stays a texture (the share image), not a meaning in the UI. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
 **Rules:**
 - Any new motion respects `prefers-reduced-motion` (the global rule already shortens it; check that each effect still reads with no motion) and stays short. Keeps the existing "PRs: badge only, no animation" decision.
-- Every stone or textured surface keeps text at WCAG AA, same as the current palette.
+- Every textured surface keeps text at WCAG AA, same as the current palette.
 - No new runtime dependencies. Fonts are self-hosted files, never a CDN (offline PWA).
 - Eye geometry is drawn once, in a shared `BasiliskEye` SVG component (props: `pupil` 0 = slit … 1 = round, `open` 0…1), so the rest timer and launch screen match.
 
 **Phase 1: Foundations**
-- Tokens in `index.css`: `--stone`, `--stone-2`, `--stone-fg` (cool grey tinted to the teal, with AA checked) and `--grain` (tiny inline SVG noise as a data URI, used at low opacity).
+- Tokens in `index.css`: `--stone`, `--stone-2`, `--stone-fg` and `--grain` were added here, then removed with phase 3 (unused).
 - `BasiliskEye` component and the slogan constant.
 - Fix off-brand native colors: `capacitor.config.json` `backgroundColor` is `#111827` (generic grey; should be `--bg` `#0b1514`) and the notification `iconColor` is `#34d399` (should be `--accent` `#45d0a0`).
-Done when: tokens and the eye component exist, and the APK's background and notification color match the PWA.
+Done when: the eye component exists, and the APK's background and notification color match the PWA.
 
 **Phase 2: The gaze**
 - **Tab bar:** stays as it is. An iris with a slit pupil on the active bubble (and an almond eye-shaped bubble) were tried and dropped; the eye doesn't belong in the navigation.
@@ -295,11 +295,10 @@ Done when: tokens and the eye component exist, and the APK's background and noti
 - **Launch screen** (`index.html`): plain HTML/CSS shown while the app's JS loads, so it covers the real cold-start wait and needs no JS. The eye opens, then the pupil narrows to a slit, with the slogan below (injected at build time from `SLOGAN` by a small Vite plugin). `App.tsx` fades it out as soon as settings are loaded, so it never adds waiting; on a fast start it's barely seen. Static when reduced motion is on. On Android it follows the native splash.
 Done when: on the phone, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay. (Web-checked; still to see on the phone.)
 
-**Phase 3: Petrification (stone = done, locked)**
-- **Finished sets turn to stone**: `.set.done` is `--stone` with the grain (replaces the old teal `--done` token, now gone) and a `--stone-2` border. The tick button and the working-set label keep the accent. Colour only, no animation.
-- **Streak freezes are "stone weeks"**: a missed week bridged automatically is a week turned to stone. The copy says so in en/es (settings label and help, the week card's "N stone weeks"), and a `StoneIcon` replaces the snowflake. On the Workouts-per-week chart a stone week is a light stone bar (`--chart-stone`, with a stub when nothing was trained), the readout says "Stone week", and the key adds it when one is in range. Logic in `lib/goals.ts` unchanged; internal names (`freeze`, `streakFreezes`) stay.
-- **Share image** (`lib/summaryCard.ts`): stat tiles in stone with a seeded grain; footer with the eye (shared `EYE_PATH` in `lib/brand.ts`), the name and the slogan in caps. The background stays plain. Waiting for the display font comes with phase 4.
-Done when: a finished workout reads as stone in the session view and on the share image, and a bridged week shows as a stone week.
+**Phase 3: Petrification (reduced)**
+- **Share image** (`lib/summaryCard.ts`, kept): stat tiles in stone with a seeded grain; footer with the eye (shared `EYE_PATH` in `lib/brand.ts`), the name and the slogan in caps. The background stays plain. Waiting for the display font comes with phase 4.
+- **Dropped: finished sets turning to stone.** Tried (grey stone with grain instead of the teal `--done`); the grey read as skipped, not finished. Done sets stay teal.
+- **Dropped: streak freezes as "stone weeks".** Tried (copy, stone icon, stone bars on the weekly chart); it clashed with stone meaning a finished set. Freezes keep their name and snowflake.
 
 **Phase 4: Form and type**
 - **Display font** for headings and big numbers only (weights, timers, stats, the share image); body text stays system. Shortlist, to try side by side on the active workout: a condensed grotesk for numbers (e.g. Barlow Condensed) vs. a sharp display face (e.g. Fraunces). OFL licence, Latin subset, self-hosted `woff2` in `src/assets/fonts`, `font-display: swap`, cached by the service worker. Tabular numbers on timers so digits don't jump.
@@ -308,10 +307,10 @@ Done when: a finished workout reads as stone in the session view and on the shar
 Done when: the font is in and offline-safe, and the texture and arc are on the week card with no readability loss.
 
 **Phase 5: Voice**
-- A short copy pass in en and es (done), a few lines only: the finish summary title "Locked in." / "Foco total.", the forgotten-session prompt "Still locked in?" / "¿Sigues en la zona?", rest over "Eyes up." / "Mirada al frente." (phase 2), and empty History "Nothing turned to stone yet. Finished workouts land here." Spanish keeps the app's tú register. The streak line stays plain (it's already long). Everything else keeps its current wording.
+- A short copy pass in en and es (done), a few lines only: the finish summary title "Locked in." / "Foco total.", the forgotten-session prompt "Still locked in?" / "¿Sigues en la zona?", rest over "Eyes up." / "Mirada al frente." (phase 2). Empty History stays plain (its stone line went with the stone sets). Spanish keeps the app's tú register. The streak line stays plain (it's already long). Everything else keeps its current wording.
 Done when: the lines are in both languages and read naturally on the phone.
 
-**Order:** 1 → 2 → 3 → 4 → 5. Each phase is shippable on its own; check each on the phone, not just the desktop browser (grain visibility on an OLED screen).
+**Order:** 1 → 2 → 3 → 4 → 5. Each phase is shippable on its own; check each on the phone, not just the desktop browser (texture visibility on an OLED screen).
 
 ## Updates and distribution
 Two layers, so most updates need no new APK:

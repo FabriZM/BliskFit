@@ -57,9 +57,8 @@ export const AlertIcon = (p: IconProps) => <Icon {...p}><path d="M12 3.5L2.5 20h
 export const FlameIcon = (p: IconProps) => (
   <Icon {...p}><path d="M12 22c4 0 7-2.8 7-7 0-4-3-6.5-4-9.5-1.5 2-2 3.5-2 5-1.5-1-2.5-3-2.5-5.5C7 8 5 11 5 15c0 4.2 3 7 7 7z" /></Icon>
 )
-/** A cracked stone: a missed week bridged so the streak survives (a "stone week"). */
-export const StoneIcon = (p: IconProps) => (
-  <Icon {...p}><path d="M2.5 15.5C2.5 11 6 7.5 11 7.5c5.5 0 10.5 2.5 10.5 7 0 3.5-4 5-9.5 5S2.5 19 2.5 15.5Z" /><path d="M10 7.6l1.2 3.6-2 1.8" /></Icon>
+export const SnowflakeIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M12 2v20M3.3 7l17.4 10M20.7 7L3.3 17" /><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5" /></Icon>
 )
 export const ArrowRightIcon = (p: IconProps) => <Icon {...p}><path d="M5 12h14M13 6l6 6-6 6" /></Icon>
 export const ArrowUpIcon = (p: IconProps) => <Icon {...p}><path d="M12 19V5M6 11l6-6 6 6" /></Icon>

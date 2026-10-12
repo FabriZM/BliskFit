@@ -35,12 +35,12 @@
     "weekStart": "Week starts on",
     "version": "Version",
     "prBadges": "Show PR badges",
-    "freezesUsed_one": "{{count}} stone week",
-    "freezesUsed_other": "{{count}} stone weeks",
+    "freezesUsed_one": "{{count}} freeze used",
+    "freezesUsed_other": "{{count}} freezes used",
     "openWorkout": "open workout",
-    "streakFreezes": "Stone weeks per month",
+    "streakFreezes": "Streak freezes per month",
     "freezeOff": "Off",
-    "freezeHelp": "A missed week turns to stone instead of ending your streak: bridged automatically, up to this many per month."
+    "freezeHelp": "A missed week is bridged automatically, up to this many per month, so one off week doesn't end your streak."
   },
   "muscles": {
     "chest": "Chest",
@@ -357,7 +357,7 @@
   },
   "history": {
     "title": "History",
-    "empty": "Nothing turned to stone yet. Finished workouts land here.",
+    "empty": "No finished workouts yet.",
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets",
     "view": "View",
@@ -425,7 +425,6 @@
     "goal": "Goal {{count}}",
     "goalMet": "Goal met",
     "goalMissed": "Missed",
-    "stoneWeek": "Stone week",
     "inProgress": "This week"
   },
   "gymplan": {
