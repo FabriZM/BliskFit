@@ -7,7 +7,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home -v 21)}"
+# Capacitor 8 needs JDK 21, whatever the shell's JAVA_HOME says (it may point at an older JDK for other projects).
+# BLISKFIT_JAVA_HOME overrides it.
+export JAVA_HOME="${BLISKFIT_JAVA_HOME:-$(/usr/libexec/java_home -v 21)}"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 
