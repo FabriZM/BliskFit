@@ -273,7 +273,7 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: phases 1, 2 and 5 done; phase 3 reduced to the share image; phase 4 partly (scale texture), display font and goal arc pending (web-checked).** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. The motif that carries it is **the gaze** (eye, slit pupil), marking focus. Stone stays a texture (the share image), not a meaning in the UI. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phases 1, 2 and 5 done; phase 3 reduced to the share image; phase 4 done (web-checked).** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. The motif that carries it is **the gaze** (eye, slit pupil), marking focus. Stone stays a texture (the share image), not a meaning in the UI. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
@@ -301,10 +301,10 @@ Done when: on the phone, the rest pupil closes as the timer ends, and a cold sta
 - **Dropped: streak freezes as "stone weeks".** Tried (copy, stone icon, stone bars on the weekly chart); it clashed with stone meaning a finished set. Freezes keep their name and snowflake.
 
 **Phase 4: Form and type**
-- **Display font** for headings and big numbers only (weights, timers, stats, the share image); body text stays system. Shortlist, to try side by side on the active workout: a condensed grotesk for numbers (e.g. Barlow Condensed) vs. a sharp display face (e.g. Fraunces). OFL licence, Latin subset, self-hosted `woff2` in `src/assets/fonts`, `font-display: swap`, cached by the service worker. Tabular numbers on timers so digits don't jump.
+- **Display font** (done): **Barlow Condensed 700**, chosen over Fraunces after a side-by-side. Used for headings and big numbers only (`--font-display`: h1, workout timer, set inputs, rest ring and bar, in-progress timer, stat values, and the share image's title and stat numbers); body text stays system. Self-hosted Latin-subset `woff2` (15 KB, OFL) in `src/assets/fonts`, `font-display: swap`, `size-adjust: 116%` so it matches the system face at the same font-size, tabular numbers. Precached by the service worker (`globPatterns` adds `woff2`). The share image waits for it (`loadCardFonts`) and falls back to the system font.
 - **Scale texture** (done): `--scales`, a seamless fish-scale tile at 4% opacity, on the week card only. Not on the launch screen or share image (kept clean), never on lists or forms.
-- **Serpent curve**: the weekly goal progress on the week card as a coiled arc, echoing the S-curve of the logo cutout. Charts are left alone.
-Done when: the font is in and offline-safe, and the texture and arc are on the week card with no readability loss.
+- **Dropped: serpent curve** (the weekly goal as a coiled arc on the week card); not tried.
+Done when: the font is in and offline-safe, and the texture is on the week card with no readability loss.
 
 **Phase 5: Voice**
 - A short copy pass in en and es (done), a few lines only: the finish summary title "Locked in." / "Foco total.", the forgotten-session prompt "Still locked in?" / "¿Sigues en la zona?", rest over "Eyes up." / "Mirada al frente." (phase 2). Empty History stays plain (its stone line went with the stone sets). Spanish keeps the app's tú register. The streak line stays plain (it's already long). Everything else keeps its current wording.

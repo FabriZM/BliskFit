@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { buildSummaryCard, canvasToPng, drawSummaryCard, type SummaryCardInput } from '../../lib/summaryCard'
+import { buildSummaryCard, canvasToPng, drawSummaryCard, loadCardFonts, type SummaryCardInput } from '../../lib/summaryCard'
 import { toDateInput } from '../../lib/dates'
 import { platform } from '../../lib/platform'
 import { useBlobUrl } from '../../lib/useBlobUrl'
@@ -15,7 +15,8 @@ export default function SummaryImage({ input, onClose }: { input: SummaryCardInp
   // Drawn once when opened; the workout can't change while the preview is up.
   useEffect(() => {
     const card = buildSummaryCard(input)
-    void canvasToPng(drawSummaryCard(card, { pr: t('summary.pr'), more: t('summary.moreExercises', { count: card.more }) }))
+    void loadCardFonts()
+      .then(() => canvasToPng(drawSummaryCard(card, { pr: t('summary.pr'), more: t('summary.moreExercises', { count: card.more }) })))
       .then(setPng, () => setFailed(true))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

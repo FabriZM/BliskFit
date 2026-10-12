@@ -57,6 +57,13 @@ const W = 1080
 const PAD = 72
 const C = { bg: '#0b1514', card: '#13211f', stone: '#252f2d', fg: '#e8f0ee', muted: '#8fa5a1', silver: '#c3cfcc', accent: '#45d0a0', onAccent: '#06261f' }
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+/** Display face for the title and stat numbers, as in the app (index.css); falls back to FONT if not loaded. */
+const DISPLAY = `"Barlow Condensed", ${FONT}`
+
+/** Loads the display font before drawing (the canvas doesn't wait for it on its own). Never throws. */
+export async function loadCardFonts(): Promise<void> {
+  try { await Promise.all([document.fonts.load(`700 64px "Barlow Condensed"`), document.fonts.load(`700 52px "Barlow Condensed"`)]) } catch { /* draw with the fallback */ }
+}
 
 /** Cuts text to fit `max` px, ending in an ellipsis. */
 function fit(ctx: CanvasRenderingContext2D, text: string, max: number): string {
@@ -151,7 +158,7 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
 
   let y = PAD + 64
   ctx.fillStyle = C.fg
-  ctx.font = `700 64px ${FONT}`
+  ctx.font = `700 64px ${DISPLAY}`
   ctx.fillText(fit(ctx, card.title, inner), PAD, y)
   y += 60
   ctx.fillStyle = C.muted
@@ -170,7 +177,7 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
     ctx.fillStyle = C.fg
     // Numbers shrink to fit rather than being cut ("1:05:00", "10335 kg").
     let size = 52
-    do ctx.font = `700 ${size}px ${FONT}`; while (ctx.measureText(s.value).width > tileW - 40 && (size -= 2) > 28)
+    do ctx.font = `700 ${size}px ${DISPLAY}`; while (ctx.measureText(s.value).width > tileW - 40 && (size -= 2) > 28)
     ctx.fillText(fit(ctx, s.value, tileW - 40), x + 20, y + 86)
     ctx.fillStyle = C.muted
     ctx.font = `400 30px ${FONT}`

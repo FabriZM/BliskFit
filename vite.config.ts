@@ -48,6 +48,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Default precache list plus the self-hosted display font, so it works offline.
+        globPatterns: ['**/*.{js,wasm,css,html,woff2}'],
         runtimeCaching: [{
           // Demo images are remote; cache them after first view so they work offline.
           urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/yuhonas\/.*\.jpg$/,
