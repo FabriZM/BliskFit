@@ -54,7 +54,7 @@ export function buildSummaryCard(i: SummaryCardInput): SummaryCard {
 
 const W = 1080
 const PAD = 72
-const C = { bg: '#111827', card: '#1f2937', fg: '#f3f4f6', muted: '#9ca3af', accent: '#34d399', onAccent: '#064e3b' }
+const C = { bg: '#0b1514', card: '#13211f', fg: '#e8f0ee', muted: '#8fa5a1', accent: '#45d0a0', onAccent: '#06261f' }
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 
 /** Cuts text to fit `max` px, ending in an ellipsis. */
