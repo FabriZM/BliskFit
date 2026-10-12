@@ -217,7 +217,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 onUndo={() => void uncompleteSet(s.id)}
                 onRepeat={() => void updateSet(s.id, copyOf(sorted[i - 1]))}
                 onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, copyOf(src)) }}
-                onDelete={() => void deleteSet(s.id)} />
+                onDelete={sorted.length > 1 ? () => void deleteSet(s.id) : undefined} />
             ))}
           </ul>
           <div className="set-adds">

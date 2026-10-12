@@ -45,7 +45,7 @@ export async function startSession(routineId?: ID): Promise<ID> {
   }
   await db.transaction('rw', db.sessions, db.setLogs, async () => {
     await db.sessions.add(session)
-    await db.setLogs.bulkAdd(items.flatMap((it) => blankSets(session.id, it, it.targetSets)))
+    await db.setLogs.bulkAdd(items.flatMap((it) => blankSets(session.id, it, Math.max(1, it.targetSets))))
   })
   return session.id
 }
@@ -67,7 +67,7 @@ export const acknowledgeForgotten = (id: ID) => mutate(id, (s) => ({ ...s, forgo
 export const addExercisesToSession = (id: ID, exercises: Exercise[]) =>
   mutate(id, async (s) => {
     const items = exercises.map((e): SessionExercise => ({ id: newId(), exerciseId: e.id, ...defaultsFor(e) }))
-    await db.setLogs.bulkAdd(items.flatMap((it) => blankSets(id, it, it.targetSets)))
+    await db.setLogs.bulkAdd(items.flatMap((it) => blankSets(id, it, Math.max(1, it.targetSets))))
     return { ...s, exercises: [...s.exercises, ...items] }
   })
 

@@ -84,7 +84,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   onUndo: () => void
   onRepeat: () => void
   onUseLast: () => void
-  onDelete: () => void
+  /** Omitted for an exercise's last set: every exercise keeps at least one. */
+  onDelete?: () => void
   onPlates?: () => void
 }) {
   const { t } = useTranslation()
@@ -96,12 +97,15 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   const plateLoad = bar !== undefined && plateKg !== undefined ? loadFor(kgToDisplay(plateKg, units), bar, PLATES[units]) : undefined
   const ready = isFilled(set, tracking)
 
-  // Swipe either way to delete the set (no confirmation). Works from anywhere on the row, including fields;
-  // a mostly-vertical gesture is left to the page scroll. Stops propagation so the card's own swipe stays out.
+  // Swipe either way, at least half the row's width, to delete the set (no confirmation). Works from anywhere on
+  // the row, including fields; a mostly-vertical gesture is left to the page scroll. Stops propagation so the
+  // card's own swipe stays out. The last set can't be deleted, so it doesn't swipe.
   const [dx, setDx] = useState(0)
-  const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
-  const SWIPE_AT = 80
-  const down = (e: React.PointerEvent) => { e.stopPropagation(); drag.current = { x: e.clientX, y: e.clientY, active: false } }
+  const drag = useRef<{ x: number; y: number; width: number; active: boolean } | null>(null)
+  const down = (e: React.PointerEvent<HTMLElement>) => {
+    e.stopPropagation()
+    if (onDelete) drag.current = { x: e.clientX, y: e.clientY, width: e.currentTarget.offsetWidth, active: false }
+  }
   const move = (e: React.PointerEvent<HTMLElement>) => {
     const d = drag.current
     if (!d) return
@@ -118,10 +122,11 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   }
   const up = (e: React.PointerEvent) => {
     e.stopPropagation()
-    const swiped = drag.current?.active && Math.abs(dx) > SWIPE_AT
+    const d = drag.current
+    const swiped = d?.active && Math.abs(dx) >= d.width / 2
     drag.current = null
     setDx(0)
-    if (swiped) onDelete()
+    if (swiped) onDelete?.()
   }
   // A cancelled gesture (the OS took over the touch) must never delete anything.
   const cancel = (e: React.PointerEvent) => { e.stopPropagation(); drag.current = null; setDx(0) }
@@ -184,7 +189,7 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
           <label className="inline"><input type="checkbox" checked={!!set.failure} onChange={(e) => onChange({ failure: e.target.checked || undefined })} /> {t('workout.failure')}</label>
           <div className="set-actions">
             <button disabled={!canUseLast || done} onClick={onUseLast}>{t('workout.useLastSet')}</button>
-            <button className="danger" onClick={onDelete}>{t('workout.deleteSet')}</button>
+            <button className="danger" disabled={!onDelete} onClick={onDelete}>{t('workout.deleteSet')}</button>
           </div>
         </div>
       )}
