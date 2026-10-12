@@ -273,7 +273,7 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: phase 1 done; phase 2 done except the launch screen (web-checked); 3–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phase 1 done; phase 2 done (web-checked); 3–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
@@ -292,8 +292,8 @@ Done when: tokens and the eye component exist, and the APK's background and noti
 **Phase 2: The gaze**
 - **Tab bar:** stays as it is. An iris with a slit pupil on the active bubble (and an almond eye-shaped bubble) were tried and dropped; the eye doesn't belong in the navigation.
 - **Rest timer** (`RestPopup.tsx` ring and `RestBar.tsx`): a `BasiliskEye` above the countdown in the popup and next to it in the bar. The pupil narrows from round to a slit as rest runs out; at zero it's a full slit (amber in the popup, like the ring). The bar's "rest over" text is now "Eyes up." / "Mirada al frente."; the popup keeps the short "Go!" (it has to fit the ring). The progress fill and ring stay.
-- **Launch screen** (not done yet): an eye opening over the logo mark, plus the slogan, shown only while the app is loading (DB open, settings), so it never adds waiting time. Static when reduced motion is on.
-Done when: on the phone, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay.
+- **Launch screen** (`index.html`): plain HTML/CSS shown while the app's JS loads, so it covers the real cold-start wait and needs no JS. The eye opens, then the pupil narrows to a slit, with the slogan below (injected at build time from `SLOGAN` by a small Vite plugin). `App.tsx` fades it out as soon as settings are loaded, so it never adds waiting; on a fast start it's barely seen. Static when reduced motion is on. On Android it follows the native splash.
+Done when: on the phone, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay. (Web-checked; still to see on the phone.)
 
 **Phase 3: Petrification (stone = done, locked)**
 - **Finished sets turn to stone**: `.set.done` uses `--stone` with the grain instead of the teal `--done`; numbers in `--stone-fg`. The tick/button keeps the accent so state is clear at a glance. Change of color only, no animation. Check that warm-up/drop labels and PR badges are still readable on stone.

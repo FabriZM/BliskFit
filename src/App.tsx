@@ -54,6 +54,16 @@ export default function App() {
     if (loaded) void i18n.changeLanguage(settings.language)
   }, [loaded, settings.language, i18n])
 
+  // Fade out the launch screen from index.html once settings are in; it never waits longer than loading does.
+  useEffect(() => {
+    if (!loaded) return
+    const launch = document.getElementById('launch')
+    if (!launch) return
+    launch.classList.add('done')
+    const timer = setTimeout(() => launch.remove(), 300)
+    return () => clearTimeout(timer)
+  }, [loaded])
+
   return (
     <div className="app">
       {needRefresh && (

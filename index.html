@@ -7,8 +7,29 @@
     <link rel="icon" href="%BASE_URL%favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="%BASE_URL%pwa-192.png" />
     <title>BliskFit</title>
+    <!-- Launch screen: plain HTML/CSS so it shows while the app's JS loads; App removes it once settings are loaded.
+         The basilisk's eye opens, then the pupil narrows to a slit (the gaze locks). Colors match index.css. -->
+    <style>
+      #launch { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #0b1514; color: #45d0a0; transition: opacity .25s ease; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      #launch.done { opacity: 0; pointer-events: none; }
+      #launch svg { width: 88px; height: 88px; overflow: visible; }
+      #launch .lid { transform-origin: 12px 12px; animation: launch-lid .45s cubic-bezier(.2, .8, .2, 1) .1s both; }
+      #launch .pupil { transform-origin: 12px 12px; animation: launch-pupil .35s cubic-bezier(.4, 0, .2, 1) .5s both; }
+      #launch p { margin: 0; color: #c3cfcc; font-size: .95rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; animation: launch-fade .4s ease .55s both; }
+      @keyframes launch-lid { from { transform: scaleY(.04); } }
+      @keyframes launch-pupil { from { transform: scaleX(1); } to { transform: scaleX(.22); } }
+      @keyframes launch-fade { from { opacity: 0; transform: translateY(4px); } }
+      @media (prefers-reduced-motion: reduce) { #launch .lid, #launch p { animation: none; } #launch .pupil { animation: none; transform: scaleX(.22); } }
+    </style>
   </head>
   <body>
+    <div id="launch" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><g class="lid">
+        <path d="M1.5 12C5 5.5 19 5.5 22.5 12 19 18.5 5 18.5 1.5 12Z" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
+        <ellipse class="pupil" cx="12" cy="12" rx="4" ry="5.2" fill="currentColor" />
+      </g></svg>
+      <p>%SLOGAN%</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

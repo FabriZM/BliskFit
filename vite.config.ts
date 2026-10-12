@@ -25,6 +25,8 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // The launch screen in index.html shows the slogan before any JS runs.
+    { name: 'slogan', transformIndexHtml: (html: string) => html.replace('%SLOGAN%', SLOGAN) },
     VitePWA({
       disable: native,
       registerType: 'prompt',
