@@ -21,6 +21,27 @@ export interface AppFiles {
   remove(name: string): Promise<void>
 }
 
+/**
+ * Why getting a Google token failed: it would need the consent screen, the user closed it, the browser blocked
+ * Google's pop-up (web), or something else broke.
+ */
+export class GoogleAuthError extends Error {
+  constructor(public reason: 'consent' | 'canceled' | 'popup' | 'failed', message: string = reason) { super(message) }
+}
+
+/** Google sign-in for Drive backups (drive.file scope only). */
+export interface GoogleAuth {
+  /**
+   * An access token. `interactive` may show Google's account picker and consent screen (needs a tap from the
+   * user on the web); otherwise it only succeeds silently or rejects with GoogleAuthError('consent').
+   */
+  getToken(interactive: boolean): Promise<string>
+  /** Forget a token Google rejected, so the next getToken fetches a fresh one. */
+  clearToken(token: string): Promise<void>
+  /** Withdraw the app's access to the user's Drive (on disconnect). */
+  revoke(token?: string, email?: string): Promise<void>
+}
+
 export interface Platform {
   readonly isNative: boolean
   /** Short buzz for feedback while the app is in the foreground. */
@@ -38,6 +59,7 @@ export interface Platform {
    * launched with. Only in the Android app. Returns an unsubscribe function.
    */
   onOpenUrl?(cb: (url: string) => void): () => void
+  googleAuth: GoogleAuth
   /** Private file storage for automatic backups; only in the Android app. */
   appFiles?: AppFiles
   /** Shares a link through the system share sheet, or copies it where there's none. */

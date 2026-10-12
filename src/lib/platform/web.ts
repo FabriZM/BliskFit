@@ -1,4 +1,5 @@
 import type { PermissionState, Platform, ScheduledNotification } from './types'
+import { googleWebAuth } from './googleWeb'
 
 /** Browser/PWA implementation: Vibration API, Wake Lock API, and service-worker notifications while the page lives. */
 const supported = () => typeof Notification !== 'undefined' && 'serviceWorker' in navigator
@@ -21,6 +22,7 @@ if (typeof document !== 'undefined') document.addEventListener('visibilitychange
 
 export const webPlatform: Platform = {
   isNative: false,
+  googleAuth: googleWebAuth,
   vibrate(pattern = [250, 120, 250]) {
     try { navigator.vibrate?.(pattern) } catch { /* unsupported */ }
   },

@@ -27,7 +27,7 @@ export default defineConfig({
     VitePWA({
       disable: native,
       registerType: 'prompt',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['favicon.png'],
       manifest: {
         name: 'BliskFit',
         short_name: 'BliskFit',

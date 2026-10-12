@@ -659,5 +659,26 @@
     "help": "Al actualizar se guarda primero una copia automática y luego se descarga la nueva versión; Android te pide confirmar la instalación. Tus datos se mantienen.",
     "allReleases": "Todas las versiones",
     "webHelp": "La versión web se actualiza sola: cuando haya una nueva verás una barra de “Actualización disponible”."
+  },
+  "drive": {
+    "title": "Google Drive",
+    "help": "Haz copias automáticas en tu propio Google Drive, en una carpeta “BliskFit backups”. BliskFit solo puede ver los archivos que crea ahí, nada más de tu Drive.",
+    "connect": "Conectar Google Drive",
+    "connected": "Conectado. Primera copia guardada.",
+    "connectedShort": "Conectado.",
+    "account": "Copias en {{email}}.",
+    "autoHelp": "Se guarda una copia después de cada entrenamiento y al menos una vez al día al abrir la app; se conservan las 7 más recientes.",
+    "backupNow": "Copiar ahora",
+    "show": "Ver copias en Drive",
+    "none": "Aún no hay copias en Drive.",
+    "disconnect": "Desconectar",
+    "confirmDisconnect": "¿Dejar de copiar a Google Drive? Las copias que ya están ahí se quedan en tu Drive.",
+    "confirmDelete": "¿Borrar de tu Drive la copia del {{date}}?",
+    "failed": "No se pudo conectar con Google Drive. Revisa tu conexión e inténtalo de nuevo.",
+    "problem": {
+      "signIn": "La última copia automática necesita que inicies sesión de nuevo: toca “Copiar ahora”.",
+      "failed": "La última copia automática no se pudo hacer. Se volverá a intentar; o toca “Copiar ahora”."
+    },
+    "popupBlocked": "El navegador bloqueó la ventana de inicio de sesión de Google. Permite las ventanas emergentes para este sitio e inténtalo de nuevo."
   }
 }

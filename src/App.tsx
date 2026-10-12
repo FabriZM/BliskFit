@@ -29,6 +29,7 @@ import ExerciseForm from './pages/exercises/ExerciseForm'
 import { ExercisesIcon, ProfileIcon, WorkoutIcon } from './components/TabIcons'
 import { db } from './db/db'
 import { ensureSeed } from './db/seed'
+import { autoBackupToDrive } from './db/driveBackup'
 
 // Three tabs. Routines and programs live under Workout, so those routes keep the Workout tab highlighted.
 const TABS = [
@@ -48,6 +49,9 @@ export default function App() {
     void ensureSeed(db)
     // Ask the browser not to evict our IndexedDB data.
     void navigator.storage?.persist?.()
+    // Daily Google Drive backup, if connected; a little later so it never slows the start.
+    const driveTimer = setTimeout(() => void autoBackupToDrive(false), 5000)
+    return () => clearTimeout(driveTimer)
   }, [load])
 
   useEffect(() => {

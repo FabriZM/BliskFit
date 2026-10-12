@@ -659,5 +659,26 @@
     "help": "Updating saves an automatic backup first, then downloads the new version; Android asks you to confirm the install. Your data stays.",
     "allReleases": "All releases",
     "webHelp": "The web version updates itself: when a new version is out you'll see an “Update available” bar."
+  },
+  "drive": {
+    "title": "Google Drive",
+    "help": "Back up automatically to your own Google Drive, in a “BliskFit backups” folder. BliskFit can only see the files it creates there, nothing else in your Drive.",
+    "connect": "Connect Google Drive",
+    "connected": "Connected. First backup saved.",
+    "connectedShort": "Connected.",
+    "account": "Backing up to {{email}}.",
+    "autoHelp": "A backup is saved after every workout and at least once a day when you open the app; the newest 7 are kept.",
+    "backupNow": "Back up now",
+    "show": "Show backups in Drive",
+    "none": "No backups in Drive yet.",
+    "disconnect": "Disconnect",
+    "confirmDisconnect": "Stop backing up to Google Drive? The backups already there stay in your Drive.",
+    "confirmDelete": "Delete the backup from {{date}} from your Drive?",
+    "failed": "Couldn't reach Google Drive. Check your connection and try again.",
+    "problem": {
+      "signIn": "The last automatic backup needs you to sign in again: tap “Back up now”.",
+      "failed": "The last automatic backup didn't go through. It will try again; or tap “Back up now”."
+    },
+    "popupBlocked": "Your browser blocked Google’s sign-in window. Allow pop-ups for this site and try again."
   }
 }

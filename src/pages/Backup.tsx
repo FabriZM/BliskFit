@@ -8,10 +8,11 @@ import { setsToCsv } from '../lib/csv'
 import { platform } from '../lib/platform'
 import type { AppFile } from '../lib/platform/types'
 import { useSettings } from '../stores/settings'
+import DriveBackup from '../components/DriveBackup'
 
 const LAST_BACKUP = 'lastBackupAt'
 
-/** Settings → Backup and data: JSON backup and restore, CSV export, persistent storage status. */
+/** Settings → Backup and data: Google Drive, JSON backup and restore, CSV export, persistent storage status. */
 export default function Backup() {
   const { t, i18n } = useTranslation()
   const units = useSettings((s) => s.settings.units)
@@ -74,6 +75,8 @@ export default function Backup() {
     <section>
       <p><Link to="/profile/settings">← {t('profile.settings')}</Link></p>
       <h1>{t('backup.title')}</h1>
+
+      <DriveBackup restore={restoreText} />
 
       <h2>{t('backup.backupTitle')}</h2>
       <p className="muted small help">{t('backup.backupHelp')}</p>

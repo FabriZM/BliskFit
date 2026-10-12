@@ -14,6 +14,7 @@ import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
 import { SetFields } from './SetRow'
 import SummaryImage from './SummaryImage'
+import { autoBackupToDrive } from '../../db/driveBackup'
 
 /** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
 function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
@@ -50,6 +51,9 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
   const [editing, setEditing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [sharing, setSharing] = useState(false)
+
+  // A finished workout is the moment worth saving: back it up to Drive right away (if connected).
+  useEffect(() => { if (justFinished) void autoBackupToDrive(true) }, [justFinished, id])
 
   const data = useLiveQuery(async () => {
     const session = await db.sessions.get(id)

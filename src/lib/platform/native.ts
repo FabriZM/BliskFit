@@ -1,4 +1,5 @@
-import type { AppFiles, PermissionState, Platform, ScheduledNotification } from './types'
+import { registerPlugin } from '@capacitor/core'
+import { GoogleAuthError, type AppFiles, type GoogleAuth, type PermissionState, type Platform, type ScheduledNotification } from './types'
 
 /** Capacitor (Android) implementation. Plugins are imported lazily so the plain PWA never loads them. */
 const CHANNEL = 'timers'
@@ -32,6 +33,27 @@ async function blobToBase64(b: Blob): Promise<string> {
 const toState = (s: string): PermissionState =>
   s === 'granted' ? 'granted' : s === 'denied' ? 'denied' : 'prompt'
 
+/** Our own plugin (android/.../GoogleDrivePlugin.java): Google's Authorization API for the drive.file scope. */
+interface GoogleDrivePlugin {
+  authorize(o: { interactive: boolean }): Promise<{ accessToken: string }>
+  clearToken(o: { token: string }): Promise<void>
+  revoke(o: { email?: string }): Promise<void>
+}
+const GoogleDrive = registerPlugin<GoogleDrivePlugin>('GoogleDrive')
+
+const googleAuth: GoogleAuth = {
+  async getToken(interactive) {
+    try {
+      return (await GoogleDrive.authorize({ interactive })).accessToken
+    } catch (e) {
+      const code = (e as { code?: string }).code
+      throw new GoogleAuthError(code === 'NEEDS_CONSENT' ? 'consent' : code === 'CANCELED' ? 'canceled' : 'failed', (e as Error).message)
+    }
+  },
+  clearToken: (token) => GoogleDrive.clearToken({ token }),
+  revoke: (_token, email) => GoogleDrive.revoke({ email }),
+}
+
 const BACKUP_DIR = 'backups'
 const fs = () => import('@capacitor/filesystem')
 
@@ -61,6 +83,7 @@ const appFiles: AppFiles = {
 
 export const nativePlatform: Platform = {
   isNative: true,
+  googleAuth,
   appFiles,
   onOpenUrl(cb) {
     let handle: { remove: () => Promise<void> } | undefined

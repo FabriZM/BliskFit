@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App window / splash background (dark, matches the web app). -->
     <color name="ic_launcher_background">#111827</color>
+    <!-- Launcher icon tile behind the teal logo. -->
+    <color name="ic_launcher_tile">#FFFFFF</color>
 </resources>

@@ -23,7 +23,9 @@ It works offline and updates itself (tap **Reload** on the "Update available" ba
 
 ## Keep a backup
 
-Everything lives only on your phone. Save a backup now and then from Profile → ⚙ → **Backup and data** → **Save backup**, and keep the file somewhere else (Google Drive, your computer). On a new phone, install BliskFit and use **Restore** with that file.
+Everything lives only on your phone, so keep a backup somewhere else. Easiest: Profile → ⚙ → **Backup and data** → **Connect Google Drive**. BliskFit then saves a backup to your own Drive after every workout (it can only see its own "BliskFit backups" folder). On a new phone, install BliskFit, connect the same Google account and tap **Restore** next to the latest backup.
+
+Without Drive: **Save backup** there creates a file you can keep anywhere (your computer, a cloud folder), and **Restore** reads it back.
 
 ## Opening shared routines in the app
 
