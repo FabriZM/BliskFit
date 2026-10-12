@@ -1,7 +1,7 @@
 import { EYE_PATH } from '../lib/brand'
 
 /**
- * The basilisk's eye, drawn once and shared (tab bar, rest bar, launch screen) so they all match.
+ * The basilisk's eye, drawn once and shared by the rest popup and rest bar (index.html's launch screen has a copy).
  * `pupil`: 0 = a closed slit (locked in) … 1 = round. `open`: 0 = lid shut … 1 = fully open.
  * Both are applied as CSS transforms, so a change animates when the caller adds a transition.
  */
