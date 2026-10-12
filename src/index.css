@@ -274,3 +274,50 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .today-routine { display: block; margin: 2px 0 4px; font-size: var(--text-xl); font-weight: 800; letter-spacing: -.01em; color: var(--fg); text-decoration: none; }
 .today-card .primary { width: 100%; margin-top: var(--space-3); padding: 12px 16px; }
 .today-card a:not(.today-routine) { color: var(--accent); font-weight: 600; }
+
+/* ---- Workout screen: built for one-handed use mid-set ---- */
+/* Sticky toolbar: big timer with the routine name under it */
+.wk-head { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); margin: -16px -16px var(--space-3); padding: var(--space-3) var(--space-4); top: -16px; }
+.wk-head > div:first-child { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.wk-head > div:first-child .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.wk-timer { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -.02em; }
+.wk-actions button { padding: 10px 14px; }
+.muscle-counter .chip.on { background: var(--accent-soft); border-color: transparent; color: var(--accent); font-weight: 600; }
+/* Exercise card */
+.rx-list { gap: var(--space-3); }
+.ex-card { border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.ex-card .swipe-body { padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); }
+.ex-card .rx-name { font-size: var(--text-lg); font-weight: 700; letter-spacing: -.01em; }
+.ex-card.grouped { border-left: 4px solid var(--accent); }
+.last-hint { background: var(--surface-2); border-radius: var(--radius-sm); padding: 6px 6px 6px 10px; margin: var(--space-1) 0; }
+.last-hint button { border-radius: var(--radius-pill); background: var(--surface); }
+/* Set rows */
+.sets { gap: var(--space-2); }
+.set-body { padding: 6px; background: var(--bg); border: 1px solid transparent; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.set.next .set-body { border-color: var(--border-strong); }
+.set.done .set-body { background: var(--done); border-color: #45d0a033; }
+.set-main { gap: var(--space-2); }
+.set-label { width: 40px; height: 40px; font-size: var(--text-base); background: var(--surface-2); }
+.set.done .set-label.working { background: var(--accent-soft); color: var(--accent); }
+.wide-num { height: 44px; max-width: 96px; font-size: var(--text-lg); font-weight: 700; font-variant-numeric: tabular-nums; }
+.field { font-size: var(--text-xs); gap: 2px; }
+.set.done .wide-num { background: transparent; border-color: transparent; }
+.set-main > .icon { min-width: 36px; padding: 6px; color: var(--muted); }
+.check { width: 52px; height: 44px; border-radius: var(--radius); background: transparent; border: 2px solid var(--border-strong); color: var(--muted); font-size: 1.3rem; }
+.check:not(:disabled):not(.on) { border-color: var(--accent); color: var(--accent); }
+.check.on { border-color: var(--accent); box-shadow: 0 2px 10px #45d0a040; }
+.check:disabled { opacity: .5; }
+.set-adds { margin-top: var(--space-1); } .set-adds .link { margin-top: 0; padding: 10px; border-radius: var(--radius); }
+/* Rest bar: floating pill above the content */
+.restbar { bottom: 10px; background: var(--brand); border: 1px solid #45d0a055; border-radius: var(--radius-pill); padding: 6px; box-shadow: var(--shadow-2); }
+.restbar strong { font-size: var(--text-lg); font-weight: 800; }
+.restbar button { border-radius: var(--radius-pill); background: #ffffff14; padding: 10px 14px; min-width: 52px; }
+.restbar-fill { background: #45d0a02e; }
+.restbar.over { border-color: var(--accent); }
+/* Rest popup */
+.rest-card { gap: var(--space-4); padding: var(--space-6) var(--space-5) var(--space-5); }
+.ring { width: 240px; height: 240px; }
+.ring-track { stroke: var(--surface-2); stroke-width: 10; } .ring-fill { stroke-width: 10; filter: drop-shadow(0 0 6px #45d0a066); }
+.ring-text strong { font-size: 3.4rem; font-weight: 800; letter-spacing: -.03em; } .ring-text span { text-transform: uppercase; letter-spacing: .12em; font-size: var(--text-xs); font-weight: 600; }
+.rest-actions button { border-radius: var(--radius-pill); padding: 12px 8px; }
+.rest-card .primary { padding: 14px 16px; border-radius: var(--radius-pill); }

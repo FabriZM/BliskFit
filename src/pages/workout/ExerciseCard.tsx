@@ -202,7 +202,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}
-                hint={hintFor(i)} pr={prs.get(s.id)} barOf={barOf} showPlates={s.id === nextId || expanded === s.id}
+                hint={hintFor(i)} pr={prs.get(s.id)} next={s.id === nextId} barOf={barOf} showPlates={s.id === nextId || expanded === s.id}
                 onPlates={() => setPlatesFor(s.id)}
                 expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}

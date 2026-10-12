@@ -58,7 +58,7 @@ export function SetFields({ set, tracking, units: fallback, hint, onChange }: {
   )
 }
 
-export default function SetRow({ set, tracking, units: fallback, label, hint, pr, expanded, canRepeat, canUseLast, barOf, showPlates, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete, onPlates }: {
+export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, canRepeat, canUseLast, barOf, showPlates, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete, onPlates }: {
   set: SetLog
   tracking: TrackingType
   /** The exercise's weight unit (its own, else the app's), for sets with no unit of their own yet. */
@@ -68,6 +68,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   hint?: SetLog
   /** Records this set achieved (shown as a PR badge once it's done). */
   pr?: PRKind[]
+  /** The next set to do in this exercise (highlighted). */
+  next?: boolean
   expanded: boolean
   canRepeat: boolean
   canUseLast: boolean
@@ -124,7 +126,7 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   const cancel = (e: React.PointerEvent) => { e.stopPropagation(); drag.current = null; setDx(0) }
 
   return (
-    <li className={`set${done ? ' done' : ''}${dx ? ` swiping ${dx > 0 ? 'dir-r' : 'dir-l'}` : ''}`}>
+    <li className={`set${done ? ' done' : ''}${next && !done ? ' next' : ''}${dx ? ` swiping ${dx > 0 ? 'dir-r' : 'dir-l'}` : ''}`}>
       <div className="swipe-bg" aria-hidden>🗑</div>
       <div className="set-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .15s' }}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}>
