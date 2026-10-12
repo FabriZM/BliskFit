@@ -6,6 +6,7 @@ import { getActiveProgramId } from '../db/programs'
 import { getActiveSession, startSession } from '../db/workout'
 import { suggestToday } from '../lib/programs'
 import { useSettings } from '../stores/settings'
+import { ArrowRightIcon } from './Icons'
 
 /** "Today's workout" suggestion from the active program. Start / resume buttons live here too. */
 export default function TodayCard() {
@@ -30,7 +31,7 @@ export default function TodayCard() {
 
   let body: React.ReactNode
   if (s.kind === 'none') {
-    body = <><p className="muted">{t('today.noProgram')}</p><Link to="/routines/programs">{t('programs.title')} →</Link></>
+    body = <><p className="muted">{t('today.noProgram')}</p><Link to="/routines/programs">{t('programs.title')} <ArrowRightIcon /></Link></>
   } else if (s.kind === 'notStarted') {
     body = <p className="muted">{t('today.notStarted', { date: new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(s.startDate) })}</p>
   } else if (s.kind === 'rest') {

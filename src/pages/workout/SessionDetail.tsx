@@ -16,6 +16,7 @@ import { SetFields } from './SetRow'
 import SummaryImage from './SummaryImage'
 import { autoBackupToDrive } from '../../db/driveBackup'
 import { BackLink } from '../../components/PageHeader'
+import { PencilIcon, TrashIcon } from '../../components/Icons'
 
 /** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
 function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
@@ -146,7 +147,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
                             <span className="label-wrap"><span className={`set-label static ${s.setType}`}>{label}</span>
                               {prs.get(s.id) && <PRBadge kinds={prs.get(s.id)!} />}</span>
                             <SetFields set={s} tracking={trackingOf(s.exerciseId)} units={units} onChange={(patch) => void updateSet(s.id, patch)} />
-                            <button className="icon" aria-label={t('workout.deleteSet')} onClick={() => void deleteSet(s.id)}>🗑</button>
+                            <button className="icon" aria-label={t('workout.deleteSet')} onClick={() => void deleteSet(s.id)}><TrashIcon /></button>
                           </div></div>
                         </li>
                       )
@@ -169,7 +170,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
       </ul>
 
       <div className="actions">
-        <button className={editing ? 'primary' : ''} onClick={() => setEditing(!editing)}>{editing ? t('detail.doneEditing') : `✎ ${t('detail.edit')}`}</button>
+        <button className={editing ? 'primary' : ''} onClick={() => setEditing(!editing)}>{editing ? t('detail.doneEditing') : <><PencilIcon /> {t('detail.edit')}</>}</button>
         {items.length > 0 && !editing && <button onClick={() => setSharing(true)}>{t('summary.shareImage')}</button>}
         <button className="danger" onClick={() => setConfirmDelete(true)}>{t('detail.deleteWorkout')}</button>
       </div>

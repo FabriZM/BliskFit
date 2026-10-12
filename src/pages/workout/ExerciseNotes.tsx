@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
 import type { ID } from '../../db/types'
 import { useBlobUrl } from '../../lib/useBlobUrl'
+import { CloseIcon, PinIcon, PinOffIcon, WrenchIcon } from '../../components/Icons'
 
 function Photo({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
@@ -34,16 +35,16 @@ export default function ExerciseNotes({ exerciseId, gymId, adding, onDoneAdding 
     <>
       {pinned.map((n) => (
         <div className="note pinned" key={n.id}>
-          <span>📌 {n.text}</span>
+          <span><PinIcon filled /> {n.text}</span>
           <span>
-            <button className="icon" aria-label={t('workout.unpin')} onClick={() => void db.exerciseNotes.update(n.id, { pinned: false })}>📍</button>
-            <button className="icon" aria-label={t('common.delete')} onClick={() => void db.exerciseNotes.delete(n.id)}>✕</button>
+            <button className="icon" aria-label={t('workout.unpin')} onClick={() => void db.exerciseNotes.update(n.id, { pinned: false })}><PinOffIcon /></button>
+            <button className="icon" aria-label={t('common.delete')} onClick={() => void db.exerciseNotes.delete(n.id)}><CloseIcon /></button>
           </span>
         </div>
       ))}
       {setup.map((n) => (
         <div className="note setup" key={n.id}>
-          <span>🔧 {gyms.find((g) => g.id === n.gymId)?.name ? `${gyms.find((g) => g.id === n.gymId)!.name}: ` : ''}{n.text}</span>
+          <span><WrenchIcon /> {gyms.find((g) => g.id === n.gymId)?.name ? `${gyms.find((g) => g.id === n.gymId)!.name}: ` : ''}{n.text}</span>
           {n.photo && <Photo blob={n.photo} />}
         </div>
       ))}

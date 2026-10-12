@@ -5,6 +5,7 @@ import {
 } from '../db/driveBackup'
 import type { DriveFile } from '../lib/drive'
 import { GoogleAuthError } from '../lib/platform'
+import { TrashIcon } from './Icons'
 
 /** Backup and data → Google Drive: connect, back up now, list and restore Drive backups, disconnect. */
 export default function DriveBackup({ restore }: { restore: (text: () => Promise<string>) => Promise<void> }) {
@@ -62,7 +63,7 @@ export default function DriveBackup({ restore }: { restore: (text: () => Promise
                 <button className="icon" aria-label={t('common.delete')} disabled={busy} onClick={() => {
                   if (!confirm(t('drive.confirmDelete', { date: fmt(file.createdTime) }))) return
                   void run(async () => { await deleteDriveBackup(file.id); setFiles(files.filter((x) => x.id !== file.id)) })
-                }}>🗑</button>
+                }}><TrashIcon /></button>
               </span>
             </li>
           ))}

@@ -5,6 +5,7 @@ import { db } from '../../db/db'
 import type { Exercise, Units } from '../../db/types'
 import { barWeight, formatPlate, loadFor, PLATES, totalWeight } from '../../lib/plates'
 import { displayToKg } from '../../lib/units'
+import { CloseIcon } from '../../components/Icons'
 
 /**
  * Plates for one set: tap plates to load the bar and see the total, or type a total to see the plates. Works in
@@ -56,7 +57,7 @@ export default function PlateSheet({ exercise, unit, weight, onUse, onClose }: {
         <div className="chips">
           {perSide.length === 0 && <span className="muted small">{t('plates.empty')}</span>}
           {perSide.map((p, i) => (
-            <button key={i} className="chip on" aria-label={t('plates.remove', { plate: `${formatPlate(p)} ${unit}` })} onClick={() => remove(i)}>{formatPlate(p)} ✕</button>
+            <button key={i} className="chip on" aria-label={t('plates.remove', { plate: `${formatPlate(p)} ${unit}` })} onClick={() => remove(i)}>{formatPlate(p)} <CloseIcon /></button>
           ))}
         </div>
 

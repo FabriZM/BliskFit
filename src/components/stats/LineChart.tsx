@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Point } from '../../lib/stats'
+import { TrendDownIcon, TrendUpIcon } from '../Icons'
 
 const W = 320, H = 150
 const M = { l: 40, r: 10, t: 10, b: 22 }
@@ -82,7 +83,7 @@ export default function LineChart({ label, points, trend, format, lowerBetter = 
       </svg>
       <p className="chart-readout" aria-live="polite">
         <strong>{format(cur.value)}</strong> · <span className="muted">{date.format(cur.at)}</span>
-        {prev && cur.value !== prev.value && <span className={better ? 'delta good' : 'delta'}> · {cur.value > prev.value ? '▲' : '▼'} {format(Math.abs(cur.value - prev.value))}</span>}
+        {prev && cur.value !== prev.value && <span className={better ? 'delta good' : 'delta'}> · {cur.value > prev.value ? <TrendUpIcon /> : <TrendDownIcon />} {format(Math.abs(cur.value - prev.value))}</span>}
       </p>
       <details className="chart-table">
         <summary>{t('chart.table')}</summary>

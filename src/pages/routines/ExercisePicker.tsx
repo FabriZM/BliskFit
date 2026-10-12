@@ -6,6 +6,7 @@ import { useFavorites } from '../../db/favorites'
 import type { Exercise } from '../../db/types'
 import { filterExercises } from '../../lib/exerciseFilter'
 import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
+import { StarIcon } from '../../components/Icons'
 
 const PAGE = 50
 
@@ -48,7 +49,7 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title }
             {orderMuscles(muscles).map((m) => <option key={m.id} value={m.id}>{(m.parentId ? '  ' : '') + muscleLabel(m, t)}</option>)}
           </select>
           <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => { setFavoritesOnly(!favoritesOnly); setShown(PAGE) }}>
-            ★ {t('exercises.favorites')}
+            <StarIcon filled /> {t('exercises.favorites')}
           </button>
         </div>
         <ul className="list">
@@ -56,7 +57,7 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title }
             <li key={e.id}>
               <label className="pick">
                 <input type="checkbox" checked={picked.includes(e.id)} onChange={() => toggle(e.id)} />
-                <span>{favorites.has(e.id) ? '★ ' : ''}{e.name}</span>
+                <span>{favorites.has(e.id) && <><StarIcon filled className="fav-mark" label={t('exercises.favorites')} /> </>}{e.name}</span>
               </label>
             </li>
           ))}

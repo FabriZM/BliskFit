@@ -19,6 +19,7 @@ import Photo from './Photo'
 import Sparkline from './stats/Sparkline'
 import { measurementLabel } from './stats/measurementLabel'
 import { pinTargets } from '../db/stats'
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from './Icons'
 
 function AddWeight() {
   const { t } = useTranslation()
@@ -132,9 +133,9 @@ export default function PinnedStats() {
               <div className="pin-edit">
                 <strong>{title(p)}</strong>
                 <span>
-                  <button className="icon" disabled={i === 0} aria-label={t('stats.moveUp')} onClick={() => void setPins(movePin(pins, i, -1))}>↑</button>
-                  <button className="icon" disabled={i === pins.length - 1} aria-label={t('stats.moveDown')} onClick={() => void setPins(movePin(pins, i, 1))}>↓</button>
-                  <button className="icon" aria-label={`${t('stats.unpin')}: ${title(p)}`} onClick={() => void setPins(pins.filter((x) => x !== p))}>✕</button>
+                  <button className="icon" disabled={i === 0} aria-label={t('stats.moveUp')} onClick={() => void setPins(movePin(pins, i, -1))}><ArrowUpIcon /></button>
+                  <button className="icon" disabled={i === pins.length - 1} aria-label={t('stats.moveDown')} onClick={() => void setPins(movePin(pins, i, 1))}><ArrowDownIcon /></button>
+                  <button className="icon" aria-label={`${t('stats.unpin')}: ${title(p)}`} onClick={() => void setPins(pins.filter((x) => x !== p))}><CloseIcon /></button>
                 </span>
               </div>
             ) : (

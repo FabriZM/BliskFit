@@ -7,6 +7,7 @@ import { getActiveProgramId } from '../../db/programs'
 import { startSession } from '../../db/workout'
 import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
+import { ChevronRightIcon } from '../../components/Icons'
 
 /** Routines (start / open / create) and the entry to programs: the heart of the Workout tab. */
 export default function RoutinesSection() {
@@ -59,7 +60,7 @@ export default function RoutinesSection() {
       <h2>{t('programs.title')}</h2>
       <Link className="card link-card" to="/routines/programs">
         <span>{program ? `${t('programs.active')}: ${program.name}` : t('today.noProgram')}</span>
-        <span aria-hidden>→</span>
+        <ChevronRightIcon />
       </Link>
     </>
   )

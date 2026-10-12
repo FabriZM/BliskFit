@@ -18,6 +18,7 @@ import ExerciseNotes from './ExerciseNotes'
 import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
 import SetRow from './SetRow'
+import { BulbIcon, FlameIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
 
 export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, defaultRest, onSwap }: {
   session: WorkoutSession
@@ -140,16 +141,16 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
 
   return (
     <li className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}`}>
-      <div className="swipe-bg" aria-hidden>🗑 {t('workout.removeExercise')}</div>
+      <div className="swipe-bg" aria-hidden><TrashIcon /> {t('workout.removeExercise')}</div>
       <div className="swipe-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={cancelSwipe}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
         <strong className="rx-name">{exercise?.name ?? '…'}</strong>
-        <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}>⋯</button>
+        <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
       </div>
       <p className="muted small meta">
-        <button className="icon tiny" aria-label={t('workout.addNote')} title={t('workout.addNote')} onClick={() => setAddingNote(true)}>📝</button>
+        <button className="icon tiny" aria-label={t('workout.addNote')} title={t('workout.addNote')} onClick={() => setAddingNote(true)}><NoteIcon /></button>
         {item.targetSets} × {item.repMin ? (item.repMax && item.repMax !== item.repMin ? `${item.repMin}–${item.repMax}` : item.repMin) : '—'}
         {' · '}{t('workout.rest')} {rest.sec === 0 ? t('workout.restOff') : formatClock(rest.sec * 1000)}{rest.source === 'learned' ? ` (${t('workout.learned')})` : rest.source === 'custom' ? ` (${t('workout.custom')})` : ''}
         {item.skipped ? ` · ${t('workout.skipped')}` : ''}
@@ -158,19 +159,19 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       {menu && (
         <div className="menu icons" role="menu">
           <button role="menuitem" title={t('workout.swap')} aria-label={t('workout.swap')} onClick={() => { onSwap(); setMenu(false) }}>
-            <span aria-hidden>🔄</span><small>{t('workout.swapShort')}</small>
+            <SwapIcon /><small>{t('workout.swapShort')}</small>
           </button>
           <button role="menuitem" title={t('workout.restTimer')} aria-label={t('workout.restTimer')} onClick={() => { setEditingRest(true); setMenu(false) }}>
-            <span aria-hidden>⏱️</span><small>{t('workout.restShort')}</small>
+            <TimerIcon /><small>{t('workout.restShort')}</small>
           </button>
           {exercise && usesWeight(tracking) && (
             <button role="menuitem" title={t('equipmentSettings.title')} aria-label={t('equipmentSettings.title')} onClick={() => { setEditingEquipment(true); setMenu(false) }}>
-              <span aria-hidden>⚖️</span><small>{t('equipmentSettings.short')}</small>
+              <SlidersIcon /><small>{t('equipmentSettings.short')}</small>
             </button>
           )}
           <button role="menuitem" title={item.skipped ? t('workout.unskip') : t('workout.skip')} aria-label={item.skipped ? t('workout.unskip') : t('workout.skip')}
             onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>
-            <span aria-hidden>{item.skipped ? '↩️' : '⏭️'}</span><small>{item.skipped ? t('workout.unskip') : t('workout.skipShort')}</small>
+            {item.skipped ? <UndoIcon /> : <SkipIcon />}<small>{item.skipped ? t('workout.unskip') : t('workout.skipShort')}</small>
           </button>
         </div>
       )}
@@ -192,7 +193,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           {!last && suggestion && suggestedSet && (
             <div className="last-hint suggest">
               <span className="muted small">
-                💡 {t('workout.suggested')}: {formatSet(suggestedSet, tracking, appUnits)}
+                <BulbIcon /> {t('workout.suggested')}: {formatSet(suggestedSet, tracking, appUnits)}
                 {' · '}{t('workout.basedOn', { names: suggestion.basedOn.slice(0, 2).map((b) => b.name).join(', ') })}
                 {suggestion.confidence === 'rough' ? ` (${t('workout.rough')})` : ''}
               </span>
@@ -221,7 +222,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           </ul>
           <div className="set-adds">
             <button className="link" onClick={() => void addSet(session.id, item.id)}>+ {t('workout.addSet')}</button>
-            {warmup && <button className="link" onClick={warmup.add}>🔥 {warmup.redo ? t('workout.redoWarmup') : t('workout.addWarmup')}</button>}
+            {warmup && <button className="link" onClick={warmup.add}><FlameIcon /> {warmup.redo ? t('workout.redoWarmup') : t('workout.addWarmup')}</button>}
           </div>
         </>
       )}

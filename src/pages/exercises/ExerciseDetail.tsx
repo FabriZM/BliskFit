@@ -12,6 +12,7 @@ import EquipmentSettings from '../../components/EquipmentSettings'
 import { usesWeight } from '../../lib/plates'
 import ExerciseRecords from './ExerciseRecords'
 import { BackLink } from '../../components/PageHeader'
+import { PlayIcon, StarIcon } from '../../components/Icons'
 
 function NotePhoto({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
@@ -65,7 +66,7 @@ export default function ExerciseDetail() {
         <h1>{ex.name}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}
           aria-label={favorites.has(id) ? t('exercises.unfavorite') : t('exercises.favorite')} onClick={() => void toggleFavorite(id)}>
-          {favorites.has(id) ? '★' : '☆'}
+          <StarIcon filled={favorites.has(id)} />
         </button>
       </div>
       <p className="muted">
@@ -75,7 +76,7 @@ export default function ExerciseDetail() {
       {demo.length > 0 && <div className="demo">{demo.map((u) => <img key={u} className="hero" src={u} alt="" loading="lazy" />)}</div>}
       <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
       {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
-      {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener">▶ {t('exercises.video')}</a></p>}
+      {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener"><PlayIcon /> {t('exercises.video')}</a></p>}
 
       <ExerciseRecords exercise={ex} />
 

@@ -22,6 +22,7 @@ import ReminderSetup from '../../components/ReminderSetup'
 import RestPopup from './RestPopup'
 import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
+import { MoreIcon, PauseIcon } from '../../components/Icons'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
@@ -63,12 +64,12 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       <div className="wk-head">
         <div>
           <strong className="wk-timer" role="timer">{formatClock(elapsedMs(session, now))}</strong>
-          <span className="muted small"> {paused ? `⏸ ${t('workout.paused')}` : (routineName ?? t('workout.empty'))}</span>
+          <span className="muted small"> {paused ? <><PauseIcon /> {t('workout.paused')}</> : (routineName ?? t('workout.empty'))}</span>
         </div>
         <div className="wk-actions">
           <button onClick={() => void (paused ? resume(session.id) : pause(session.id))}>{paused ? t('workout.resumeBtn') : t('workout.pause')}</button>
           <button className="primary" onClick={() => (doneCount ? void finish() : setConfirmFinish(true))}>{t('workout.finish')}</button>
-          <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}>⋯</button>
+          <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
         </div>
       </div>
 

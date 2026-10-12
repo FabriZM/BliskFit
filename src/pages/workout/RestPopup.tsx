@@ -5,6 +5,7 @@ import { useNotificationState } from '../../lib/platform/hooks'
 import type { WorkoutSession } from '../../db/types'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
+import { BellIcon } from '../../components/Icons'
 
 const R = 90
 const C = 2 * Math.PI * R
@@ -50,7 +51,7 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
           <button onClick={() => { void clearRest(session.id); close() }}>{t('workout.skipRest')}</button>
         </div>
         {permission === 'prompt' && (
-          <button className="link" onClick={() => void request()}>🔔 {t('workout.notifyRest')}</button>
+          <button className="link" onClick={() => void request()}><BellIcon /> {t('workout.notifyRest')}</button>
         )}
         <button className="primary" onClick={close}>{t('workout.dismiss')}</button>
       </div>

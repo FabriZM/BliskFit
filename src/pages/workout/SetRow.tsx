@@ -7,6 +7,7 @@ import type { PRKind } from '../../lib/prs'
 import { describeSide, formatPlate, loadFor, PLATES, retypeKg, setUnit, usesWeight } from '../../lib/plates'
 import { formatNum, displayToKg, kgToDisplay } from '../../lib/units'
 import { isFilled } from '../../lib/workout'
+import { CheckIcon, DumbbellIcon, RepeatIcon, TrashIcon } from '../../components/Icons'
 
 type FieldKey = 'weight' | 'extraWeight' | 'reps' | 'durationSec' | 'distanceM'
 type Kind = 'weight' | 'reps' | 'sec' | 'min' | 'km'
@@ -127,7 +128,7 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
 
   return (
     <li className={`set${done ? ' done' : ''}${next && !done ? ' next' : ''}${dx ? ` swiping ${dx > 0 ? 'dir-r' : 'dir-l'}` : ''}`}>
-      <div className="swipe-bg" aria-hidden>🗑</div>
+      <div className="swipe-bg" aria-hidden><TrashIcon size={22} /></div>
       <div className="set-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .15s' }}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}>
       <div className="set-main">
@@ -136,13 +137,13 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
           {done && pr && pr.length > 0 && <PRBadge kinds={pr} />}
         </span>
         <SetFields set={set} tracking={tracking} units={fallback} hint={hint} onChange={onChange} />
-        <button className="icon" disabled={!canRepeat || done} aria-label={t('workout.repeat')} title={t('workout.repeat')} onClick={onRepeat}>⟲</button>
+        <button className="icon" disabled={!canRepeat || done} aria-label={t('workout.repeat')} title={t('workout.repeat')} onClick={onRepeat}><RepeatIcon /></button>
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
-          onClick={done ? onUndo : onDone}>✓</button>
+          onClick={done ? onUndo : onDone}><CheckIcon size={24} /></button>
       </div>
       {bar !== undefined && showPlates && !done && onPlates && (
         <button className={`plates-line${set.weight === undefined ? ' muted' : ''}`} onClick={onPlates}>
-          <span aria-hidden>🏋</span>{' '}
+          <DumbbellIcon />{' '}
           {!plateLoad ? t('plates.open')
             : plateLoad.perSide.length === 0 ? t('plates.barOnly')
               : t('plates.line', { plates: describeSide(plateLoad.perSide) })}

@@ -9,6 +9,7 @@ import { formatNum, kgToDisplay } from '../../lib/units'
 import { rollUp, sumMuscles, underTrained, weekSeries } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import type { StatsCtx } from './ctx'
+import { TrendDownIcon, TrendUpIcon } from '../../components/Icons'
 
 const UNDER_WEEKS = 4
 
@@ -16,7 +17,7 @@ function Delta({ cur, prev, good = true }: { cur: number; prev: number; good?: b
   const { t } = useTranslation()
   const d = Math.round((cur - prev) * 10) / 10
   if (!d) return <small className="muted">{t('stats.sameAsLast')}</small>
-  return <small className={d > 0 === good ? 'delta good' : 'delta'}>{d > 0 ? '▲' : '▼'} {formatNum(Math.abs(d))}</small>
+  return <small className={d > 0 === good ? 'delta good' : 'delta'}>{d > 0 ? <TrendUpIcon /> : <TrendDownIcon />} {formatNum(Math.abs(d))}</small>
 }
 
 /** Weekly summary against last week, under-trained muscles, recent PRs. */

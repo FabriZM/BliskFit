@@ -7,6 +7,7 @@ import { exerciseSeries, isPlateau, metricsFor } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import ExerciseRecords from '../exercises/ExerciseRecords'
 import type { StatsCtx } from './ctx'
+import { AlertIcon, StarIcon } from '../../components/Icons'
 
 const SHOWN = 8
 
@@ -50,7 +51,7 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
       <div className="chips picker-chips">
         {matches.slice(0, SHOWN).map(({ ex }) => (
           <button key={ex.id} className={`chip${ex.id === selectedId ? ' on' : ''}`} aria-pressed={ex.id === selectedId} onClick={() => select(ex.id)}>
-            {data.favorites.has(ex.id) ? '★ ' : ''}{ex.name}
+            {data.favorites.has(ex.id) && <><StarIcon filled className="fav-mark" label={t('exercises.favorites')} /> </>}{ex.name}
           </button>
         ))}
         {selected && !matches.slice(0, SHOWN).some((r) => r.ex.id === selected.id) && <button className="chip on" aria-pressed>{selected.name}</button>}
@@ -61,7 +62,7 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
       {selected && (
         <>
           <h2 className="stats-ex-name">{selected.name}</h2>
-          {plateau && <p className="plateau" role="status">⚠ {t('stats.plateau', { count: Math.max(3, plateauSessions) })}</p>}
+          {plateau && <p className="plateau" role="status"><AlertIcon /> {t('stats.plateau', { count: Math.max(3, plateauSessions) })}</p>}
           {metrics.map((metric) => (
             <SeriesCard key={metric} ctx={exCtx} title={t(`stats.metric_${metric}`)}
               pin={{ kind: 'exercise', exerciseId: selected.id, metric, range: ctx.range }} />

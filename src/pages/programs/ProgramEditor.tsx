@@ -12,6 +12,7 @@ import NumInput from '../../components/NumInput'
 import ShareButtons from '../../components/ShareButtons'
 import { packProgramById } from '../../db/share'
 import { BackLink } from '../../components/PageHeader'
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon } from '../../components/Icons'
 
 export default function ProgramEditor() {
   const { t, i18n } = useTranslation()
@@ -44,7 +45,7 @@ export default function ProgramEditor() {
       <input className="title-input" aria-label={t('programs.name')} value={program.name} onChange={(e) => save({ ...program, name: e.target.value })}
         onBlur={() => !program.name.trim() && save({ ...program, name: t('programs.untitled') })} />
       <div className="row">
-        <span>{active === id ? `✓ ${t('programs.active')}` : t('programs.notActive')}</span>
+        <span>{active === id ? <><CheckIcon /> {t('programs.active')}</> : t('programs.notActive')}</span>
         {active === id
           ? <button onClick={() => void setActiveProgramId(undefined)}>{t('programs.deactivate')}</button>
           : <button className="primary" onClick={() => void setActiveProgramId(id)}>{t('programs.setActive')}</button>}
@@ -109,9 +110,9 @@ export default function ProgramEditor() {
               <li key={rid} className="row">
                 <span><strong>{String.fromCharCode(65 + (i % 26))}</strong> · {rName(rid)}</span>
                 <span>
-                  <button aria-label="up" disabled={i === 0} onClick={() => move(i, -1)}>▲</button>
-                  <button aria-label="down" disabled={i === rotation.length - 1} onClick={() => move(i, 1)}>▼</button>
-                  <button aria-label={t('common.delete')} onClick={() => save({ ...program, rotation: rotation.filter((x) => x !== rid) })}>✕</button>
+                  <button aria-label="up" disabled={i === 0} onClick={() => move(i, -1)}><ChevronUpIcon /></button>
+                  <button aria-label="down" disabled={i === rotation.length - 1} onClick={() => move(i, 1)}><ChevronDownIcon /></button>
+                  <button aria-label={t('common.delete')} onClick={() => save({ ...program, rotation: rotation.filter((x) => x !== rid) })}><CloseIcon /></button>
                 </span>
               </li>
             ))}

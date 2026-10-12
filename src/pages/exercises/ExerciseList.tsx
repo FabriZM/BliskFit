@@ -9,6 +9,7 @@ import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { SearchIcon } from '../../components/TabIcons'
+import { StarIcon } from '../../components/Icons'
 
 const PAGE = 60
 
@@ -64,7 +65,7 @@ export default function ExerciseList() {
         <input type="search" placeholder={t('exercises.search')} value={query}
           onChange={(e) => reset(() => setQuery(e.target.value))} />
         <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => reset(() => setFavoritesOnly(!favoritesOnly))}>
-          ★ {t('exercises.favorites')}
+          <StarIcon filled /> {t('exercises.favorites')}
         </button>
       </div>
       <div className="filters">
@@ -100,7 +101,7 @@ export default function ExerciseList() {
                 </Link>
                 <button className={`star${favorites.has(e.id) ? ' on' : ''}`} aria-pressed={favorites.has(e.id)}
                   aria-label={favorites.has(e.id) ? t('exercises.unfavorite') : t('exercises.favorite')} onClick={() => void toggleFavorite(e.id)}>
-                  {favorites.has(e.id) ? '★' : '☆'}
+                  <StarIcon filled={favorites.has(e.id)} />
                 </button>
               </li>
             ))}

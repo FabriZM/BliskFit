@@ -18,6 +18,7 @@ import { displayToKg, formatNum, kgToDisplay } from '../lib/units'
 import { useBlobUrl } from '../lib/useBlobUrl'
 import { useSettings } from '../stores/settings'
 import { BackLink } from '../components/PageHeader'
+import { PencilIcon, TrashIcon } from '../components/Icons'
 
 const CUSTOM = '\u0000custom'
 const PHOTO_SIDE = 1280
@@ -193,8 +194,8 @@ function EntryRow({ entry, photos }: { entry: Entry; photos: ProgressPhoto[] }) 
       <div className="entry-main">
         {entry.kind === 'photo' && <Photo blob={entry.row.photo} alt="" className="entry-thumb" />}
         <div className="entry-text"><span>{label}</span><small className="muted">{fmt.format(entry.date)}</small></div>
-        <button className="icon" aria-label={t('common.edit')} title={t('common.edit')} onClick={() => setEditing(!editing)}>✎</button>
-        <button className="icon" aria-label={t('common.delete')} title={t('common.delete')} onClick={remove}>🗑</button>
+        <button className="icon" aria-label={t('common.edit')} title={t('common.edit')} onClick={() => setEditing(!editing)}><PencilIcon /></button>
+        <button className="icon" aria-label={t('common.delete')} title={t('common.delete')} onClick={remove}><TrashIcon /></button>
       </div>
       {editing && (
         <div className="entry-edit">

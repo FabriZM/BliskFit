@@ -8,6 +8,7 @@ import { useSettings } from '../../stores/settings'
 import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { CalendarIcon } from '../../components/TabIcons'
+import { CheckIcon } from '../../components/Icons'
 
 export default function ProgramList() {
   const { t } = useTranslation()
@@ -37,7 +38,7 @@ export default function ProgramList() {
           <li key={p.id}>
             <div className="routine-row">
               <Link to={`/routines/programs/${p.id}`}>
-                <strong>{p.name}{data.active === p.id ? ` · ✓ ${t('programs.active')}` : ''}</strong>
+                <strong>{p.name}{data.active === p.id ? <> · <CheckIcon /> {t('programs.active')}</> : null}</strong>
                 <span className="muted">{p.mode === 'rotation' ? t('programs.rotationSummary', { count: p.rotation?.length ?? 0 }) : t('programs.weeksSummary', { count: p.weeks })}</span>
               </Link>
               {data.active !== p.id && <button onClick={() => void setActiveProgramId(p.id)}>{t('programs.setActive')}</button>}

@@ -359,3 +359,15 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .empty p { margin: 0; color: var(--muted); max-width: 30ch; }
 .empty-icon { width: 56px; height: 56px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
 .empty-icon svg { width: 26px; height: 26px; }
+
+/* ---- Icons (components/Icons.tsx): inline with text by default, fixed sizes inside icon-only controls ---- */
+.ico { display: inline-block; flex: none; vertical-align: -.2em; }
+.icon > .ico, .handle > .ico, .star > .ico, .pin > .ico, .set-main > .icon > .ico { width: 20px; height: 20px; vertical-align: middle; }
+.star > .ico { width: 24px; height: 24px; } .icon.tiny > .ico { width: 16px; height: 16px; }
+.menu.icons button > .ico { width: 22px; height: 22px; }
+.check > .ico { vertical-align: middle; }
+.star.on, .pin.on, .fav-mark { color: var(--warn); }
+.streak-flame { color: #ff8a3d; } .freeze { color: var(--info); }
+.met-check { color: var(--accent); }
+.delta > .ico { vertical-align: 0; }
+.swipe-bg { gap: 6px; }

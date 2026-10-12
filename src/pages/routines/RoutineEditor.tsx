@@ -20,6 +20,7 @@ import ExercisePicker from './ExercisePicker'
 import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { ExercisesIcon } from '../../components/TabIcons'
+import { CloseIcon, GripIcon, LinkIcon } from '../../components/Icons'
 
 interface RowProps {
   item: RoutineExercise
@@ -44,9 +45,9 @@ function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRe
       style={{ transform: CSS.Transform.toString(transform), transition }}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
-        <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}>⠿</button>
+        <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         <strong className="rx-name">{exercise?.name ?? '…'}</strong>
-        <button className="icon" aria-label={t('common.delete')} onClick={onRemove}>✕</button>
+        <button className="icon" aria-label={t('common.delete')} onClick={onRemove}><CloseIcon /></button>
       </div>
       <div className="rx-fields">
         <label>{t('routines.sets')}
@@ -68,7 +69,7 @@ function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRe
       </div>
       {canLink && (
         <button className={`link${linkedToNext ? ' on' : ''}`} onClick={onToggleLink}>
-          {linkedToNext ? `🔗 ${t('routines.unlinkNext')}` : `🔗 ${t('routines.linkNext')}`}
+          <LinkIcon /> {linkedToNext ? t('routines.unlinkNext') : t('routines.linkNext')}
         </button>
       )}
     </li>

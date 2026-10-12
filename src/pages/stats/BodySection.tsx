@@ -6,6 +6,7 @@ import SeriesCard from '../../components/stats/SeriesCard'
 import { measurementLabel } from '../../components/stats/measurementLabel'
 import { STANDARD_MEASUREMENTS, parseMeasurementType } from '../../lib/body'
 import type { StatsCtx } from './ctx'
+import { ArrowRightIcon } from '../../components/Icons'
 
 const order = (base: string) => {
   const i = (STANDARD_MEASUREMENTS as readonly string[]).indexOf(base)
@@ -26,7 +27,7 @@ export default function BodySection({ ctx }: { ctx: StatsCtx }) {
 
   return (
     <>
-      <p className="small"><Link to="/profile/body">{t('stats.openBodyLog')} →</Link></p>
+      <p className="small"><Link to="/profile/body">{t('stats.openBodyLog')} <ArrowRightIcon /></Link></p>
       {data.bodyWeights.length > 0 && <SeriesCard ctx={ctx} pin={{ kind: 'bodyweight', range: ctx.range }} title={t('body.weight')}>
         <p className="muted small">{t('stats.trendHelp')}</p>
       </SeriesCard>}

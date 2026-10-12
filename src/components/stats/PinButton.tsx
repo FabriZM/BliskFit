@@ -4,6 +4,7 @@ import type { PinSpec } from '../../db/types'
 import { setPins } from '../../db/stats'
 import { MAX_PINS, isPinned, togglePin } from '../../lib/pins'
 import { useSettings } from '../../stores/settings'
+import { StarIcon } from '../Icons'
 
 /** Pins (or unpins) a card, with this card's current range, to Profile. At most 6 pins. */
 export default function PinButton({ pin, label }: { pin: PinSpec; label: string }) {
@@ -21,7 +22,7 @@ export default function PinButton({ pin, label }: { pin: PinSpec; label: string 
           if (!next) return setFull(true)
           setFull(false)
           void setPins(next)
-        }}>{pinned ? '★' : '☆'}</button>
+        }}><StarIcon filled={pinned} /></button>
       {full && <span className="pin-full small" role="status">{t('stats.pinsFull', { count: MAX_PINS })}</span>}
     </>
   )

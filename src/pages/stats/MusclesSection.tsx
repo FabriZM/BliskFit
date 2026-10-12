@@ -9,6 +9,7 @@ import { formatNum, kgToDisplay } from '../../lib/units'
 import { pushPull, rollUp, sumMuscles, underTrained, weekSeries } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import type { StatsCtx } from './ctx'
+import { ChevronDownIcon, ChevronRightIcon } from '../../components/Icons'
 
 /** Weekly sets (or volume) per muscle group with drill-down, push/pull balance, left/right asymmetry, under-trained list. */
 export default function MusclesSection({ ctx }: { ctx: StatsCtx }) {
@@ -41,7 +42,7 @@ export default function MusclesSection({ ctx }: { ctx: StatsCtx }) {
       <li key={id} id={child ? undefined : cardId({ kind: 'muscles', muscleId: id, range: ctx.range })} className={child ? 'mrow child' : 'mrow'}>
         <div className="mrow-head">
           {!child && sub.length > 0
-            ? <button className="link-btn" aria-expanded={open.has(id)} onClick={() => setOpen((o) => { const x = new Set(o); if (x.has(id)) x.delete(id); else x.add(id); return x })}>{open.has(id) ? '▾' : '▸'} {muscleLabel(m, t)}</button>
+            ? <button className="link-btn" aria-expanded={open.has(id)} onClick={() => setOpen((o) => { const x = new Set(o); if (x.has(id)) x.delete(id); else x.add(id); return x })}>{open.has(id) ? <ChevronDownIcon /> : <ChevronRightIcon />} {muscleLabel(m, t)}</button>
             : <span>{muscleLabel(m, t)}</span>}
           <span><strong>{fmt(value)}</strong>{metric === 'sets' && <small className="muted"> {t('stats.perWeekShort')}</small>}</span>
           {!child && metric === 'sets' && <PinButton pin={{ kind: 'muscles', muscleId: id, range: ctx.range }} label={muscleLabel(m, t)} />}

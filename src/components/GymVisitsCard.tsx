@@ -5,6 +5,7 @@ import { db } from '../db/db'
 import { daysLeftIn, effectiveVisitDays, gymPeriods, paceHint, qualifyingSessionIds, visitDays } from '../lib/gymVisits'
 import VisitDaysEditor from './VisitDaysEditor'
 import { useNow } from '../lib/useNow'
+import { PencilIcon } from './Icons'
 
 /** One card per gym that has a visit plan (nothing at all if none do). Profile only. */
 export default function GymVisitsCard() {
@@ -38,7 +39,7 @@ export default function GymVisitsCard() {
           <div className="card gym-card" key={g.id}>
             <div className="row head">
               <strong>{g.name}</strong>
-              <button className="icon" aria-label={t('gymplan.edit')} title={t('gymplan.edit')} onClick={() => setEditing(g.id)}>✎</button>
+              <button className="icon" aria-label={t('gymplan.edit')} title={t('gymplan.edit')} onClick={() => setEditing(g.id)}><PencilIcon /></button>
             </div>
             <p className="muted small period-range">{fmt.format(cur.start)} – {fmt.format(new Date(cur.end.getFullYear(), cur.end.getMonth(), cur.end.getDate() - 1))}</p>
             <p className="gym-line">

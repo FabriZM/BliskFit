@@ -8,6 +8,7 @@ import { weekdayNames } from '../lib/dates'
 import { weekStart } from '../lib/programs'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
+import { CheckIcon, FlameIcon, SnowflakeIcon } from './Icons'
 
 /**
  * This week's training days against the goal, plus the weekly streak. Days with a workout are tappable: one
@@ -39,10 +40,10 @@ export default function WeekCard() {
   const streakLine = (
     <p className="streak">
       {streak > 0
-        ? <>🔥 <strong>{t('profile.streakWeeks', { count: streak })}</strong></>
+        ? <><FlameIcon className="streak-flame" /> <strong>{t('profile.streakWeeks', { count: streak })}</strong></>
         : <span className="muted">{t('profile.noStreak', { count: goal })}</span>}
       {streak > 0 && !week.met && <span className="muted small"> · {t('profile.streakKeep', { count: goal - week.count })}</span>}
-      {frozen.length > 0 && <span className="muted small"> · 🧊 {t('profile.freezesUsed', { count: frozen.length })}</span>}
+      {frozen.length > 0 && <span className="muted small"> · <SnowflakeIcon className="freeze" /> {t('profile.freezesUsed', { count: frozen.length })}</span>}
     </p>
   )
 
@@ -59,7 +60,7 @@ export default function WeekCard() {
           const label = `${names[d.date.getDay()]} ${d.date.getDate()}`
           return d.trained ? (
             <button key={key} className={cls} aria-label={`${label} · ${t('profile.openWorkout')}`} onClick={() => open(key)}>
-              <span>✓</span><small>{names[d.date.getDay()].slice(0, 3)}</small>
+              <span><CheckIcon size={18} /></span><small>{names[d.date.getDay()].slice(0, 3)}</small>
             </button>
           ) : (
             <div key={key} className={cls} aria-label={label}>
