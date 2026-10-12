@@ -10,7 +10,7 @@ export const SHARE_FORMAT = 1
 
 /** Exercise definition as shared: what's needed to recreate a custom one. Photos and learned rest stay home. */
 export type SharedExercise = Pick<Exercise, 'id' | 'name' | 'trackingType' | 'equipment' | 'mechanic' | 'primaryMuscleIds'
-  | 'secondaryMuscleIds' | 'demoUrl' | 'videoUrl' | 'defaultRestSec'>
+  | 'secondaryMuscleIds' | 'demoUrl' | 'videoUrl' | 'defaultRestSec' | 'description' | 'instructions'>
 
 export type SharedRoutineExercise = Omit<RoutineExercise, 'id'>
 export interface SharedRoutine { name: string; exercises: SharedRoutineExercise[] }
@@ -41,8 +41,8 @@ export class ShareError extends Error {
 const isSeeded = (id: ID) => id.startsWith('x:')
 
 function sharedExercise(e: Exercise): SharedExercise {
-  const { id, name, trackingType, equipment, mechanic, primaryMuscleIds, secondaryMuscleIds, demoUrl, videoUrl, defaultRestSec } = e
-  return { id, name, trackingType, equipment, mechanic, primaryMuscleIds, secondaryMuscleIds, demoUrl, videoUrl, defaultRestSec }
+  const { id, name, trackingType, equipment, mechanic, primaryMuscleIds, secondaryMuscleIds, demoUrl, videoUrl, defaultRestSec, description, instructions } = e
+  return { id, name, trackingType, equipment, mechanic, primaryMuscleIds, secondaryMuscleIds, demoUrl, videoUrl, defaultRestSec, description, instructions }
 }
 
 const sharedRoutine = (r: Routine): SharedRoutine => ({
@@ -97,6 +97,7 @@ const str = (v: unknown, max = 200) => (isStr(v) ? v.slice(0, max) : undefined)
 const num = (v: unknown, min: number, max: number) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : undefined
 const url = (v: unknown) => (isStr(v) && /^https?:\/\//i.test(v) ? v.slice(0, 500) : undefined)
+const steps = (v: unknown) => { const s = Array.isArray(v) ? v.filter(isStr).slice(0, 30).map((x) => x.slice(0, 1000)) : []; return s.length ? s : undefined }
 const ids = (v: unknown) => (Array.isArray(v) ? v.filter(isStr).slice(0, 20) : [])
 /** Drops undefined fields so stored rows look like ones made in the app. */
 const compact = <T extends object>(o: T): T => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
@@ -143,6 +144,8 @@ export function validatePackage(data: unknown): SharePackage {
         demoUrl: url(e.demoUrl),
         videoUrl: url(e.videoUrl),
         defaultRestSec: num(e.defaultRestSec, 0, 3600),
+        description: str(e.description, 1000),
+        instructions: steps(e.instructions),
       })
     })
     const n = routines.length

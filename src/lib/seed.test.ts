@@ -87,6 +87,18 @@ describe('seed + filter', () => {
     expect((await db.exercises.get('x:Triceps_Pushdown'))?.mechanic).toBe('isolation')
   })
 
+  it('every seeded exercise has how-to steps, and an older install gets them on upgrade', async () => {
+    const db = new GymDB('test-' + newId())
+    await ensureSeed(db)
+    await db.meta.put({ key: 'seedVersion', value: 2 })
+    await db.exercises.update('x:Barbell_Squat', { instructions: undefined, level: undefined })
+    await ensureSeed(db)
+    const all = await db.exercises.toArray()
+    expect(all.filter((e) => !e.instructions?.length).map((e) => e.id)).toEqual([])
+    expect((await db.exercises.get('x:Barbell_Squat'))?.instructions?.length).toBeGreaterThan(2)
+    expect((await db.exercises.get('x:Barbell_Squat'))?.level).toBe('beginner')
+  })
+
   it('search ignores accents and case', () => {
     const e: Exercise = { id: '1', name: 'Sentadilla Búlgara', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom' as const }
     expect(filterExercises([e], { query: 'BULGARA', muscleIds: new Set(), equipment: '' })).toHaveLength(1)

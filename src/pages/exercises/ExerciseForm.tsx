@@ -26,6 +26,8 @@ export default function ExerciseForm() {
   const [mechanic, setMechanic] = useState<'' | 'compound' | 'isolation'>('')
   const [primary, setPrimary] = useState<string[]>([])
   const [secondary, setSecondary] = useState<string[]>([])
+  const [description, setDescription] = useState('')
+  const [howTo, setHowTo] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [restSec, setRestSec] = useState('')
   const [photo, setPhoto] = useState<Blob>()
@@ -38,6 +40,7 @@ export default function ExerciseForm() {
       if (!e) return
       setName(e.name); setTrackingType(e.trackingType); setEquipment(e.equipment ?? ''); setMechanic(e.mechanic ?? '')
       setPrimary(e.primaryMuscleIds); setSecondary(e.secondaryMuscleIds)
+      setDescription(e.description ?? ''); setHowTo(e.instructions?.join('\n') ?? '')
       setVideoUrl(e.videoUrl ?? ''); setRestSec(e.defaultRestSec?.toString() ?? ''); setPhoto(e.photo)
     })
   }, [editingId])
@@ -47,6 +50,7 @@ export default function ExerciseForm() {
     if (!name.trim()) return setError(t('exercises.nameRequired'))
     if (!primary.length) return setError(t('exercises.primaryRequired'))
     const existing = editingId ? await db.exercises.get(editingId) : undefined
+    const steps = howTo.split('\n').map((l) => l.trim()).filter(Boolean)
     const ex: Exercise = {
       ...existing,
       id: existing?.id ?? newId(),
@@ -56,6 +60,8 @@ export default function ExerciseForm() {
       mechanic: mechanic || undefined,
       primaryMuscleIds: primary,
       secondaryMuscleIds: secondary.filter((m) => !primary.includes(m)),
+      description: description.trim() || undefined,
+      instructions: steps.length ? steps : undefined,
       photo,
       videoUrl: videoUrl.trim() || undefined,
       defaultRestSec: restSec ? Number(restSec) : undefined,
@@ -96,6 +102,12 @@ export default function ExerciseForm() {
         <fieldset><legend>{t('exercises.secondary')}</legend>
           <MuscleChips muscles={muscles} value={secondary} onChange={setSecondary} taken={primary} />
         </fieldset>
+        <label>{t('exercises.description')}
+          <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('exercises.descriptionPlaceholder')} />
+        </label>
+        <label>{t('exercises.howTo')}
+          <textarea rows={4} value={howTo} onChange={(e) => setHowTo(e.target.value)} placeholder={t('exercises.howToHint')} />
+        </label>
         <label>{t('exercises.photo')}
           <input type="file" accept="image/*" onChange={async (e) => {
             const f = e.target.files?.[0]

@@ -26,6 +26,11 @@ export interface Exercise {
   equipment?: string
   /** Compound (multi-joint) or isolation; used to find comparable exercises for starting-weight suggestions. */
   mechanic?: 'compound' | 'isolation'
+  level?: 'beginner' | 'intermediate' | 'expert'
+  /** Free text written by the user; when absent the app describes the exercise from its muscles and mechanic. */
+  description?: string
+  /** How to do it, one step per entry. */
+  instructions?: string[]
   primaryMuscleIds: ID[]
   secondaryMuscleIds: ID[]
   photo?: Blob

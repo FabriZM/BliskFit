@@ -136,7 +136,21 @@
     "mechanic": "Movement type (helps suggest starting weights)",
     "mechanicNone": "Not set",
     "compound": "Compound (several joints)",
-    "isolation": "Isolation (one joint)"
+    "isolation": "Isolation (one joint)",
+    "description": "Description",
+    "descriptionPlaceholder": "What it is and what it works",
+    "howTo": "How to do it",
+    "howToHint": "One step per line",
+    "about": "Works the {{primary}}.",
+    "aboutCompound": "A compound movement for the {{primary}}.",
+    "aboutIsolation": "An isolation movement for the {{primary}}.",
+    "aboutCardio": "A cardio exercise for the {{primary}}.",
+    "aboutSecondary": "Also works the {{secondary}}.",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "expert": "Advanced"
+    }
   },
   "gyms": {
     "title": "Gyms (optional)",

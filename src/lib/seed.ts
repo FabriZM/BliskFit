@@ -7,13 +7,18 @@ export interface SeedRow {
   c: string
   e: string | null
   m?: string | null
+  l?: string
   p: string[]
   s: string[]
   i: number
+  /** How-to steps. */
+  h?: string[]
 }
 
-/** v2: adds `mechanic` (compound/isolation). */
-export const SEED_VERSION = 2
+/** v2: adds `mechanic` (compound/isolation). v3: adds `level` and how-to `instructions`. */
+export const SEED_VERSION = 3
+
+const LEVELS = ['beginner', 'intermediate', 'expert'] as const
 
 const DURATION_NAMES = /\b(plank|wall sit|hold|hang)\b/i
 
@@ -48,6 +53,8 @@ export function seedExercise(row: SeedRow): Exercise {
     trackingType: inferTrackingType(row),
     equipment: row.e ?? undefined,
     mechanic: row.m === 'compound' || row.m === 'isolation' ? row.m : undefined,
+    level: LEVELS.find((l) => l === row.l),
+    instructions: row.h?.length ? row.h : undefined,
     primaryMuscleIds: row.p.map((p) => muscleId(slug(p))),
     secondaryMuscleIds: row.s.map((p) => muscleId(slug(p))),
     demoUrl: row.i > 0 ? demoImageUrls(row.id, row.i)[0] : undefined,

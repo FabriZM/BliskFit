@@ -6,6 +6,7 @@ import { db, newId } from '../../db/db'
 import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { compressImage } from '../../lib/image'
 import { muscleLabel } from '../../lib/muscles'
+import { describeExercise } from '../../lib/describe'
 import { demoImageUrls } from '../../lib/seed'
 import { useBlobUrl } from '../../lib/useBlobUrl'
 import EquipmentSettings from '../../components/EquipmentSettings'
@@ -20,7 +21,7 @@ function NotePhoto({ blob }: { blob: Blob }) {
 }
 
 export default function ExerciseDetail() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const id = decodeURIComponent(useParams().id ?? '')
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
@@ -41,6 +42,7 @@ export default function ExerciseDetail() {
 
   const name = (mid: string) => { const m = muscles.find((x) => x.id === mid); return m ? muscleLabel(m, t) : mid }
   const demo = ex.source === 'seeded' && ex.demoUrl ? demoImageUrls(id.replace(/^x:/, ''), 2) : []
+  const about = describeExercise(ex, name, t, i18n.language)
   const gymName = (gid?: string) => gyms.find((g) => g.id === gid)?.name
 
   const addNote = async () => {
@@ -73,12 +75,21 @@ export default function ExerciseDetail() {
       </div>
       <p className="muted">
         {t(`tracking.${ex.trackingType}`)} · {t(`equipment.${ex.equipment ?? 'none'}`, { defaultValue: ex.equipment ?? '' })}
+        {ex.level && <> · {t(`exercises.level.${ex.level}`)}</>}
       </p>
+      {about && <p className="about">{about}</p>}
       {photoUrl && <img className="hero" src={photoUrl} alt={ex.name} />}
       {demo.length > 0 && <div className="demo">{demo.map((u) => <img key={u} className="hero" src={u} alt="" loading="lazy" />)}</div>}
       <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
       {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
       {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener"><PlayIcon /> {t('exercises.video')}</a></p>}
+
+      {ex.instructions && ex.instructions.length > 0 && (
+        <>
+          <h2>{t('exercises.howTo')}</h2>
+          <ol className="steps">{ex.instructions.map((s, i) => <li key={i}>{s}</li>)}</ol>
+        </>
+      )}
 
       <ExerciseRecords exercise={ex} />
 

@@ -98,6 +98,11 @@ fieldset { border: 1px solid var(--border); border-radius: var(--radius); paddin
 .actions { display: flex; gap: 8px; margin: 16px 0; }
 .photo { max-width: 160px; border-radius: 8px; display: block; margin: 6px 0; }
 .hero { width: 100%; max-width: 420px; border-radius: 8px; display: block; margin: 8px 0; }
+.about { color: var(--silver); line-height: 1.5; }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: var(--space-3); }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 24px 1fr; gap: var(--space-3); line-height: 1.5; }
+.steps li::before { content: counter(step); width: 24px; height: 24px; border-radius: var(--radius-pill); background: var(--accent-soft); color: var(--accent);
+  font-size: var(--text-xs); font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
 .error { color: var(--danger); }
 /* ---- Cards ---- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); margin: var(--space-2) 0 var(--space-4); box-shadow: var(--shadow-1); } .card h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); font-weight: 700; } .card p { margin: 4px 0; }

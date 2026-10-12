@@ -136,7 +136,21 @@
     "mechanic": "Tipo de movimiento (ayuda a sugerir pesos iniciales)",
     "mechanicNone": "Sin definir",
     "compound": "Compuesto (varias articulaciones)",
-    "isolation": "Aislado (una articulación)"
+    "isolation": "Aislado (una articulación)",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Qué es y qué trabaja",
+    "howTo": "Cómo hacerlo",
+    "howToHint": "Un paso por línea",
+    "about": "Trabaja {{primary}}.",
+    "aboutCompound": "Movimiento compuesto que trabaja {{primary}}.",
+    "aboutIsolation": "Movimiento de aislamiento que trabaja {{primary}}.",
+    "aboutCardio": "Ejercicio de cardio que trabaja {{primary}}.",
+    "aboutSecondary": "También involucra {{secondary}}.",
+    "level": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "expert": "Avanzado"
+    }
   },
   "gyms": {
     "title": "Gimnasios (opcional)",
