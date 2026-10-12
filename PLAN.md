@@ -272,6 +272,47 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 ### M9: Interactive body figure
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
+### M10: Basilisk identity
+**Status: planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+
+**Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
+
+**Rules:**
+- Any new motion respects `prefers-reduced-motion` (the global rule already shortens it; check that each effect still reads with no motion) and stays short. Keeps the existing "PRs: badge only, no animation" decision.
+- Every stone or textured surface keeps text at WCAG AA, same as the current palette.
+- No new runtime dependencies. Fonts are self-hosted files, never a CDN (offline PWA).
+- Eye geometry is drawn once, in a shared `BasiliskEye` SVG component (props: `pupil` 0 = slit … 1 = round, `open` 0…1), so the tab bar, rest bar and launch screen match.
+
+**Phase 1: Foundations**
+- Tokens in `index.css`: `--stone`, `--stone-2`, `--stone-fg` (cool grey tinted to the teal, with AA checked) and `--grain` (tiny inline SVG noise as a data URI, used at low opacity).
+- `BasiliskEye` component and the slogan constant.
+- Fix off-brand native colors: `capacitor.config.json` `backgroundColor` is `#111827` (generic grey; should be `--bg` `#0b1514`) and the notification `iconColor` is `#34d399` (should be `--accent` `#45d0a0`).
+Done when: tokens and the eye component exist, and the APK's background and notification color match the PWA.
+
+**Phase 2: The gaze**
+- **Tab bar bubble** (`TabBar.tsx`, `.tabbar-bubble`): the active bubble becomes an iris (radial accent gradient with a faint slit pupil behind the icon, icon kept legible). When it rises at the new tab, the slit does one quick blink (scaleY). Prototype two versions before choosing: an iris on the round bubble vs. an almond eye-shaped bubble. The current dive/rise mechanics stay.
+- **Rest bar** (`RestBar.tsx`): a small eye next to the countdown. The pupil narrows from round to a slit as rest runs out, and at zero it's a full slit with the "rest over" text changed to "Eyes up." The progress fill stays.
+- **Launch screen**: an eye opening over the logo mark, plus the slogan, shown only while the app is loading (DB open, settings), so it never adds waiting time. Static when reduced motion is on.
+Done when: on the phone, switching tabs shows the eye/blink, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay.
+
+**Phase 3: Petrification (stone = done, locked)**
+- **Finished sets turn to stone**: `.set.done` uses `--stone` with the grain instead of the teal `--done`; numbers in `--stone-fg`. The tick/button keeps the accent so state is clear at a glance. Change of color only, no animation. Check that warm-up/drop labels and PR badges are still readable on stone.
+- **Streak freezes become "stone weeks"**: a missed week bridged automatically is a week "turned to stone". Rename it in the copy (en/es: settings label, help text, `freezesUsed`), swap the snowflake (`SnowflakeIcon` in `WeekCard.tsx`) for a stone icon, and show bridged weeks on the calendar/week card as stone chips. Logic in `lib/goals.ts` unchanged; internal names (`freeze`) can stay.
+- **Share image** (`lib/summaryCard.ts`): eye mark and slogan in the footer, faint grain on the background, the stat tiles in stone. The canvas waits for the display font (`document.fonts.load`) before drawing.
+Done when: a finished workout reads as stone in the session view and on the share image, and a bridged week shows as a stone week.
+
+**Phase 4: Form and type**
+- **Display font** for headings and big numbers only (weights, timers, stats, the share image); body text stays system. Shortlist, to try side by side on the active workout: a condensed grotesk for numbers (e.g. Barlow Condensed) vs. a sharp display face (e.g. Fraunces). OFL licence, Latin subset, self-hosted `woff2` in `src/assets/fonts`, `font-display: swap`, cached by the service worker. Tabular numbers on timers so digits don't jump.
+- **Scale texture**: a very faint hex/scale pattern (2–4% opacity) on hero surfaces only: the week card, launch screen and share image. Never on lists or forms.
+- **Serpent curve**: the weekly goal progress on the week card as a coiled arc, echoing the S-curve of the logo cutout. Charts are left alone.
+Done when: the font is in and offline-safe, and the texture and arc are on the week card with no readability loss.
+
+**Phase 5: Voice**
+- A short copy pass in en and es, a few lines only, so it doesn't get corny: rest over "Eyes up.", forgotten session "Still locked in?", streak "N weeks unbroken. Stone cold.", empty history "Nothing has met the gaze yet." The Spanish versions are written to fit, not translated literally. Everything else keeps its current plain wording.
+Done when: the lines are in both languages and read naturally on the phone.
+
+**Order:** 1 → 2 (tab bar first: most visible) → 3 → 4 → 5. Each phase is shippable on its own; check each on the phone, not just the desktop browser (blink timing, grain visibility on an OLED screen).
+
 ## Updates and distribution
 Two layers, so most updates need no new APK:
 1. **Web bundle updates (most releases):** the APK ships with the app's web code bundled (works offline). On launch it checks a small `version.json` on the static host and downloads a newer web bundle in the background, applying it on next start. Options: a Capacitor live-update plugin (self-hostable ones exist, e.g. Capgo; verify current status/licensing at M7) or a small custom updater. The PWA version updates itself through its service worker ("update available" prompt).
