@@ -34,7 +34,7 @@
 /* ---- Base ---- */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: var(--text-base); line-height: 1.4; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+body { overflow: hidden; overscroll-behavior: none; background: var(--bg); color: var(--fg); font-family: var(--font); font-size: var(--text-base); line-height: 1.4; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
 .app { display: flex; flex-direction: column; height: 100%; padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px)); }
 main { flex: 1; overflow-y: auto; padding: var(--space-4) var(--space-4) 28px; }
 h1 { margin: 0 0 var(--space-3); font-size: var(--text-2xl); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
@@ -54,7 +54,7 @@ button:disabled { opacity: .4; cursor: default; }
    moves the notch without stretching it. On a switch the notch starts sliding at once and
    glides in (.32s ease-out). The bubble only moves vertically: it dives into the bar (0-.09s), jumps across while
    hidden, and rises more slowly at the new tab (.18-.42s). */
-.tabbar { --tab-h: 68px; position: relative; z-index: 5; display: flex; padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)); }
+.tabbar { --tab-h: 68px; position: relative; z-index: 5; display: flex; overflow-x: clip; overflow-y: visible; /* the strip is 2x wide; the bubble pokes above */ padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)); }
 .tabbar-bg { position: absolute; top: 0; bottom: 0; left: 0; width: 200%; display: flex; pointer-events: none; transform: translateX(calc(-50% + (var(--i) + .5) * 100% / 6)); transition: transform .32s cubic-bezier(.22, 1, .36, 1); filter: drop-shadow(0 -4px 12px #0007); }
 .tabbar-fill { flex: 1; background: var(--surface); box-shadow: inset 0 1px 0 var(--border); }
 .tabbar-notch { flex: none; width: 112px; display: flex; flex-direction: column; margin: 0 -1px; }
