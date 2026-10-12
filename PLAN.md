@@ -273,7 +273,7 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: phases 1–3 done (web-checked); 4–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phases 1–3 and 5 done, phase 4 partly (scale texture); display font and goal arc pending (web-checked).** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
@@ -303,12 +303,12 @@ Done when: a finished workout reads as stone in the session view and on the shar
 
 **Phase 4: Form and type**
 - **Display font** for headings and big numbers only (weights, timers, stats, the share image); body text stays system. Shortlist, to try side by side on the active workout: a condensed grotesk for numbers (e.g. Barlow Condensed) vs. a sharp display face (e.g. Fraunces). OFL licence, Latin subset, self-hosted `woff2` in `src/assets/fonts`, `font-display: swap`, cached by the service worker. Tabular numbers on timers so digits don't jump.
-- **Scale texture**: a very faint hex/scale pattern (2–4% opacity) on hero surfaces only: the week card, launch screen and share image. Never on lists or forms.
+- **Scale texture** (done): `--scales`, a seamless fish-scale tile at 4% opacity, on the week card only. Not on the launch screen or share image (kept clean), never on lists or forms.
 - **Serpent curve**: the weekly goal progress on the week card as a coiled arc, echoing the S-curve of the logo cutout. Charts are left alone.
 Done when: the font is in and offline-safe, and the texture and arc are on the week card with no readability loss.
 
 **Phase 5: Voice**
-- A short copy pass in en and es, a few lines only, so it doesn't get corny: rest over "Eyes up.", forgotten session "Still locked in?", streak "N weeks unbroken. Stone cold.", empty history "Nothing has met the gaze yet." The Spanish versions are written to fit, not translated literally. Everything else keeps its current plain wording.
+- A short copy pass in en and es (done), a few lines only: the finish summary title "Locked in." / "Foco total.", the forgotten-session prompt "Still locked in?" / "¿Sigues en la zona?", rest over "Eyes up." / "Mirada al frente." (phase 2), and empty History "Nothing turned to stone yet. Finished workouts land here." Spanish keeps the app's tú register. The streak line stays plain (it's already long). Everything else keeps its current wording.
 Done when: the lines are in both languages and read naturally on the phone.
 
 **Order:** 1 → 2 → 3 → 4 → 5. Each phase is shippable on its own; check each on the phone, not just the desktop browser (grain visibility on an OLED screen).

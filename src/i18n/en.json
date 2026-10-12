@@ -334,7 +334,7 @@
     "redoWarmup": "Redo warm-up"
   },
   "summary": {
-    "title": "Workout complete",
+    "title": "Locked in.",
     "duration": "Duration",
     "sets": "Sets",
     "volume": "Volume",
@@ -349,7 +349,7 @@
     "imageHelp": "Shows the workout only: no gym, notes or body data."
   },
   "forgotten": {
-    "title": "Still working out?",
+    "title": "Still locked in?",
     "body": "No set logged for 2 hours. Finish at your last set ({{time}}) or keep going?",
     "finish": "Finish at {{time}}",
     "notification": "No set logged for 2 hours. Open the app to finish your workout.",
@@ -357,7 +357,7 @@
   },
   "history": {
     "title": "History",
-    "empty": "No finished workouts yet.",
+    "empty": "Nothing turned to stone yet. Finished workouts land here.",
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets",
     "view": "View",

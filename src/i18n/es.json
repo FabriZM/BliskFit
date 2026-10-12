@@ -334,7 +334,7 @@
     "redoWarmup": "Rehacer calentamiento"
   },
   "summary": {
-    "title": "Entreno completado",
+    "title": "Foco total.",
     "duration": "Duración",
     "sets": "Series",
     "volume": "Volumen",
@@ -349,7 +349,7 @@
     "imageHelp": "Muestra solo el entrenamiento: sin gimnasio, notas ni datos corporales."
   },
   "forgotten": {
-    "title": "¿Sigues entrenando?",
+    "title": "¿Sigues en la zona?",
     "body": "Sin series registradas hace 2 horas. ¿Terminar en tu última serie ({{time}}) o seguir?",
     "finish": "Terminar a las {{time}}",
     "notification": "Sin series registradas hace 2 horas. Abre la app para terminar tu entreno.",
@@ -357,7 +357,7 @@
   },
   "history": {
     "title": "Historial",
-    "empty": "Aún no hay entrenos terminados.",
+    "empty": "Nada se ha vuelto piedra todavía. Aquí aparecen los entrenos terminados.",
     "sets_one": "{{count}} serie",
     "sets_other": "{{count}} series",
     "view": "Vista",
