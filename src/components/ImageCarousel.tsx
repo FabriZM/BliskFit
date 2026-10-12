@@ -32,8 +32,8 @@ export default function ImageCarousel({ images, label }: { images: { src: string
       </div>
       {many && (
         <>
-          <button className="carousel-nav prev" onClick={() => go(index - 1)} disabled={index === 0} aria-label={t('carousel.prev')}><ChevronLeftIcon /></button>
-          <button className="carousel-nav next" onClick={() => go(index + 1)} disabled={index === images.length - 1} aria-label={t('carousel.next')}><ChevronRightIcon /></button>
+          <button className="carousel-nav carousel-prev" onClick={() => go(index - 1)} disabled={index === 0} aria-label={t('carousel.prev')}><ChevronLeftIcon /></button>
+          <button className="carousel-nav carousel-next" onClick={() => go(index + 1)} disabled={index === images.length - 1} aria-label={t('carousel.next')}><ChevronRightIcon /></button>
           <div className="carousel-dots">
             {images.map((img, i) => (
               <button key={img.src} className={i === index ? 'on' : ''} aria-current={i === index}

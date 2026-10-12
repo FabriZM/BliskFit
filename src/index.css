@@ -114,7 +114,7 @@ fieldset { border: 1px solid var(--border); border-radius: var(--radius); paddin
 .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .carousel-nav { position: absolute; top: calc(50% - 26px); width: 36px; height: 36px; padding: 0; border: 0; border-radius: var(--radius-pill);
   background: #000a; color: #fff; display: grid; place-items: center; }
-.carousel-nav.prev { left: 8px; } .carousel-nav.next { right: 8px; } .carousel-nav:disabled { opacity: 0; pointer-events: none; }
+.carousel-prev { left: 8px; } .carousel-next { right: 8px; } .carousel-nav:disabled { opacity: 0; pointer-events: none; }
 .carousel-dots { display: flex; justify-content: center; gap: 6px; padding-top: var(--space-2); }
 .carousel-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--border-strong); }
 .carousel-dots button.on { background: var(--accent); width: 20px; }
