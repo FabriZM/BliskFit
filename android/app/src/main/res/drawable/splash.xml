@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item><color android:color="#111827" /></item>
+    <item><color android:color="#0b1514" /></item>
     <!-- White disc behind the logo: teal on the dark background is too faint. -->
     <item android:gravity="center" android:width="160dp" android:height="160dp">
         <shape android:shape="oval"><solid android:color="@color/ic_launcher_tile" /></shape>

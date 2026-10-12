@@ -2,11 +2,11 @@
   "appId": "com.fabrizm.bliskfit",
   "appName": "BliskFit",
   "webDir": "dist",
-  "backgroundColor": "#111827",
+  "backgroundColor": "#0b1514",
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_bliskfit",
-      "iconColor": "#34d399"
+      "iconColor": "#45d0a0"
     },
     "SystemBars": {
       "style": "DARK"

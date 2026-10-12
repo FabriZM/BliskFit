@@ -7,8 +7,12 @@ import { platform } from '../../lib/platform'
 import { useNotificationState } from '../../lib/platform/hooks'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
+import BasiliskEye from '../../components/BasiliskEye'
 
-/** Sticky rest countdown derived from stored timestamps; vibrates and beeps once when it reaches zero. */
+/**
+ * Sticky rest countdown derived from stored timestamps; vibrates and beeps once when it reaches zero. The basilisk's
+ * pupil narrows from round to a slit as rest runs out: at zero the gaze is locked, time to lift.
+ */
 export default function RestBar({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
   const now = useNow(250)
@@ -34,7 +38,7 @@ export default function RestBar({ session }: { session: WorkoutSession }) {
     <div className={`restbar${over ? ' over' : ''}`} role="timer" aria-live="off">
       <div className="restbar-fill" style={{ width: `${Math.min(100, Math.max(0, (1 - remaining / total) * 100))}%` }} />
       <button onClick={() => void adjustRest(session.id, -15)}>−15</button>
-      <strong>{over ? t('workout.restOver') : `${t('workout.rest')} ${formatClock(remaining)}`}</strong>
+      <strong><BasiliskEye className="rest-eye" size={22} pupil={over ? 0 : remaining / total} />{over ? t('workout.restOver') : `${t('workout.rest')} ${formatClock(remaining)}`}</strong>
       <button onClick={() => void adjustRest(session.id, 15)}>+15</button>
       <button onClick={() => void clearRest(session.id)}>{over ? t('common.close') : t('workout.skipRest')}</button>
     </div>

@@ -8,6 +8,9 @@
   --fg: #e8f0ee; --muted: #8fa5a1; --silver: #c3cfcc;
   /* brand */
   --brand: #124f4e; --brand-deep: #0c3533; --accent: #45d0a0; --accent-soft: #45d0a033; --on-accent: #06261f; --done: #123a33;
+  /* basilisk: stone marks what's done and locked; --grain is a faint noise laid over stone and hero surfaces */
+  --stone: #252f2d; --stone-2: #313c3a; --stone-fg: #d3dbd9;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
   /* semantic */
   --warn: #f5b942; --warn-soft: #7a4a0e55; --warn-ring: #f5b94266; --on-warn: #3d2603;
   --danger: #f2555a; --danger-bg: #7a1f22; --danger-fg: #ffd4d5;
@@ -62,8 +65,13 @@ button:disabled { opacity: .4; cursor: default; }
 .notch-fill { fill: var(--surface); } .notch-edge { fill: none; stroke: var(--border); stroke-width: 1; }
 .tabbar-bubbles { position: absolute; top: -40px; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; }
 .tabbar-bubble { position: absolute; top: 22px; left: 0; width: calc(100% / 3); height: 52px; display: flex; justify-content: center; pointer-events: none; transform: translateX(calc(var(--i) * 100%)); transition: transform 0s .09s; }
-.tabbar-bubble i { width: 52px; height: 52px; border-radius: 50%; background: var(--accent); box-shadow: 0 6px 18px #45d0a055, 0 2px 4px #0006; }
+.tabbar-bubble i { position: relative; width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle, #8cf0cc 0 16%, var(--accent) 46%, #2a9a74 100%); box-shadow: 0 6px 18px #45d0a055, 0 2px 4px #0006; }
 .tabbar-bubble i.dive { animation: bubble-dive .42s both; }
+/* The bubble is the basilisk's eye: an iris with a slit pupil behind the icon. The pupil is dilated while the bubble
+   dives and constricts as it rises at the new tab (.18-.42s, with the rise), so the gaze locks onto the tab. */
+.tabbar-bubble i::before { content: ''; position: absolute; left: 50%; top: 5px; bottom: 5px; width: 14px; margin-left: -7px; border-radius: 50%; background: var(--on-accent); opacity: .22; transform: scaleX(.4); }
+.tabbar-bubble i.dive::before { animation: pupil-lock .42s both; }
+@keyframes pupil-lock { 0%, 43% { transform: scaleX(1.6); } 100% { transform: scaleX(.4); } }
 @keyframes bubble-dive {
   0% { transform: none; animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
   21%, 43% { transform: translateY(64px) scale(.8); animation-timing-function: cubic-bezier(.3, 1.45, .6, 1); }
@@ -171,7 +179,7 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 .meta { display: flex; align-items: center; gap: 6px; } .icon.tiny { min-width: 0; min-height: 0; padding: 0 4px; font-size: .8rem; line-height: 1; opacity: .8; background: transparent; }
 .toggle { width: 44px; height: 24px; accent-color: var(--accent); }
 .rest-card { align-items: center; text-align: center; } .rest-card .primary { width: 100%; }
-.ring { position: relative; width: 220px; height: 220px; } .ring svg { width: 100%; height: 100%; }
+.ring { position: relative; width: 220px; height: 220px; } .ring > svg { width: 100%; height: 100%; }
 .ring-track { fill: none; stroke: var(--border); stroke-width: 12; } .ring-fill { fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset .25s linear; }
 .rest-card.over .ring-fill { stroke: var(--warn); stroke-dashoffset: 0; }
 .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; } .ring-text strong { font-size: 2.6rem; font-variant-numeric: tabular-nums; } .ring-text span { color: var(--muted); }
@@ -351,6 +359,8 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .restbar button { border-radius: var(--radius-pill); background: #ffffff14; padding: 10px 14px; min-width: 52px; }
 .restbar-fill { background: #45d0a02e; }
 .restbar.over { border-color: var(--accent); }
+.restbar strong { display: inline-flex; align-items: center; gap: 6px; } .rest-eye { flex: none; color: var(--accent); } .restbar.over .rest-eye { color: var(--on-accent); }
+.rest-eye .eye-pupil { transition: transform .25s linear; } .ring-text .rest-eye { margin-bottom: 2px; } .rest-card.over .rest-eye { color: var(--warn); }
 /* Rest popup */
 .rest-card { gap: var(--space-4); padding: var(--space-6) var(--space-5) var(--space-5); }
 .ring { width: 240px; height: 240px; }

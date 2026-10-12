@@ -273,7 +273,7 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phase 1 done; phase 2 done except the launch screen (web-checked; the tab-bar timing still needs a look on the phone); 3–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
@@ -290,9 +290,9 @@ Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and
 Done when: tokens and the eye component exist, and the APK's background and notification color match the PWA.
 
 **Phase 2: The gaze**
-- **Tab bar bubble** (`TabBar.tsx`, `.tabbar-bubble`): the active bubble becomes an iris (radial accent gradient with a faint slit pupil behind the icon, icon kept legible). When it rises at the new tab, the slit does one quick blink (scaleY). Prototype two versions before choosing: an iris on the round bubble vs. an almond eye-shaped bubble. The current dive/rise mechanics stay.
-- **Rest bar** (`RestBar.tsx`): a small eye next to the countdown. The pupil narrows from round to a slit as rest runs out, and at zero it's a full slit with the "rest over" text changed to "Eyes up." The progress fill stays.
-- **Launch screen**: an eye opening over the logo mark, plus the slogan, shown only while the app is loading (DB open, settings), so it never adds waiting time. Static when reduced motion is on.
+- **Tab bar bubble** (`TabBar.tsx`, `.tabbar-bubble`): the active bubble is an iris (radial accent gradient with a faint slit pupil behind the icon). The pupil is dilated while the bubble dives and constricts as it rises at the new tab, so the gaze "locks" onto it. The dive/rise mechanics are unchanged. An almond eye-shaped bubble was tried and dropped: it clashes with the round notch and gets clipped by the bar.
+- **Rest timer** (`RestPopup.tsx` ring and `RestBar.tsx`): a `BasiliskEye` above the countdown in the popup and next to it in the bar. The pupil narrows from round to a slit as rest runs out; at zero it's a full slit (amber in the popup, like the ring). The bar's "rest over" text is now "Eyes up." / "Mirada al frente."; the popup keeps the short "Go!" (it has to fit the ring). The progress fill and ring stay.
+- **Launch screen** (not done yet): an eye opening over the logo mark, plus the slogan, shown only while the app is loading (DB open, settings), so it never adds waiting time. Static when reduced motion is on.
 Done when: on the phone, switching tabs shows the eye/blink, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay.
 
 **Phase 3: Petrification (stone = done, locked)**

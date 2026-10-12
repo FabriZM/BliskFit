@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { SLOGAN } from './src/lib/brand'
 
 // "0.3.0 (build 17)": package.json version + git commit count, matching the Android versionName.
 const pkgVersion = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
@@ -31,7 +32,7 @@ export default defineConfig({
       manifest: {
         name: 'BliskFit',
         short_name: 'BliskFit',
-        description: 'Offline-first gym tracker',
+        description: `${SLOGAN} Offline-first gym tracker.`,
         theme_color: '#0b1514',
         background_color: '#0b1514',
         display: 'standalone',

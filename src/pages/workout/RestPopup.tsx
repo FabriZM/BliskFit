@@ -4,6 +4,7 @@ import { adjustRest, clearRest } from '../../db/workout'
 import type { WorkoutSession } from '../../db/types'
 import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
+import BasiliskEye from '../../components/BasiliskEye'
 
 const R = 90
 const C = 2 * Math.PI * R
@@ -38,6 +39,7 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
             <circle cx="100" cy="100" r={R} className="ring-fill" strokeDasharray={C} strokeDashoffset={C * (1 - frac)} transform="translate(200 0) scale(-1 1) rotate(-90 100 100)" />
           </svg>
           <div className="ring-text" role="timer">
+            <BasiliskEye className="rest-eye" size={36} pupil={frac} />
             <strong>{over ? t('workout.restOverShort') : formatClock(remaining)}</strong>
             <span>{t('workout.rest')}</span>
           </div>

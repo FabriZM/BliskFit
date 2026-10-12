@@ -11,7 +11,7 @@ const TABS = [
 ] as const
 
 /**
- * Bottom navigation. The active tab sits in a bubble raised in a notch of the bar. Switching tabs: the bubble dives
+ * Bottom navigation. The active tab sits in a bubble (the basilisk's eye) raised in a notch of the bar. Switching tabs: the bubble dives
  * into the bar, the notch snaps to the new tab, and the bubble rises there (timings in index.css).
  */
 export default function TabBar() {

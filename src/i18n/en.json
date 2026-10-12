@@ -292,7 +292,7 @@
     "notePlaceholder": "e.g. felt a pinch, drop weight",
     "rest": "Rest",
     "learned": "learned",
-    "restOver": "Rest over — go!",
+    "restOver": "Eyes up.",
     "skipRest": "Skip",
     "swapScope": "Swap to {{name}}?",
     "scopeSession": "This session only",
