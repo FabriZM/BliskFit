@@ -1,6 +1,7 @@
 import type { ID, SessionExercise, SetLog, TrackingType, Units } from '../db/types'
 import type { PRKind } from './prs'
 import { formatSet } from './format'
+import { EYE_PATH, SLOGAN } from './brand'
 
 /**
  * The shareable workout summary image: what goes on it (pure, tested) and how it's drawn (canvas). Only the
@@ -54,7 +55,7 @@ export function buildSummaryCard(i: SummaryCardInput): SummaryCard {
 
 const W = 1080
 const PAD = 72
-const C = { bg: '#0b1514', card: '#13211f', fg: '#e8f0ee', muted: '#8fa5a1', accent: '#45d0a0', onAccent: '#06261f' }
+const C = { bg: '#0b1514', card: '#13211f', stone: '#252f2d', fg: '#e8f0ee', muted: '#8fa5a1', silver: '#c3cfcc', accent: '#45d0a0', onAccent: '#06261f' }
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 
 /** Cuts text to fit `max` px, ending in an ellipsis. */
@@ -87,6 +88,42 @@ function setLines(ctx: CanvasRenderingContext2D, sets: string[], max: number): s
   return [...lines, fit(ctx, cur, max)]
 }
 
+/** A tile of faint white noise (the stone grain), seeded so every image comes out the same. */
+function grain(ctx: CanvasRenderingContext2D): CanvasPattern | null {
+  const tile = document.createElement('canvas')
+  tile.width = tile.height = 128
+  const g = tile.getContext('2d')!
+  const img = g.createImageData(128, 128)
+  let seed = 7
+  for (let i = 0; i < img.data.length; i += 4) {
+    seed = (seed * 16807) % 2147483647
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = 255
+    img.data[i + 3] = (seed % 100) < 45 ? 10 : 0
+  }
+  g.putImageData(img, 0, 0)
+  return ctx.createPattern(tile, 'repeat')
+}
+
+/** The basilisk's eye with a slit pupil, `size` px wide, top-left at (x, y). */
+function drawEye(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(size / 24, size / 24)
+  const eye = new Path2D(EYE_PATH)
+  ctx.fillStyle = C.accent
+  ctx.globalAlpha = 0.22
+  ctx.fill(eye)
+  ctx.globalAlpha = 1
+  ctx.strokeStyle = C.accent
+  ctx.lineWidth = 1.4
+  ctx.lineJoin = 'round'
+  ctx.stroke(eye)
+  ctx.beginPath()
+  ctx.ellipse(12, 12, 0.9, 5.2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath()
   ctx.roundRect(x, y, w, h, r)
@@ -109,6 +146,7 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
   const ctx = canvas.getContext('2d')!
   ctx.fillStyle = C.bg
   ctx.fillRect(0, 0, W, canvas.height)
+  const noise = grain(ctx)
   ctx.textBaseline = 'alphabetic'
 
   let y = PAD + 64
@@ -121,13 +159,14 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
   ctx.fillText(fit(ctx, card.date, inner), PAD, y)
   y += 66
 
-  // Stat tiles.
+  // Stat tiles, in stone: the finished workout, locked in.
   const gap = 20
   const tileW = (inner - gap * (card.stats.length - 1)) / card.stats.length
   card.stats.forEach((s, i) => {
     const x = PAD + i * (tileW + gap)
-    ctx.fillStyle = C.card
+    ctx.fillStyle = C.stone
     roundRect(ctx, x, y, tileW, 170, 24)
+    if (noise) { ctx.fillStyle = noise; roundRect(ctx, x, y, tileW, 170, 24) }
     ctx.fillStyle = C.fg
     // Numbers shrink to fit rather than being cut ("1:05:00", "10335 kg").
     let size = 52
@@ -167,10 +206,17 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
     ctx.fillText(labels.more, PAD, y + 36)
   }
 
-  // Footer.
+  // Footer: the eye and name on the left, the slogan on the right.
+  const base = canvas.height - PAD + 12
+  drawEye(ctx, PAD, base - 38, 52)
   ctx.fillStyle = C.accent
   ctx.font = `700 36px ${FONT}`
-  ctx.fillText('BliskFit', PAD, canvas.height - PAD + 12)
+  ctx.fillText('BliskFit', PAD + 66, base)
+  ctx.fillStyle = C.silver
+  ctx.font = `600 28px ${FONT}`
+  ctx.textAlign = 'right'
+  ctx.fillText(SLOGAN.toUpperCase(), W - PAD, base - 2)
+  ctx.textAlign = 'left'
   return canvas
 }
 

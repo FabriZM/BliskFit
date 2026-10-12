@@ -8,7 +8,7 @@ import { weekdayNames } from '../lib/dates'
 import { weekStart } from '../lib/programs'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
-import { CheckIcon, FlameIcon, SnowflakeIcon } from './Icons'
+import { CheckIcon, FlameIcon, StoneIcon } from './Icons'
 
 /**
  * This week's training days against the goal, plus the weekly streak. Days with a workout are tappable: one
@@ -43,7 +43,7 @@ export default function WeekCard() {
         ? <><FlameIcon className="streak-flame" /> <strong>{t('profile.streakWeeks', { count: streak })}</strong></>
         : <span className="muted">{t('profile.noStreak', { count: goal })}</span>}
       {streak > 0 && !week.met && <span className="muted small"> · {t('profile.streakKeep', { count: goal - week.count })}</span>}
-      {frozen.length > 0 && <span className="muted small"> · <SnowflakeIcon className="freeze" /> {t('profile.freezesUsed', { count: frozen.length })}</span>}
+      {frozen.length > 0 && <span className="muted small"> · <StoneIcon className="stone-week" /> {t('profile.freezesUsed', { count: frozen.length })}</span>}
     </p>
   )
 

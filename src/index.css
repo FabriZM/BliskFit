@@ -7,7 +7,7 @@
   --bg: #0b1514; --surface: #13211f; --surface-2: #1b2d2b; --border: #263b38; --border-strong: #3a524e;
   --fg: #e8f0ee; --muted: #8fa5a1; --silver: #c3cfcc;
   /* brand */
-  --brand: #124f4e; --brand-deep: #0c3533; --accent: #45d0a0; --accent-soft: #45d0a033; --on-accent: #06261f; --done: #123a33;
+  --brand: #124f4e; --brand-deep: #0c3533; --accent: #45d0a0; --accent-soft: #45d0a033; --on-accent: #06261f;
   /* basilisk: stone marks what's done and locked; --grain is a faint noise laid over stone and hero surfaces */
   --stone: #252f2d; --stone-2: #313c3a; --stone-fg: #d3dbd9;
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -17,7 +17,7 @@
   --info: #6aa8f0; --info-soft: #1e3a5f55;
   --warmup: #7a4a0e; --drop: #4a2a80;
   /* charts */
-  --chart-grid: #22332f; --chart-missed: #5f736f; --chart-goal: var(--silver); --chart-trend: var(--silver); --chart-push: var(--info);
+  --chart-grid: #22332f; --chart-missed: #5f736f; --chart-goal: var(--silver); --chart-trend: var(--silver); --chart-push: var(--info); --chart-stone: #a9b4b1;
   /* legacy alias */
   --card: var(--surface);
 }
@@ -150,7 +150,7 @@ details { background: var(--surface); border: 1px solid var(--border); border-ra
 .muscle-counter { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; } .muscle-counter .chip { white-space: nowrap; font-size: .8rem; padding: 4px 10px; }
 .ex-card.skipped .swipe-body > :not(.menu):not(.rx-head) { opacity: .5; } .ex-card.skipped .rx-name { opacity: .6; } .ex-card .muted { margin: 2px 0 6px; }
 .sets { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
-.set { border-radius: 10px; position: relative; overflow: hidden; touch-action: pan-y; } .set-body { background: var(--bg); padding: 6px; border-radius: 10px; position: relative; } .set.done .set-body { background: var(--done); } .set.swiping .swipe-bg { display: flex; }
+.set { border-radius: 10px; position: relative; overflow: hidden; touch-action: pan-y; } .set-body { background: var(--bg); padding: 6px; border-radius: 10px; position: relative; } .set.done .set-body { background: var(--grain), var(--stone); } .set.swiping .swipe-bg { display: flex; }
 .set-main { display: flex; align-items: center; gap: 6px; }
 .set-label { width: 34px; height: 34px; border-radius: 50%; padding: 0; font-weight: 700; flex: none; } .set-label.warmup { background: var(--warmup); } .set-label.drop { background: var(--drop); }
 .field { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; font-size: .65rem; color: var(--muted); }
@@ -219,7 +219,7 @@ button.wd { background: transparent; padding: 0; border: 0; color: inherit; curs
 .chart-sel { fill: #ffffff; opacity: .07; }
 .chart-readout { margin: 8px 0 4px; font-size: .9rem; } .chart-readout strong { font-variant-numeric: tabular-nums; }
 .chart-key { display: flex; gap: 14px; flex-wrap: wrap; } .chart-key span { display: inline-flex; align-items: center; gap: 6px; }
-.chart-key .sw { width: 12px; height: 8px; border-radius: 4px 4px 0 0; display: inline-block; } .sw.met { background: var(--accent); } .sw.missed { background: var(--chart-missed); } .sw.wip { background: var(--accent); opacity: .45; }
+.chart-key .sw { width: 12px; height: 8px; border-radius: 4px 4px 0 0; display: inline-block; } .sw.met { background: var(--accent); } .sw.missed { background: var(--chart-missed); } .sw.stone { background: var(--chart-stone); } .sw.wip { background: var(--accent); opacity: .45; }
 .reminder-days { padding: 12px 0 4px; display: flex; flex-direction: column; gap: 8px; }
 .time-input { width: auto; } .help { margin: 0 0 8px; }
 .plan-editor { margin: 0 0 8px; background: var(--surface-2); border: 0; border-radius: var(--radius); padding: 8px 12px; } .plan-editor summary { font-size: .9rem; color: var(--muted); font-weight: 500; cursor: pointer; } .plan-editor .form { padding-top: 10px; }
@@ -335,7 +335,8 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .sets { gap: var(--space-2); }
 .set-body { padding: 6px; background: var(--bg); border: 1px solid transparent; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
 .set.next .set-body { border-color: var(--border-strong); }
-.set.done .set-body { background: var(--done); border-color: #45d0a033; }
+/* A finished set is turned to stone: locked in. Colour only, no animation. */
+.set.done .set-body { background: var(--grain), var(--stone); border-color: var(--stone-2); }
 .set-main { gap: var(--space-2); }
 .set-label { width: 40px; height: 40px; font-size: var(--text-base); background: var(--surface-2); }
 .set.done .set-label.working { background: var(--accent-soft); color: var(--accent); }
@@ -389,7 +390,7 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .menu.icons button > .ico { width: 22px; height: 22px; }
 .check > .ico { vertical-align: middle; }
 .star.on, .pin.on, .fav-mark { color: var(--warn); }
-.streak-flame { color: #ff8a3d; } .freeze { color: var(--info); }
+.streak-flame { color: #ff8a3d; } .stone-week { color: var(--stone-fg); }
 .delta > .ico { vertical-align: 0; }
 .swipe-bg { gap: 6px; }
 .note-text { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 6px 2px; font: inherit; font-weight: 400; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }

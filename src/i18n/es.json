@@ -35,12 +35,12 @@
     "weekStart": "La semana empieza el",
     "version": "Versión",
     "prBadges": "Mostrar insignias de récord",
-    "freezesUsed_one": "{{count}} congelación usada",
-    "freezesUsed_other": "{{count}} congelaciones usadas",
+    "freezesUsed_one": "{{count}} semana de piedra",
+    "freezesUsed_other": "{{count}} semanas de piedra",
     "openWorkout": "abrir entreno",
-    "streakFreezes": "Congelaciones de racha por mes",
+    "streakFreezes": "Semanas de piedra por mes",
     "freezeOff": "Desactivado",
-    "freezeHelp": "Una semana fallada se cubre automáticamente, hasta este número por mes, para que una mala semana no termine tu racha."
+    "freezeHelp": "Una semana fallada se vuelve piedra en vez de cortar tu racha: se cubre sola, hasta este número por mes."
   },
   "muscles": {
     "chest": "Pecho",
@@ -425,6 +425,7 @@
     "goal": "Meta {{count}}",
     "goalMet": "Meta cumplida",
     "goalMissed": "No cumplida",
+    "stoneWeek": "Semana de piedra",
     "inProgress": "Esta semana"
   },
   "gymplan": {

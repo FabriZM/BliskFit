@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { useGoalHistory } from '../db/goals'
-import { dateKey, goalForWeek, trainingDayKeys, weeklyBars } from '../lib/goals'
+import { dateKey, goalForWeek, streakInfo, trainingDayKeys, weeklyBars } from '../lib/goals'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
 
@@ -19,12 +19,13 @@ const BASE = M.t + PH
  * Workouts (distinct training days) per week with the goal that applied in each week.
  * Marks: thin bars (<= 24px) with a rounded tip on a square baseline, hairline gridlines, a 2px goal step line.
  * Goal met = accent, missed = neutral grey (the pair separates well for colour-blind and normal vision), the
- * current week is a lighter wash while in progress. Identity never relies on colour alone: the goal line is
+ * current week is a lighter wash while in progress. A missed week bridged to keep the streak is a stone week: a
+ * light stone bar, with a stub when nothing was trained so it still shows. Identity never relies on colour alone: the goal line is
  * labelled, a key names the states, a readout spells out each week, and a table view lists every value.
  */
 export default function GoalChart() {
   const { t, i18n } = useTranslation()
-  const { weeklyGoal, weekStartDay } = useSettings((s) => s.settings)
+  const { weeklyGoal, weekStartDay, streakFreezes } = useSettings((s) => s.settings)
   const history = useGoalHistory()
   const now = useNow(60_000)
   const sessions = useLiveQuery(() => db.sessions.where('status').equals('finished').toArray(), [])
@@ -34,7 +35,9 @@ export default function GoalChart() {
 
   const weeks = RANGES.find((r) => r.key === range)!.weeks
   const goalFor = (ws: Date) => goalForWeek(history, dateKey(ws), weeklyGoal)
-  const bars = weeklyBars(trainingDayKeys(sessions), new Date(now), weekStartDay, weeks, goalFor)
+  const keys = trainingDayKeys(sessions)
+  const bars = weeklyBars(keys, new Date(now), weekStartDay, weeks, goalFor)
+  const stone = new Set(streakInfo(keys, new Date(now), weekStartDay, goalFor, streakFreezes).frozen.map(dateKey))
   const n = bars.length
   const slot = PW / n
   const barW = Math.min(24, Math.max(2, slot - 2)) // >= 2px surface gap between bars
@@ -58,7 +61,7 @@ export default function GoalChart() {
     return `M${x},${BASE} V${BASE - h + r} Q${x},${BASE - h} ${x + r},${BASE - h} H${x + barW - r} Q${x + barW},${BASE - h} ${x + barW},${BASE - h + r} V${BASE} Z`
   }
 
-  const fill = (b: (typeof bars)[number]) => (b.met ? 'var(--accent)' : 'var(--chart-missed)')
+  const fill = (b: (typeof bars)[number]) => (b.met ? 'var(--accent)' : stone.has(b.key) ? 'var(--chart-stone)' : 'var(--chart-missed)')
   const opacity = (b: (typeof bars)[number]) => (b.current && !b.met ? 0.45 : 1)
 
   const pick = (clientX: number, el: SVGSVGElement) => {
@@ -75,7 +78,8 @@ export default function GoalChart() {
     return newMonth && (n <= 26 || b.start.getMonth() % 3 === 0) ? [{ i, text: month.format(b.start) }] : []
   })
 
-  const status = bar.current && !bar.met ? t('chart.inProgress') : bar.met ? t('chart.goalMet') : t('chart.goalMissed')
+  const status = bar.current && !bar.met ? t('chart.inProgress') : bar.met ? t('chart.goalMet') : stone.has(bar.key) ? t('chart.stoneWeek') : t('chart.goalMissed')
+  const anyStone = bars.some((b) => stone.has(b.key))
 
   return (
     <div className="card goal-chart">
@@ -106,7 +110,7 @@ export default function GoalChart() {
           </g>
         ))}
         {sel !== null && <rect x={xSlot(shown)} y={M.t} width={slot} height={PH} className="chart-sel" />}
-        {bars.map((b, i) => <path key={b.key} d={barPath(i, b.count)} fill={fill(b)} opacity={opacity(b)} />)}
+        {bars.map((b, i) => <path key={b.key} d={barPath(i, stone.has(b.key) ? Math.max(b.count, yMax / 16) : b.count)} fill={fill(b)} opacity={opacity(b)} />)}
         <path d={goalPath} className="chart-goal" fill="none" />
         <text x={W - M.r + 6} y={y(bars[n - 1].goal) + 3} className="chart-goal-label">{t('chart.goal', { count: bars[n - 1].goal })}</text>
         {xLabels.map((l) => (
@@ -121,6 +125,7 @@ export default function GoalChart() {
       <div className="chart-key muted small">
         <span><i className="sw met" />{t('chart.goalMet')}</span>
         <span><i className="sw missed" />{t('chart.goalMissed')}</span>
+        {anyStone && <span><i className="sw stone" />{t('chart.stoneWeek')}</span>}
         <span><i className="sw wip" />{t('chart.inProgress')}</span>
       </div>
 

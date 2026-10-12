@@ -273,7 +273,7 @@ Done when: with a free key, a generated routine can be reviewed, accepted and st
 Front/back SVG with tappable muscles feeding the muscle filter, zoom regions and pinch/pan for small muscles, heatmap of weekly sets, measurement overlays. Artwork: existing library vs custom, decided at this point.
 
 ### M10: Basilisk identity
-**Status: phase 1 done; phase 2 done (web-checked); 3–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
+**Status: phases 1–3 done (web-checked); 4–5 planned.** Bring the basilisk from the logo into the app itself, beyond the teal palette. Today it only lives in the logo (a kettlebell whose negative space is the serpent's head, the handle opening a hooded eye). The idea: meeting the basilisk's gaze petrifies you, and in this app being petrified means locking in. Two motifs carry it: **the gaze** (eye, slit pupil) marks focus and what's active; **stone** marks what's done and locked. Identity goes in a few high-traffic places, never as decoration on every screen.
 
 **Slogan: "Meet its gaze. Lock in."** It's a brand mark, so it stays in English in every language: a constant in code, not an i18n key. It appears in three places only: the launch screen, the footer of the share image, and the PWA manifest `description`. Not repeated in the UI.
 
@@ -296,9 +296,9 @@ Done when: tokens and the eye component exist, and the APK's background and noti
 Done when: on the phone, the rest pupil closes as the timer ends, and a cold start shows the eye and slogan with no extra delay. (Web-checked; still to see on the phone.)
 
 **Phase 3: Petrification (stone = done, locked)**
-- **Finished sets turn to stone**: `.set.done` uses `--stone` with the grain instead of the teal `--done`; numbers in `--stone-fg`. The tick/button keeps the accent so state is clear at a glance. Change of color only, no animation. Check that warm-up/drop labels and PR badges are still readable on stone.
-- **Streak freezes become "stone weeks"**: a missed week bridged automatically is a week "turned to stone". Rename it in the copy (en/es: settings label, help text, `freezesUsed`), swap the snowflake (`SnowflakeIcon` in `WeekCard.tsx`) for a stone icon, and show bridged weeks on the calendar/week card as stone chips. Logic in `lib/goals.ts` unchanged; internal names (`freeze`) can stay.
-- **Share image** (`lib/summaryCard.ts`): eye mark and slogan in the footer, faint grain on the background, the stat tiles in stone. The canvas waits for the display font (`document.fonts.load`) before drawing.
+- **Finished sets turn to stone**: `.set.done` is `--stone` with the grain (replaces the old teal `--done` token, now gone) and a `--stone-2` border. The tick button and the working-set label keep the accent. Colour only, no animation.
+- **Streak freezes are "stone weeks"**: a missed week bridged automatically is a week turned to stone. The copy says so in en/es (settings label and help, the week card's "N stone weeks"), and a `StoneIcon` replaces the snowflake. On the Workouts-per-week chart a stone week is a light stone bar (`--chart-stone`, with a stub when nothing was trained), the readout says "Stone week", and the key adds it when one is in range. Logic in `lib/goals.ts` unchanged; internal names (`freeze`, `streakFreezes`) stay.
+- **Share image** (`lib/summaryCard.ts`): stat tiles in stone with a seeded grain; footer with the eye (shared `EYE_PATH` in `lib/brand.ts`), the name and the slogan in caps. The background stays plain. Waiting for the display font comes with phase 4.
 Done when: a finished workout reads as stone in the session view and on the share image, and a bridged week shows as a stone week.
 
 **Phase 4: Form and type**
