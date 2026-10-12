@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
@@ -24,6 +24,8 @@ export default function ExerciseDetail() {
   const nav = useNavigate()
   const id = decodeURIComponent(useParams().id ?? '')
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
+  // Opened from a running workout: back goes to the workout, not the exercise list.
+  const fromWorkout = (useLocation().state as { back?: string } | null)?.back === '/workout'
   const muscles = useLiveQuery(() => db.muscleGroups.toArray(), []) ?? []
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
@@ -61,7 +63,7 @@ export default function ExerciseDetail() {
 
   return (
     <section>
-      <BackLink to="/exercises" label={t('tabs.exercises')} />
+      <BackLink to={fromWorkout ? '/workout' : '/exercises'} label={fromWorkout ? t('tabs.workout') : t('tabs.exercises')} />
       <div className="row head">
         <h1>{ex.name}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}

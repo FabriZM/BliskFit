@@ -7,7 +7,8 @@ import type { PRKind } from '../../lib/prs'
 import { describeSide, formatPlate, loadFor, PLATES, retypeKg, setUnit, usesWeight } from '../../lib/plates'
 import { formatNum, displayToKg, kgToDisplay } from '../../lib/units'
 import { isFilled } from '../../lib/workout'
-import { CheckIcon, DumbbellIcon, RepeatIcon, TrashIcon } from '../../components/Icons'
+import { CheckIcon, DumbbellIcon, TrashIcon } from '../../components/Icons'
+import { formatSet } from '../../lib/format'
 
 type FieldKey = 'weight' | 'extraWeight' | 'reps' | 'durationSec' | 'distanceM'
 type Kind = 'weight' | 'reps' | 'sec' | 'min' | 'km'
@@ -59,7 +60,7 @@ export function SetFields({ set, tracking, units: fallback, hint, onChange }: {
   )
 }
 
-export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, canRepeat, canUseLast, barOf, showPlates, onToggle, onChange, onDone, onUndo, onRepeat, onUseLast, onDelete, onPlates }: {
+export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, previous, barOf, onToggle, onChange, onDone, onUndo, onUseLast, onDelete, onPlates }: {
   set: SetLog
   tracking: TrackingType
   /** The exercise's weight unit (its own, else the app's), for sets with no unit of their own yet. */
@@ -72,17 +73,14 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   /** The next set to do in this exercise (highlighted). */
   next?: boolean
   expanded: boolean
-  canRepeat: boolean
-  canUseLast: boolean
-  /** Bar weight in a unit, when the exercise is loaded with plates (else no plate line). */
+  /** This set's value last session (the "previous" column); tapping it fills the set with it. */
+  previous?: SetLog
+  /** Bar weight in a unit, when the exercise is loaded with plates (else no plates row in the set settings). */
   barOf?: (unit: Units) => number
-  /** Show the plates line (the next set to do, or an expanded one). */
-  showPlates?: boolean
   onToggle: () => void
   onChange: (patch: Partial<SetLog>) => void
   onDone: () => void
   onUndo: () => void
-  onRepeat: () => void
   onUseLast: () => void
   /** Omitted for an exercise's last set: every exercise keeps at least one. */
   onDelete?: () => void
@@ -141,22 +139,28 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
           <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
           {done && pr && pr.length > 0 && <PRBadge kinds={pr} />}
         </span>
+        <span className="field prev-field">
+          <button className="prev" disabled={!previous || done} onClick={onUseLast}
+            aria-label={previous ? `${t('workout.useLastSet')}: ${formatSet(previous, tracking, fallback)}` : t('workout.noPrevious')}>
+            {previous ? formatSet(previous, tracking, fallback) : '—'}
+          </button>
+          <span aria-hidden>{t('workout.previous')}</span>
+        </span>
         <SetFields set={set} tracking={tracking} units={fallback} hint={hint} onChange={onChange} />
-        <button className="icon" disabled={!canRepeat || done} aria-label={t('workout.repeat')} title={t('workout.repeat')} onClick={onRepeat}><RepeatIcon /></button>
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
           onClick={done ? onUndo : onDone}><CheckIcon size={24} /></button>
       </div>
-      {bar !== undefined && showPlates && !done && onPlates && (
-        <button className={`plates-line${set.weight === undefined ? ' muted' : ''}`} onClick={onPlates}>
-          <DumbbellIcon />{' '}
-          {!plateLoad ? t('plates.open')
-            : plateLoad.perSide.length === 0 ? t('plates.barOnly')
-              : t('plates.line', { plates: describeSide(plateLoad.perSide) })}
-          {plateLoad && !plateLoad.exact ? ` (≈ ${formatPlate(plateLoad.total)})` : ''}
-        </button>
-      )}
       {expanded && (
         <div className="set-more">
+          {bar !== undefined && !done && onPlates && (
+            <button className={`plates-line${set.weight === undefined ? ' muted' : ''}`} onClick={onPlates}>
+              <DumbbellIcon />{' '}
+              {!plateLoad ? t('plates.open')
+                : plateLoad.perSide.length === 0 ? t('plates.barOnly')
+                  : t('plates.line', { plates: describeSide(plateLoad.perSide) })}
+              {plateLoad && !plateLoad.exact ? ` (≈ ${formatPlate(plateLoad.total)})` : ''}
+            </button>
+          )}
           <label>{t('workout.setType')}
             <select value={set.setType} onChange={(e) => onChange({ setType: e.target.value as SetType })}>
               {SET_TYPES.map((x) => <option key={x} value={x}>{t(`workout.type.${x}`)}</option>)}
@@ -180,15 +184,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
               {RPE.map((x) => <option key={x} value={x}>{x}</option>)}
             </select>
           </label>
-          <label>{t('workout.rir')}
-            <select value={set.rir ?? ''} onChange={(e) => onChange({ rir: e.target.value ? Number(e.target.value) : undefined })}>
-              <option value="">—</option>
-              {[0, 1, 2, 3, 4, 5].map((x) => <option key={x} value={x}>{x}</option>)}
-            </select>
-          </label>
           <label className="inline"><input type="checkbox" checked={!!set.failure} onChange={(e) => onChange({ failure: e.target.checked || undefined })} /> {t('workout.failure')}</label>
           <div className="set-actions">
-            <button disabled={!canUseLast || done} onClick={onUseLast}>{t('workout.useLastSet')}</button>
             <button className="danger" disabled={!onDelete} onClick={onDelete}>{t('workout.deleteSet')}</button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
@@ -31,7 +32,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   defaultRest: number
   onSwap: () => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [menu, setMenu] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [addingNote, setAddingNote] = useState(false)
@@ -106,13 +107,6 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
     sorted.forEach((s, i) => { if (s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, copyOf(suggestedSet)) })
   }
 
-  const useLast = () => {
-    sorted.forEach((s, i) => {
-      const src = lastSetFor(last, workingIdx[i])
-      if (src && s.doneAt === undefined && workingIdx[i] >= 0) void updateSet(s.id, copyOf(src))
-    })
-  }
-
   // Swipe either way to remove (confirmed). Only starts on non-interactive areas, and vertical scrolling wins.
   const SWIPE_AT = 100
   const onPointerDown = (e: React.PointerEvent) => {
@@ -146,7 +140,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={cancelSwipe}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
-        <strong className="rx-name">{exercise?.name ?? '…'}</strong>
+        {/* The exercise page's back button returns here (see ExerciseDetail). */}
+        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: '/workout' }}>{exercise?.name ?? '…'}</Link>
         <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
       </div>
       <p className="muted small meta">
@@ -180,16 +175,6 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
 
       {!item.skipped && (
         <>
-          {last && (
-            <div className="last-hint">
-              <span className="muted small">
-                {t('workout.lastTime', { date: new Intl.DateTimeFormat(i18n.language, { month: 'short', day: 'numeric' }).format(last.startedAt) })}
-                {session.gymId && !last.gymMatched ? ` · ${t('workout.otherGym')}` : ''}
-                {': '}{last.sets.map((s) => formatSet(s, tracking, appUnits)).join(' · ')}
-              </span>
-              <button onClick={useLast}>{t('workout.useLast')}</button>
-            </div>
-          )}
           {!last && suggestion && suggestedSet && (
             <div className="last-hint suggest">
               <span className="muted small">
@@ -203,9 +188,9 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}
-                hint={hintFor(i)} pr={prs.get(s.id)} next={s.id === nextId} barOf={barOf} showPlates={s.id === nextId || expanded === s.id}
+                hint={hintFor(i)} pr={prs.get(s.id)} next={s.id === nextId} barOf={barOf}
                 onPlates={() => setPlatesFor(s.id)}
-                expanded={expanded === s.id} canRepeat={i > 0} canUseLast={!!(lastSetFor(last, workingIdx[i]) ?? suggestedSet) && workingIdx[i] >= 0}
+                expanded={expanded === s.id} previous={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
                 onDone={() => {
@@ -215,8 +200,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                   void completeSet(s.id, shouldStartRest(session.exercises, item.id) && sec > 0 ? sec : null)
                 }}
                 onUndo={() => void uncompleteSet(s.id)}
-                onRepeat={() => void updateSet(s.id, copyOf(sorted[i - 1]))}
-                onUseLast={() => { const src = lastSetFor(last, workingIdx[i]) ?? suggestedSet; if (src) void updateSet(s.id, copyOf(src)) }}
+                onUseLast={() => { const src = workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined; if (src) void updateSet(s.id, copyOf(src)) }}
                 onDelete={sorted.length > 1 ? () => void deleteSet(s.id) : undefined} />
             ))}
           </ul>

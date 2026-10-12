@@ -371,3 +371,25 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .met-check { color: var(--accent); }
 .delta > .ico { vertical-align: 0; }
 .swipe-bg { gap: 6px; }
+.note-text { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 6px 2px; font: inherit; font-weight: 400; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+.note-text:active:not(:disabled) { transform: none; filter: none; background: #ffffff0d; }
+.note-input-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.note-input { font-size: var(--text-sm); }
+.note-count { align-self: flex-end; font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; } .note-count.full { color: var(--warn); }
+/* Set rows: captions ("kg", "reps") hang below their input, so each field is input-high and the label, repeat and
+   check buttons center on the inputs themselves. */
+.set-main { align-items: center; padding-bottom: 15px; }
+.set-main .field { position: relative; }
+.set-main .field > span { position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; text-align: center; line-height: 14px; }
+.set-label, .check, .set-main > .icon { display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.check > .ico, .set-main > .icon > .ico { vertical-align: 0; }
+.set-more .plates-line { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); font-size: var(--text-sm); font-weight: 600; }
+/* "Previous" column: last session's value for the set; tap to fill the set with it */
+.set-main .prev-field { flex: 0 0 64px; }
+.prev { width: 100%; height: 44px; padding: 0 2px; background: transparent; border: 0; border-radius: var(--radius-sm); color: var(--muted); font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prev:not(:disabled):active { background: var(--surface-2); color: var(--fg); }
+.prev:disabled { opacity: 1; color: var(--border-strong); }
+.set.done .prev { color: var(--muted); opacity: .6; }
+.set-main .wide-num { padding-left: 2px; padding-right: 2px; }
+.set-main { gap: 6px; } .set-main .prev-field { flex-basis: 60px; }
+a.rx-name { color: var(--fg); text-decoration: none; } a.rx-name:active { color: var(--accent); }
