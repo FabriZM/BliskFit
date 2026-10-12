@@ -4,21 +4,23 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
 import type { ID } from '../../db/types'
 import { useBlobUrl } from '../../lib/useBlobUrl'
-import { CloseIcon, PinIcon, PinOffIcon, WrenchIcon } from '../../components/Icons'
+import { CloseIcon, PinIcon, WrenchIcon } from '../../components/Icons'
 
 function Photo({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
   return url ? <img className="photo small-photo" src={url} alt="" /> : null
 }
 
-/** Pinned notes ("for next time") and machine setup notes, shown right in the exercise card. */
+/** Exercise notes (pinned ones "for next time" first) and machine setup notes, shown right in the exercise card. */
 export default function ExerciseNotes({ exerciseId, gymId, adding, onDoneAdding }: {
   exerciseId: ID; gymId?: ID; adding: boolean; onDoneAdding: () => void
 }) {
   const { t } = useTranslation()
   const [text, setText] = useState('')
   const [pin, setPin] = useState(true)
-  const pinned = useLiveQuery(() => db.exerciseNotes.where('exerciseId').equals(exerciseId).filter((n) => n.pinned).toArray(), [exerciseId]) ?? []
+  // Unpinning keeps the note; only the X deletes it.
+  const notes = (useLiveQuery(() => db.exerciseNotes.where('exerciseId').equals(exerciseId).toArray(), [exerciseId]) ?? [])
+    .sort((a, b) => Number(b.pinned) - Number(a.pinned))
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const setup = (useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(exerciseId).toArray(), [exerciseId]) ?? [])
     // With a gym set, show that gym's notes plus untagged ones; with none, show everything.
@@ -33,13 +35,12 @@ export default function ExerciseNotes({ exerciseId, gymId, adding, onDoneAdding 
 
   return (
     <>
-      {pinned.map((n) => (
-        <div className="note pinned" key={n.id}>
-          <span><PinIcon filled /> {n.text}</span>
-          <span>
-            <button className="icon" aria-label={t('workout.unpin')} onClick={() => void db.exerciseNotes.update(n.id, { pinned: false })}><PinOffIcon /></button>
-            <button className="icon" aria-label={t('common.delete')} onClick={() => void db.exerciseNotes.delete(n.id)}><CloseIcon /></button>
-          </span>
+      {notes.map((n) => (
+        <div className={`note${n.pinned ? ' pinned' : ''}`} key={n.id}>
+          <button className="icon" aria-pressed={n.pinned} aria-label={n.pinned ? t('workout.unpin') : t('workout.pinNote')}
+            onClick={() => void db.exerciseNotes.update(n.id, { pinned: !n.pinned })}><PinIcon filled={n.pinned} /></button>
+          <span className="note-text">{n.text}</span>
+          <button className="icon" aria-label={t('common.delete')} onClick={() => void db.exerciseNotes.delete(n.id)}><CloseIcon /></button>
         </div>
       ))}
       {setup.map((n) => (
