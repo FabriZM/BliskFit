@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  asymmetries, canAddPhoto, compareDefaults, entryTimestamp, latestByType, measurementType, normalizeTag, parseMeasurementType,
+  BODY_FAT, asymmetries, canAddPhoto, isCustomMeasurement, measurementUnit, compareDefaults, entryTimestamp, latestByType, measurementType, normalizeTag, parseMeasurementType,
   photoTags, photosOnDay, MAX_PHOTOS_PER_DAY,
 } from './body'
 import { MAX_PINS, cardKey, isPinned, movePin, pinKey, togglePin, validPins } from './pins'
@@ -25,6 +25,17 @@ describe('measurement types', () => {
     expect(a).toHaveLength(1) // thigh has no right side
     expect(a[0]).toMatchObject({ base: 'biceps', left: 36, right: 38, diff: -2 })
     expect(a[0].pct).toBeCloseTo((2 / 36) * 100, 5)
+  })
+})
+
+describe('body fat', () => {
+  it('is a percentage, not a circumference or a custom measurement', () => {
+    expect(measurementUnit(BODY_FAT)).toBe('%')
+    expect(measurementUnit('waist')).toBe('cm')
+    expect(measurementUnit('wrist_l')).toBe('cm')
+    expect(isCustomMeasurement(BODY_FAT)).toBe(false)
+    expect(isCustomMeasurement('waist')).toBe(false)
+    expect(isCustomMeasurement('wrist')).toBe(true)
   })
 })
 

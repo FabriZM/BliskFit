@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useDerived, useStatsData } from '../../db/stats'
 import type { StatsRange } from '../../db/types'
@@ -64,10 +64,7 @@ export default function StatsPanel() {
   return (
     <section>
       <BackLink to="/profile" label={t('tabs.profile')} />
-      <div className="row head">
-        <h1>{t('stats.title')}</h1>
-        <Link className="btn" to="/profile/body">{t('body.logLink')}</Link>
-      </div>
+      <h1>{t('stats.title')}</h1>
       <div className="segmented stats-sections" role="tablist" aria-label={t('stats.title')}>
         {sections.map((s) => (
           <button key={s} role="tab" aria-selected={section === s} className={section === s ? 'on' : ''}

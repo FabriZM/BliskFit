@@ -6,7 +6,6 @@ import { useGoalHistory } from '../db/goals'
 import { dateKey, goalForWeek, trainingDayKeys, weeklyBars } from '../lib/goals'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
-import { CheckIcon } from './Icons'
 
 const RANGES = [{ key: '8w', weeks: 8 }, { key: '6m', weeks: 26 }, { key: '1y', weeks: 52 }] as const
 
@@ -125,17 +124,6 @@ export default function GoalChart() {
         <span><i className="sw wip" />{t('chart.inProgress')}</span>
       </div>
 
-      <details className="chart-table">
-        <summary>{t('chart.table')}</summary>
-        <table>
-          <thead><tr><th>{t('chart.week')}</th><th>{t('chart.days')}</th><th>{t('chart.goalCol')}</th></tr></thead>
-          <tbody>
-            {[...bars].reverse().map((b) => (
-              <tr key={b.key}><td>{dayMonth.format(b.start)}</td><td>{b.count}</td><td>{b.goal}{b.met ? <> <CheckIcon className="met-check" /></> : null}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
     </div>
   )
 }

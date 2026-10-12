@@ -19,7 +19,7 @@ import Photo from './Photo'
 import Sparkline from './stats/Sparkline'
 import { measurementLabel } from './stats/measurementLabel'
 import { pinTargets } from '../db/stats'
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from './Icons'
+import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronRightIcon, CloseIcon, PencilIcon } from './Icons'
 
 function AddWeight() {
   const { t } = useTranslation()
@@ -109,11 +109,10 @@ export default function PinnedStats() {
     <>
       <div className="row head">
         <h2>{t('profile.stats')}</h2>
-        <span className="head-links">
-          {pins.length > 0 && <button className="link-btn" onClick={() => setEditing(!editing)}>{editing ? t('common.done') : t('common.edit')}</button>}
-          <Link to="/profile/stats">{t('stats.seeAll')}</Link>
-          <Link to="/profile/body">{t('body.logLink')}</Link>
-        </span>
+        {pins.length > 0 && !suggest && (
+          <button className="icon" aria-pressed={editing} aria-label={editing ? t('common.done') : t('stats.editPins')} title={editing ? t('common.done') : t('stats.editPins')}
+            onClick={() => setEditing(!editing)}>{editing ? <CheckIcon /> : <PencilIcon />}</button>
+        )}
       </div>
 
       {!hasHistory && <div className="card muted">{t('stats.emptyPins')} <Link to="/profile/stats">{t('stats.seeAll')}</Link></div>}
@@ -150,6 +149,12 @@ export default function PinnedStats() {
           </div>
         ))}
       </div>
+      {shown.length > 0 && (
+        <Link className="card link-card" to="/profile/stats">
+          <span>{t('stats.allStats')}</span>
+          <ChevronRightIcon />
+        </Link>
+      )}
     </>
   )
 }

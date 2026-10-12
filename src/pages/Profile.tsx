@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SettingsIcon } from '../components/TabIcons'
+import BodyCard from '../components/BodyCard'
 import GoalChart from '../components/GoalChart'
 import GymVisitsCard from '../components/GymVisitsCard'
 import PinnedStats from '../components/PinnedStats'
@@ -15,6 +16,7 @@ export default function Profile() {
         actions={<Link className="icon-link" to="/profile/settings" aria-label={t('profile.settings')} title={t('profile.settings')}><SettingsIcon /></Link>} />
       <WeekCard />
       <GoalChart />
+      <BodyCard />
       <GymVisitsCard />
       <PinnedStats />
     </section>

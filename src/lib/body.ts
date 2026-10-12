@@ -7,6 +7,13 @@ import { dateKey } from './goals'
 export const STANDARD_MEASUREMENTS = ['chest', 'waist', 'hips', 'neck', 'shoulders', 'biceps', 'forearm', 'thigh', 'calf'] as const
 export const SIDED = new Set<string>(['biceps', 'forearm', 'thigh', 'calf'])
 
+/** Body fat is stored as a measurement in percent; every other measurement is a circumference in cm. */
+export const BODY_FAT = 'bodyfat'
+export const measurementUnit = (type: string): 'cm' | '%' => (type === BODY_FAT ? '%' : 'cm')
+
+/** A measurement the user named themselves (not a standard circumference and not body fat). */
+export const isCustomMeasurement = (base: string) => base !== BODY_FAT && !(STANDARD_MEASUREMENTS as readonly string[]).includes(base)
+
 export type Side = 'l' | 'r'
 export const measurementType = (base: string, side?: Side): string => (side ? `${base}_${side}` : base)
 

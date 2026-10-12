@@ -1,5 +1,6 @@
 import type { BodyWeight, ExerciseMetric, Measurement, MuscleGroup, PinSpec, SetLog, StatsRange } from '../db/types'
 import type { Units } from '../db/types'
+import { BODY_FAT, measurementUnit } from './body'
 import { cardKey } from './pins'
 import {
   exerciseSeries, metricPoints, pointsInRange, rangeStart, rollUp, trend, weekSeries,
@@ -8,7 +9,7 @@ import {
 import { formatClock, formatNum, kgToDisplay } from './units'
 
 /** What one stat card (in the Stats panel or pinned on Profile) plots. */
-export type ValueUnit = 'weight' | 'reps' | 'sec' | 'm' | 'pace' | 'sessions' | 'sets' | 'cm'
+export type ValueUnit = 'weight' | 'reps' | 'sec' | 'm' | 'pace' | 'sessions' | 'sets' | 'cm' | 'pct'
 
 export interface CardSeries {
   points: Point[]
@@ -63,7 +64,7 @@ export function pinSeries(pin: PinSpec, input: CardInput, weekStartDay: number, 
       return { unit: 'weight', points: pointsInRange(all, from), trend: pointsInRange(smooth, from) }
     }
     case 'measurement':
-      return { unit: 'cm', points: pointsInRange(input.measurements.filter((m) => m.type === pin.measurement).map((m) => ({ at: m.date, value: m.value })), from) }
+      return { unit: measurementUnit(pin.measurement ?? '') === '%' ? 'pct' : 'cm', lowerBetter: pin.measurement === BODY_FAT, points: pointsInRange(input.measurements.filter((m) => m.type === pin.measurement).map((m) => ({ at: m.date, value: m.value })), from) }
     case 'photo':
       return undefined
   }
@@ -80,6 +81,7 @@ export function formatValue(v: number, unit: ValueUnit, units: Units): string {
     case 'm': return v >= 1000 ? `${formatNum(v / 1000)} km` : `${Math.round(v)} m`
     case 'pace': return `${formatClock(v * 1000)} /km`
     case 'cm': return `${formatNum(v)} cm`
+    case 'pct': return `${formatNum(v)}%`
   }
 }
 

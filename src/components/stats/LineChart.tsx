@@ -20,8 +20,7 @@ export function niceTicks(min: number, max: number): number[] {
 
 /**
  * Value over time. Marks: a 2px line with dots (hidden when there are many points), hairline gridlines, an optional
- * lighter trend line. Tap/hover or arrow keys pick a point for the readout below; a table view lists every value,
- * so nothing depends on seeing the chart.
+ * lighter trend line. Tap/hover or arrow keys pick a point for the readout below.
  */
 export default function LineChart({ label, points, trend, format, lowerBetter = false }: {
   label: string
@@ -70,7 +69,7 @@ export default function LineChart({ label, points, trend, format, lowerBetter = 
         {ticks.map((v) => (
           <g key={v}>
             <line x1={M.l} x2={W - M.r} y1={y(v)} y2={y(v)} className="chart-grid" />
-            <text x={M.l - 6} y={y(v) + 3} textAnchor="end" className="chart-tick">{format(v).replace(/ (kg|lb|cm)$/, '')}</text>
+            <text x={M.l - 6} y={y(v) + 3} textAnchor="end" className="chart-tick">{format(v).replace(/ (kg|lb|cm)$|%$/, '')}</text>
           </g>
         ))}
         <text x={M.l} y={H - 6} className="chart-tick">{date.format(t0)}</text>
@@ -85,17 +84,6 @@ export default function LineChart({ label, points, trend, format, lowerBetter = 
         <strong>{format(cur.value)}</strong> · <span className="muted">{date.format(cur.at)}</span>
         {prev && cur.value !== prev.value && <span className={better ? 'delta good' : 'delta'}> · {cur.value > prev.value ? <TrendUpIcon /> : <TrendDownIcon />} {format(Math.abs(cur.value - prev.value))}</span>}
       </p>
-      <details className="chart-table">
-        <summary>{t('chart.table')}</summary>
-        <table>
-          <thead><tr><th>{t('stats.date')}</th><th>{t('stats.value')}</th>{trend && <th>{t('stats.trend')}</th>}</tr></thead>
-          <tbody>
-            {[...points].reverse().map((p, i) => (
-              <tr key={p.at + ':' + i}><td>{date.format(p.at)}</td><td>{format(p.value)}</td>{trend && <td>{format(trend[n - 1 - i]?.value ?? p.value)}</td>}</tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
     </div>
   )
 }

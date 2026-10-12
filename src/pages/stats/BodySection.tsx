@@ -4,11 +4,12 @@ import AsymmetryList from '../../components/stats/AsymmetryList'
 import PhotosPanel from '../../components/stats/PhotosPanel'
 import SeriesCard from '../../components/stats/SeriesCard'
 import { measurementLabel } from '../../components/stats/measurementLabel'
-import { STANDARD_MEASUREMENTS, parseMeasurementType } from '../../lib/body'
+import { BODY_FAT, STANDARD_MEASUREMENTS, parseMeasurementType } from '../../lib/body'
 import type { StatsCtx } from './ctx'
 import { ArrowRightIcon } from '../../components/Icons'
 
 const order = (base: string) => {
+  if (base === BODY_FAT) return -1
   const i = (STANDARD_MEASUREMENTS as readonly string[]).indexOf(base)
   return i < 0 ? 100 : i
 }

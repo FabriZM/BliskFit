@@ -416,11 +416,7 @@
     "goal": "Goal {{count}}",
     "goalMet": "Goal met",
     "goalMissed": "Missed",
-    "inProgress": "This week",
-    "table": "Table view",
-    "week": "Week of",
-    "days": "Days",
-    "goalCol": "Goal"
+    "inProgress": "This week"
   },
   "gymplan": {
     "title": "Gym visits",
@@ -464,9 +460,6 @@
   "stats": {
     "title": "Stats",
     "noData": "No data in this range.",
-    "date": "Date",
-    "value": "Value",
-    "trend": "Trend",
     "pin": "Pin to Profile",
     "unpin": "Unpin from Profile",
     "pinsFull": "You can pin up to {{count}} stats. Unpin one first.",
@@ -551,6 +544,8 @@
     "range_1y": "Year",
     "range_all": "All",
     "seeAll": "See all",
+    "editPins": "Edit pinned stats",
+    "allStats": "All stats",
     "emptyPins": "Finish a workout and your stats show up here.",
     "noPins": "Nothing pinned yet. Pin stats with the star in the Stats panel.",
     "suggested": "Suggested to start with.",
@@ -565,14 +560,16 @@
   },
   "body": {
     "title": "Body log",
-    "logLink": "Log body",
     "seeStats": "See charts",
     "weight": "Body weight",
-    "measurement": "Measurement",
-    "photo": "Progress photo",
+    "bodyFat": "Body fat",
+    "card": {
+      "open": "Measurements",
+      "empty": "No weight logged yet.",
+      "logWeight": "Log your weight"
+    },
     "date": "Date",
     "value": "Value",
-    "custom": "Custom…",
     "customName": "Name (e.g. wrist)",
     "leftRight": "Left and right",
     "side": "Side",
@@ -602,7 +599,14 @@
     "savePhoto": "Save photo",
     "confirmDelete": "Delete this entry?",
     "storage": "{{count}} photos use {{mb}} MB on this device.",
-    "entries": "Entries",
+    "history": "History",
+    "logNew": "Log new",
+    "progress": "Progress",
+    "photos": "Progress photos",
+    "measurements": "Measurements",
+    "addCustom": "Custom measurement",
+    "photoCount_one": "{{count}} photo",
+    "photoCount_other": "{{count}} photos",
     "noEntries": "Nothing logged yet.",
     "showMore": "Show more"
   },

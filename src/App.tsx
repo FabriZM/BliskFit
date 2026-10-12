@@ -17,7 +17,10 @@ import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
 import ProgramEditor from './pages/programs/ProgramEditor'
 import Profile from './pages/Profile'
-import BodyLog from './pages/BodyLog'
+import BodyLog from './pages/body/BodyLog'
+import WeightPage from './pages/body/WeightPage'
+import MeasurementPage from './pages/body/MeasurementPage'
+import PhotosPage from './pages/body/PhotosPage'
 import StatsPanel from './pages/stats/StatsPanel'
 import Gyms from './pages/Gyms'
 import Settings from './pages/Settings'
@@ -84,6 +87,9 @@ export default function App() {
           <Route path="/profile/backup" element={<Backup />} />
           <Route path="/profile/stats" element={<StatsPanel />} />
           <Route path="/profile/body" element={<BodyLog />} />
+          <Route path="/profile/body/weight" element={<WeightPage />} />
+          <Route path="/profile/body/photos" element={<PhotosPage />} />
+          <Route path="/profile/body/m/:name" element={<MeasurementPage />} />
           <Route path="*" element={<Navigate to="/profile" replace />} />
         </Routes>
         </div>

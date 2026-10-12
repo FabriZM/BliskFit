@@ -203,8 +203,6 @@ button.wd { background: transparent; padding: 0; border: 0; color: inherit; curs
 .chart-readout { margin: 8px 0 4px; font-size: .9rem; } .chart-readout strong { font-variant-numeric: tabular-nums; }
 .chart-key { display: flex; gap: 14px; flex-wrap: wrap; } .chart-key span { display: inline-flex; align-items: center; gap: 6px; }
 .chart-key .sw { width: 12px; height: 8px; border-radius: 4px 4px 0 0; display: inline-block; } .sw.met { background: var(--accent); } .sw.missed { background: var(--chart-missed); } .sw.wip { background: var(--accent); opacity: .45; }
-.chart-table { margin-top: 10px; background: transparent; border: 0; padding: 0; } .chart-table summary { font-size: .85rem; color: var(--muted); font-weight: 500; }
-.chart-table table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 6px; } .chart-table th, .chart-table td { text-align: left; padding: 4px 0; border-bottom: 1px solid var(--chart-grid); } .chart-table th { color: var(--muted); font-weight: 500; }
 .reminder-days { padding: 12px 0 4px; display: flex; flex-direction: column; gap: 8px; }
 .time-input { width: auto; } .help { margin: 0 0 8px; }
 .plan-editor { margin: 0 0 8px; background: var(--surface-2); border: 0; border-radius: var(--radius); padding: 8px 12px; } .plan-editor summary { font-size: .9rem; color: var(--muted); font-weight: 500; cursor: pointer; } .plan-editor .form { padding-top: 10px; }
@@ -373,7 +371,6 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .check > .ico { vertical-align: middle; }
 .star.on, .pin.on, .fav-mark { color: var(--warn); }
 .streak-flame { color: #ff8a3d; } .freeze { color: var(--info); }
-.met-check { color: var(--accent); }
 .delta > .ico { vertical-align: 0; }
 .swipe-bg { gap: 6px; }
 .note-text { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 6px 2px; font: inherit; font-weight: 400; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
@@ -398,3 +395,4 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .set-main .wide-num { padding-left: 2px; padding-right: 2px; }
 .set-main { gap: 6px; } .set-main .prev-field { flex-basis: 60px; }
 a.rx-name { color: var(--fg); text-decoration: none; } a.rx-name:active { color: var(--accent); }
+.list.grouped .body-item { flex-direction: row; align-items: center; gap: 8px; padding: var(--space-3) 0; } .body-item-text { flex: 1; display: flex; flex-direction: column; min-width: 0; } .body-item > .ico, .body-item > svg { color: var(--muted); flex: none; }

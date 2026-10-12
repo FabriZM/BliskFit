@@ -416,11 +416,7 @@
     "goal": "Meta {{count}}",
     "goalMet": "Meta cumplida",
     "goalMissed": "No cumplida",
-    "inProgress": "Esta semana",
-    "table": "Ver tabla",
-    "week": "Semana del",
-    "days": "Días",
-    "goalCol": "Meta"
+    "inProgress": "Esta semana"
   },
   "gymplan": {
     "title": "Visitas al gimnasio",
@@ -464,9 +460,6 @@
   "stats": {
     "title": "Estadísticas",
     "noData": "Sin datos en este rango.",
-    "date": "Fecha",
-    "value": "Valor",
-    "trend": "Tendencia",
     "pin": "Fijar en Perfil",
     "unpin": "Quitar de Perfil",
     "pinsFull": "Puedes fijar hasta {{count}} estadísticas. Quita una primero.",
@@ -551,6 +544,8 @@
     "range_1y": "Año",
     "range_all": "Todo",
     "seeAll": "Ver todo",
+    "editPins": "Editar estadísticas fijadas",
+    "allStats": "Todas las estadísticas",
     "emptyPins": "Termina un entrenamiento y tus estadísticas aparecerán aquí.",
     "noPins": "Nada fijado aún. Fija estadísticas con la estrella del panel de Estadísticas.",
     "suggested": "Sugeridas para empezar.",
@@ -565,14 +560,16 @@
   },
   "body": {
     "title": "Registro corporal",
-    "logLink": "Registrar cuerpo",
     "seeStats": "Ver gráficas",
     "weight": "Peso corporal",
-    "measurement": "Medida",
-    "photo": "Foto de progreso",
+    "bodyFat": "Grasa corporal",
+    "card": {
+      "open": "Medidas",
+      "empty": "Aún no registraste tu peso.",
+      "logWeight": "Registrar peso"
+    },
     "date": "Fecha",
     "value": "Valor",
-    "custom": "Personalizada…",
     "customName": "Nombre (p. ej. muñeca)",
     "leftRight": "Izquierda y derecha",
     "side": "Lado",
@@ -602,7 +599,14 @@
     "savePhoto": "Guardar foto",
     "confirmDelete": "¿Borrar esta entrada?",
     "storage": "{{count}} fotos ocupan {{mb}} MB en este dispositivo.",
-    "entries": "Entradas",
+    "history": "Historial",
+    "logNew": "Registrar",
+    "progress": "Progreso",
+    "photos": "Fotos de progreso",
+    "measurements": "Medidas",
+    "addCustom": "Medida personalizada",
+    "photoCount_one": "{{count}} foto",
+    "photoCount_other": "{{count}} fotos",
     "noEntries": "Aún no hay nada registrado.",
     "showMore": "Mostrar más"
   },
