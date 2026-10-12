@@ -139,6 +139,15 @@
     "isolation": "Aislado (una articulación)",
     "description": "Descripción",
     "descriptionPlaceholder": "Qué es y qué trabaja",
+    "tab_about": "Info",
+    "tab_progress": "Progreso",
+    "tab_history": "Historial",
+    "noHistory": "Todavía no hay entrenamientos terminados con este ejercicio.",
+    "historyCount_one": "{{count}} entrenamiento",
+    "historyCount_other": "{{count}} entrenamientos",
+    "tab_setup": "Ajustes",
+    "metric": "Métrica",
+    "noProgress": "Registra este ejercicio en un entrenamiento para ver tu progreso aquí.",
     "howTo": "Cómo hacerlo",
     "howToHint": "Un paso por línea",
     "about": "Trabaja {{primary}}.",
@@ -698,6 +707,13 @@
       "failed": "La última copia automática no se pudo hacer. Se volverá a intentar; o toca “Copiar ahora”."
     },
     "popupBlocked": "El navegador bloqueó la ventana de inicio de sesión de Google. Permite las ventanas emergentes para este sitio e inténtalo de nuevo."
+  },
+  "carousel": {
+    "prev": "Foto anterior",
+    "next": "Foto siguiente",
+    "slide": "Foto {{n}} de {{total}}",
+    "start": "Posición inicial",
+    "end": "Posición final"
   },
   "equipmentSettings": {
     "title": "Equipo",

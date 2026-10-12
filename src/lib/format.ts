@@ -17,3 +17,10 @@ export function formatSet(s: SetLog, t: TrackingType, units: Units): string {
     case 'cardio': return `${formatNum((s.durationSec ?? 0) / 60)}min${s.distanceM ? ` ${formatNum(s.distanceM / 1000)}km` : ''}`
   }
 }
+
+/** DD/MM/YY in local time, e.g. "11/10/26", regardless of language. */
+export function formatShortDate(ms: number): string {
+  const d = new Date(ms)
+  const two = (n: number) => String(n).padStart(2, '0')
+  return `${two(d.getDate())}/${two(d.getMonth() + 1)}/${two(d.getFullYear() % 100)}`
+}

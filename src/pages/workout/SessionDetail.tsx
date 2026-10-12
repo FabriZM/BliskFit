@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
@@ -48,6 +48,8 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
   const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const id = useParams().id!
+  // Opened from an exercise's History tab: back returns there.
+  const backTo = (useLocation().state as { back?: string } | null)?.back
   const units = useSettings((s) => s.settings.units)
   const showPR = useSettings((s) => s.settings.prBadges)
   const [editing, setEditing] = useState(false)
@@ -86,7 +88,8 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
 
   return (
     <section>
-      <BackLink to={justFinished ? '/workout' : '/workout/history'} label={justFinished ? t('tabs.workout') : t('history.title')} />
+      {backTo?.startsWith('/exercises/') ? <BackLink to={backTo} label={t('tabs.exercises')} />
+        : <BackLink to={justFinished ? '/workout' : '/workout/history'} label={justFinished ? t('tabs.workout') : t('history.title')} />}
       <h1>{justFinished ? t('summary.title') : dayFmt.format(session.startedAt)}</h1>
       <p className="muted">
         {routineName ?? t('workout.empty')}{gymName ? ` · ${gymName}` : ''} · {timeFmt.format(session.startedAt)}{session.endedAt ? `–${timeFmt.format(session.endedAt)}` : ''}

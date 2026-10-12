@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../../db/db'
@@ -10,10 +10,15 @@ import { describeExercise } from '../../lib/describe'
 import { demoImageUrls } from '../../lib/seed'
 import { useBlobUrl } from '../../lib/useBlobUrl'
 import EquipmentSettings from '../../components/EquipmentSettings'
+import ImageCarousel from '../../components/ImageCarousel'
 import { usesWeight } from '../../lib/plates'
-import ExerciseRecords from './ExerciseRecords'
+import ExerciseHistory from './ExerciseHistory'
+import ExerciseProgress from './ExerciseProgress'
 import { BackLink } from '../../components/PageHeader'
 import { PlayIcon, StarIcon } from '../../components/Icons'
+
+const TABS = ['about', 'progress', 'history', 'setup'] as const
+type Tab = (typeof TABS)[number]
 
 function NotePhoto({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
@@ -26,7 +31,12 @@ export default function ExerciseDetail() {
   const id = decodeURIComponent(useParams().id ?? '')
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
   // Opened from a running workout: back goes to the workout, not the exercise list.
-  const fromWorkout = (useLocation().state as { back?: string } | null)?.back === '/workout'
+  const location = useLocation()
+  const fromWorkout = (location.state as { back?: string } | null)?.back === '/workout'
+  // The tab lives in the URL so going back to this page reopens it.
+  const [params, setParams] = useSearchParams()
+  const tab: Tab = TABS.find((x) => x === params.get('tab')) ?? 'about'
+  const setTab = (next: Tab) => setParams(next === 'about' ? {} : { tab: next }, { replace: true, state: location.state })
   const muscles = useLiveQuery(() => db.muscleGroups.toArray(), []) ?? []
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
@@ -77,59 +87,79 @@ export default function ExerciseDetail() {
         {t(`tracking.${ex.trackingType}`)} · {t(`equipment.${ex.equipment ?? 'none'}`, { defaultValue: ex.equipment ?? '' })}
         {ex.level && <> · {t(`exercises.level.${ex.level}`)}</>}
       </p>
-      {about && <p className="about">{about}</p>}
-      {photoUrl && <img className="hero" src={photoUrl} alt={ex.name} />}
-      {demo.length > 0 && <div className="demo">{demo.map((u) => <img key={u} className="hero" src={u} alt="" loading="lazy" />)}</div>}
-      <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
-      {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
-      {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener"><PlayIcon /> {t('exercises.video')}</a></p>}
-
-      {ex.instructions && ex.instructions.length > 0 && (
-        <>
-          <h2>{t('exercises.howTo')}</h2>
-          <ol className="steps">{ex.instructions.map((s, i) => <li key={i}>{s}</li>)}</ol>
-        </>
-      )}
-
-      <ExerciseRecords exercise={ex} />
-
-      {usesWeight(ex.trackingType) && (
-        <>
-          <h2>{t('equipmentSettings.title')}</h2>
-          <EquipmentSettings exercise={ex} />
-        </>
-      )}
-
-      <h2>{t('exercises.setupNotes')}</h2>
-      <ul className="list">
-        {notes.map((n) => (
-          <li key={n.id}><div>
-            {gymName(n.gymId) && <span className="muted">{gymName(n.gymId)}</span>}
-            <p>{n.text}</p>
-            {n.photo && <NotePhoto blob={n.photo} />}
-            <button onClick={() => void db.exerciseGymNotes.delete(n.id)}>{t('common.delete')}</button>
-          </div></li>
+      <div className="segmented ex-tabs" role="tablist" aria-label={ex.name}>
+        {TABS.map((x) => (
+          <button key={x} role="tab" id={`tab-${x}`} aria-selected={tab === x} aria-controls="ex-panel"
+            className={tab === x ? 'on' : ''} onClick={() => setTab(x)}>{t(`exercises.tab_${x}`)}</button>
         ))}
-      </ul>
-      <div className="form">
-        <textarea rows={2} value={text} placeholder={t('exercises.notePlaceholder')} onChange={(e) => setText(e.target.value)} />
-        {gyms.length > 0 && (
-          <select value={gymId} onChange={(e) => setGymId(e.target.value)} aria-label={t('gyms.gym')}>
-            <option value="">{t('gyms.anyGym')}</option>
-            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-          </select>
-        )}
-        <input type="file" accept="image/*" aria-label={t('exercises.photo')}
-          onChange={async (e) => { const f = e.target.files?.[0]; if (f) setNotePhoto(await compressImage(f)) }} />
-        <button className="primary" onClick={() => void addNote()}>{t('exercises.addNote')}</button>
       </div>
 
-      {ex.source === 'custom' && (
-        <div className="actions">
-          <Link className="btn" to={`/exercises/${encodeURIComponent(id)}/edit`}>{t('common.edit')}</Link>
-          <button className="danger" onClick={() => void remove()}>{t('common.delete')}</button>
-        </div>
-      )}
+      <div role="tabpanel" id="ex-panel" aria-labelledby={`tab-${tab}`}>
+        {tab === 'about' && (
+          <>
+            {about && <p className="about">{about}</p>}
+            <ImageCarousel label={ex.name} images={[
+              ...(photoUrl ? [{ src: photoUrl, alt: ex.name }] : []),
+              ...demo.map((src, i) => ({ src, alt: t(i === 0 ? 'carousel.start' : 'carousel.end') })),
+            ]} />
+            <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>
+            {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
+            {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener"><PlayIcon /> {t('exercises.video')}</a></p>}
+
+            {ex.instructions && ex.instructions.length > 0 && (
+              <>
+                <h2>{t('exercises.howTo')}</h2>
+                <ol className="steps">{ex.instructions.map((s, i) => <li key={i}>{s}</li>)}</ol>
+              </>
+            )}
+            {ex.source === 'custom' && (
+              <div className="actions">
+                <Link className="btn" to={`/exercises/${encodeURIComponent(id)}/edit`}>{t('common.edit')}</Link>
+                <button className="danger" onClick={() => void remove()}>{t('common.delete')}</button>
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === 'progress' && <ExerciseProgress exercise={ex} />}
+
+        {tab === 'history' && <ExerciseHistory exercise={ex} />}
+
+        {tab === 'setup' && (
+          <>
+            {usesWeight(ex.trackingType) && (
+              <>
+                <h2>{t('equipmentSettings.title')}</h2>
+                <EquipmentSettings exercise={ex} />
+              </>
+            )}
+
+            <h2>{t('exercises.setupNotes')}</h2>
+            <ul className="list">
+              {notes.map((n) => (
+                <li key={n.id}><div>
+                  {gymName(n.gymId) && <span className="muted">{gymName(n.gymId)}</span>}
+                  <p>{n.text}</p>
+                  {n.photo && <NotePhoto blob={n.photo} />}
+                  <button onClick={() => void db.exerciseGymNotes.delete(n.id)}>{t('common.delete')}</button>
+                </div></li>
+              ))}
+            </ul>
+            <div className="form">
+              <textarea rows={2} value={text} placeholder={t('exercises.notePlaceholder')} onChange={(e) => setText(e.target.value)} />
+              {gyms.length > 0 && (
+                <select value={gymId} onChange={(e) => setGymId(e.target.value)} aria-label={t('gyms.gym')}>
+                  <option value="">{t('gyms.anyGym')}</option>
+                  {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
+              )}
+              <input type="file" accept="image/*" aria-label={t('exercises.photo')}
+                onChange={async (e) => { const f = e.target.files?.[0]; if (f) setNotePhoto(await compressImage(f)) }} />
+              <button className="primary" onClick={() => void addNote()}>{t('exercises.addNote')}</button>
+            </div>
+          </>
+        )}
+      </div>
     </section>
   )
 }

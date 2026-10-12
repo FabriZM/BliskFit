@@ -139,6 +139,15 @@
     "isolation": "Isolation (one joint)",
     "description": "Description",
     "descriptionPlaceholder": "What it is and what it works",
+    "tab_about": "About",
+    "tab_progress": "Progress",
+    "tab_history": "History",
+    "noHistory": "No finished workouts with this exercise yet.",
+    "historyCount_one": "{{count}} workout",
+    "historyCount_other": "{{count}} workouts",
+    "tab_setup": "Setup",
+    "metric": "Metric",
+    "noProgress": "Log this exercise in a workout to see your progress here.",
     "howTo": "How to do it",
     "howToHint": "One step per line",
     "about": "Works the {{primary}}.",
@@ -698,6 +707,13 @@
       "failed": "The last automatic backup didn't go through. It will try again; or tap “Back up now”."
     },
     "popupBlocked": "Your browser blocked Google’s sign-in window. Allow pop-ups for this site and try again."
+  },
+  "carousel": {
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "slide": "Photo {{n}} of {{total}}",
+    "start": "Start position",
+    "end": "End position"
   },
   "equipmentSettings": {
     "title": "Equipment",

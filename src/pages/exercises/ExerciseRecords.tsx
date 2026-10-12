@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SetLog } from '../../db/types'
-import { formatSet } from '../../lib/format'
+import { formatSet, formatShortDate } from '../../lib/format'
 import { computePRs, exerciseRecords, type PRKind } from '../../lib/prs'
 import { weightUnitFor } from '../../lib/plates'
 import { formatNum, kgToDisplay } from '../../lib/units'
@@ -14,7 +14,7 @@ const MAX_REP_ROWS = 5
 
 /** Current records for an exercise plus the history of when each PR was set. Always derived from the logged sets. */
 export default function ExerciseRecords({ exercise }: { exercise: Exercise }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const appUnits = useSettings((s) => s.settings.units)
   // Records compare sets typed in different units, so they read in the exercise's unit; single sets show as typed.
   const units = weightUnitFor(exercise, appUnits)
@@ -33,7 +33,7 @@ export default function ExerciseRecords({ exercise }: { exercise: Exercise }) {
 
   if (!sets) return null
   const { records, events } = derived
-  const date = (s: SetLog) => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(s.doneAt)
+  const date = (s: SetLog) => formatShortDate(s.doneAt!)
   const w = (kg: number) => `${tracking === 'bodyweight_added' ? '+' : ''}${formatNum(kgToDisplay(kg, units))} ${units}`
 
   const rows: { label: string; value: string; set: SetLog }[] = []

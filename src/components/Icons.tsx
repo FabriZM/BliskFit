@@ -65,6 +65,7 @@ export const ArrowUpIcon = (p: IconProps) => <Icon {...p}><path d="M12 19V5M6 11
 export const ArrowDownIcon = (p: IconProps) => <Icon {...p}><path d="M12 5v14M6 13l6 6 6-6" /></Icon>
 export const ChevronUpIcon = (p: IconProps) => <Icon {...p}><path d="M6 15l6-6 6 6" /></Icon>
 export const ChevronDownIcon = (p: IconProps) => <Icon {...p}><path d="M6 9l6 6 6-6" /></Icon>
+export const ChevronLeftIcon = (p: IconProps) => <Icon {...p}><path d="M15 6l-6 6 6 6" /></Icon>
 export const ChevronRightIcon = (p: IconProps) => <Icon {...p}><path d="M9 6l6 6-6 6" /></Icon>
 /** Filled triangles for up/down changes next to a number. */
 export const TrendUpIcon = (p: IconProps) => <Icon size=".8em" {...p} filled><path d="M12 6l7 11H5z" /></Icon>
