@@ -6,6 +6,7 @@ import { db } from '../../db/db'
 import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { filterExercises } from '../../lib/exerciseFilter'
 import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
+import PageHeader from '../../components/PageHeader'
 
 const PAGE = 60
 
@@ -56,12 +57,14 @@ export default function ExerciseList() {
 
   return (
     <section>
-      <div className="row head">
-        <h1>{t('tabs.exercises')}</h1>
-        <Link className="btn" to="/exercises/new">+ {t('exercises.new')}</Link>
+      <PageHeader brand title={t('tabs.exercises')} actions={<Link className="btn" to="/exercises/new">+ {t('exercises.new')}</Link>} />
+      <div className="search-row">
+        <input type="search" placeholder={t('exercises.search')} value={query}
+          onChange={(e) => reset(() => setQuery(e.target.value))} />
+        <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => reset(() => setFavoritesOnly(!favoritesOnly))}>
+          ★ {t('exercises.favorites')}
+        </button>
       </div>
-      <input type="search" placeholder={t('exercises.search')} value={query}
-        onChange={(e) => reset(() => setQuery(e.target.value))} />
       <div className="filters">
         <select value={muscle} onChange={(e) => reset(() => setMuscle(e.target.value))} aria-label={t('exercises.muscle')}>
           <option value="">{t('exercises.allMuscles')}</option>
@@ -73,14 +76,11 @@ export default function ExerciseList() {
           <option value="">{t('exercises.allEquipment')}</option>
           {equipmentOptions.map((eq) => <option key={eq} value={eq}>{t(`equipment.${eq}`, { defaultValue: eq })}</option>)}
         </select>
-        <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => reset(() => setFavoritesOnly(!favoritesOnly))}>
-          ★ {t('exercises.favorites')}
-        </button>
       </div>
       {!exercises ? <p className="muted">…</p> : (
         <>
-          <p className="muted">{t('exercises.count', { count: results.length })}</p>
-          <ul className="list">
+          <p className="muted small list-count">{t('exercises.count', { count: results.length })}</p>
+          <ul className="list grouped">
             {results.slice(0, shown).map((e) => (
               <li key={e.id} className="ex-row">
                 <Link to={`/exercises/${encodeURIComponent(e.id)}`}>

@@ -11,6 +11,7 @@ import { useBlobUrl } from '../../lib/useBlobUrl'
 import EquipmentSettings from '../../components/EquipmentSettings'
 import { usesWeight } from '../../lib/plates'
 import ExerciseRecords from './ExerciseRecords'
+import { BackLink } from '../../components/PageHeader'
 
 function NotePhoto({ blob }: { blob: Blob }) {
   const url = useBlobUrl(blob)
@@ -59,7 +60,7 @@ export default function ExerciseDetail() {
 
   return (
     <section>
-      <p><Link to="/exercises">← {t('tabs.exercises')}</Link></p>
+      <BackLink to="/exercises" label={t('tabs.exercises')} />
       <div className="row head">
         <h1>{ex.name}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}

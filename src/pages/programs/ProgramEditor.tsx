@@ -11,6 +11,7 @@ import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
 import ShareButtons from '../../components/ShareButtons'
 import { packProgramById } from '../../db/share'
+import { BackLink } from '../../components/PageHeader'
 
 export default function ProgramEditor() {
   const { t, i18n } = useTranslation()
@@ -39,7 +40,7 @@ export default function ProgramEditor() {
 
   return (
     <section>
-      <p><Link to="/routines/programs">← {t('programs.title')}</Link></p>
+      <BackLink to="/routines/programs" label={t('programs.title')} />
       <input className="title-input" aria-label={t('programs.name')} value={program.name} onChange={(e) => save({ ...program, name: e.target.value })}
         onBlur={() => !program.name.trim() && save({ ...program, name: t('programs.untitled') })} />
       <div className="row">

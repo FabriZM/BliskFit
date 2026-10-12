@@ -15,6 +15,7 @@ import { useSettings } from '../../stores/settings'
 import { SetFields } from './SetRow'
 import SummaryImage from './SummaryImage'
 import { autoBackupToDrive } from '../../db/driveBackup'
+import { BackLink } from '../../components/PageHeader'
 
 /** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
 function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
@@ -84,7 +85,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
 
   return (
     <section>
-      <p><Link to={justFinished ? '/workout' : '/workout/history'}>← {justFinished ? t('tabs.workout') : t('history.title')}</Link></p>
+      <BackLink to={justFinished ? '/workout' : '/workout/history'} label={justFinished ? t('tabs.workout') : t('history.title')} />
       <h1>{justFinished ? t('summary.title') : dayFmt.format(session.startedAt)}</h1>
       <p className="muted">
         {routineName ?? t('workout.empty')}{gymName ? ` · ${gymName}` : ''} · {timeFmt.format(session.startedAt)}{session.endedAt ? `–${timeFmt.format(session.endedAt)}` : ''}

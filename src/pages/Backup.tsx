@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
@@ -9,6 +9,7 @@ import { platform } from '../lib/platform'
 import type { AppFile } from '../lib/platform/types'
 import { useSettings } from '../stores/settings'
 import DriveBackup from '../components/DriveBackup'
+import { BackLink } from '../components/PageHeader'
 
 const LAST_BACKUP = 'lastBackupAt'
 
@@ -73,7 +74,7 @@ export default function Backup() {
 
   return (
     <section>
-      <p><Link to="/profile/settings">← {t('profile.settings')}</Link></p>
+      <BackLink to="/profile/settings" label={t('profile.settings')} />
       <h1>{t('backup.title')}</h1>
 
       <DriveBackup restore={restoreText} />

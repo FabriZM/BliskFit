@@ -5,6 +5,7 @@ import { db, newId } from '../../db/db'
 import { getActiveProgramId, setActiveProgramId } from '../../db/programs'
 import { weekStart } from '../../lib/programs'
 import { useSettings } from '../../stores/settings'
+import { BackLink } from '../../components/PageHeader'
 
 export default function ProgramList() {
   const { t } = useTranslation()
@@ -23,7 +24,7 @@ export default function ProgramList() {
 
   return (
     <section>
-      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
+      <BackLink to="/workout" label={t('tabs.workout')} />
       <div className="row head">
         <h1>{t('programs.title')}</h1>
         <button className="primary" onClick={() => void create()}>+ {t('programs.new')}</button>

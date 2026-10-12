@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ShareError, androidAppIntent, decodeLinkData, linkDataFrom, validatePackage, type SharePackage } from '../lib/share'
 import { importPackage, previewImport, type ImportPreview } from '../db/share'
 import { useSettings } from '../stores/settings'
 import { platform } from '../lib/platform'
+import { BackLink } from '../components/PageHeader'
 
 const isAndroidBrowser = () => !platform.isNative && /Android/i.test(navigator.userAgent)
 
@@ -53,7 +54,7 @@ export default function Import() {
 
   return (
     <section>
-      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
+      <BackLink to="/workout" label={t('tabs.workout')} />
       <h1>{t('share.importTitle')}</h1>
       {pkg && preview ? (
         <div className="card">

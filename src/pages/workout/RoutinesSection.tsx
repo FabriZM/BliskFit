@@ -26,13 +26,13 @@ export default function RoutinesSection() {
     <>
       <div className="row head">
         <h2>{t('workout.routines')}</h2>
-        <span>
-          <button onClick={() => nav('/import')}>{t('share.import')}</button>{' '}
+        <span className="head-actions">
+          <button onClick={() => nav('/import')}>{t('share.import')}</button>
           <button onClick={() => void create()}>+ {t('routines.new')}</button>
         </span>
       </div>
       {routines && visible.length === 0 && <p className="muted">{showArchived ? t('routines.noArchived') : t('routines.none')}</p>}
-      <ul className="list">
+      {visible.length > 0 && <ul className="list grouped">
         {visible.map((r) => (
           <li key={r.id}>
             <div className="routine-row">
@@ -46,7 +46,7 @@ export default function RoutinesSection() {
             </div>
           </li>
         ))}
-      </ul>
+      </ul>}
       {(archivedCount > 0 || showArchived) && (
         <button onClick={() => setShowArchived(!showArchived)}>
           {showArchived ? t('routines.hideArchived') : t('routines.showArchived', { count: archivedCount })}

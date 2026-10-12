@@ -17,6 +17,7 @@ import NumInput from '../../components/NumInput'
 import ShareButtons from '../../components/ShareButtons'
 import { packRoutineById } from '../../db/share'
 import ExercisePicker from './ExercisePicker'
+import { BackLink } from '../../components/PageHeader'
 
 interface RowProps {
   item: RoutineExercise
@@ -113,7 +114,7 @@ export default function RoutineEditor() {
 
   return (
     <section>
-      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
+      <BackLink to="/workout" label={t('tabs.workout')} />
       <input className="title-input" aria-label={t('routines.name')} value={routine.name} placeholder={t('routines.name')}
         onChange={(e) => save({ ...routine, name: e.target.value })}
         onBlur={() => !routine.name.trim() && save({ ...routine, name: t('routines.untitled') })} />

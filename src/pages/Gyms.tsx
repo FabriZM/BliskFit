@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../db/db'
 import GymPlanEditor from '../components/GymPlanEditor'
+import { BackLink } from '../components/PageHeader'
 
 /** Optional feature, reachable only from Profile. The app works fully without any gym. */
 export default function Gyms() {
@@ -27,7 +28,7 @@ export default function Gyms() {
 
   return (
     <section>
-      <p><Link to="/profile/settings">← {t('profile.settings')}</Link></p>
+      <BackLink to="/profile/settings" label={t('profile.settings')} />
       <h1>{t('gyms.title')}</h1>
       <p className="muted">{t('gyms.help')}</p>
       <ul className="list">

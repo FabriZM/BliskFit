@@ -23,5 +23,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   await (await tile(512, 0.8)).toFile('public/pwa-512.png')
   // Maskable: artwork inside the 80% safe-zone circle.
   await (await tile(512, 0.6)).toFile('public/pwa-maskable-512.png')
+  // In-app header mark: only the alpha matters, the page colors it with a CSS mask.
+  await sharp(await logo(128)).toFile('src/assets/logo-mark.png')
   console.log('web icons written')
 }

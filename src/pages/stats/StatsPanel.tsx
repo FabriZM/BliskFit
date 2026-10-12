@@ -12,6 +12,7 @@ import GymsSection from './GymsSection'
 import MusclesSection from './MusclesSection'
 import OverviewSection from './OverviewSection'
 import type { StatsCtx } from './ctx'
+import { BackLink } from '../../components/PageHeader'
 
 const SECTIONS = ['overview', 'exercises', 'muscles', 'body', 'gyms'] as const
 type Section = (typeof SECTIONS)[number]
@@ -62,7 +63,7 @@ export default function StatsPanel() {
 
   return (
     <section>
-      <p><Link to="/profile">← {t('tabs.profile')}</Link></p>
+      <BackLink to="/profile" label={t('tabs.profile')} />
       <div className="row head">
         <h1>{t('stats.title')}</h1>
         <Link className="btn" to="/profile/body">{t('body.logLink')}</Link>

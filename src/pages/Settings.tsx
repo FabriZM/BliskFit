@@ -8,6 +8,7 @@ import { useSettings } from '../stores/settings'
 import { useAppUpdate } from '../db/appUpdate'
 import { useInstall } from '../components/UpdateBanner'
 import { RELEASES_PAGE } from '../lib/updates'
+import { BackLink } from '../components/PageHeader'
 
 export default function Settings() {
   const { t, i18n } = useTranslation()
@@ -15,7 +16,7 @@ export default function Settings() {
   const rem = useNotificationState()
   return (
     <section>
-      <p><Link to="/profile">← {t('tabs.profile')}</Link></p>
+      <BackLink to="/profile" label={t('tabs.profile')} />
       <h1>{t('profile.settings')}</h1>
       <label className="row">
         {t('profile.weeklyGoal')}

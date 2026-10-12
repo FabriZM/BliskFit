@@ -17,6 +17,7 @@ import { compressImage } from '../lib/image'
 import { displayToKg, formatNum, kgToDisplay } from '../lib/units'
 import { useBlobUrl } from '../lib/useBlobUrl'
 import { useSettings } from '../stores/settings'
+import { BackLink } from '../components/PageHeader'
 
 const CUSTOM = '\u0000custom'
 const PHOTO_SIDE = 1280
@@ -240,7 +241,7 @@ export default function BodyLog() {
 
   return (
     <section>
-      <p><Link to="/profile">← {t('tabs.profile')}</Link></p>
+      <BackLink to="/profile" label={t('tabs.profile')} />
       <div className="row head">
         <h1>{t('body.title')}</h1>
         <Link className="btn" to="/profile/stats?s=body">{t('body.seeStats')}</Link>

@@ -41,14 +41,14 @@ export default function TodayCard() {
     body = (
       <>
         <p className="muted">{s.mode === 'rotation' ? t('today.nextInRotation') : t('today.scheduled')}{s.trainedToday ? ` · ${t('today.trainedToday')}` : ''}</p>
-        <Link to={`/routines/${r.id}`}><strong>{r.name}</strong></Link>
+        <Link className="today-routine" to={`/routines/${r.id}`}>{r.name}</Link>
         <p className="muted small">{r.exercises.map((e) => names.get(e.exerciseId)).filter(Boolean).join(' · ') || t('routines.emptyRoutine')}</p>
         {!active && <button className="primary" onClick={async () => { await startSession(r.id); nav('/workout') }}>{t('workout.start')}</button>}
       </>
     )
   }
   return (
-    <div className="card">
+    <div className="card today-card">
       <h2>{t('today.title')}{program ? <span className="muted small"> · {program.name}</span> : null}</h2>
       {body}
       {active && <button className="primary" onClick={() => nav('/workout')}>{t('workout.resumeWorkout')}</button>}

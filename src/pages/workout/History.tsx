@@ -10,6 +10,7 @@ import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
+import { BackLink } from '../../components/PageHeader'
 
 /** Finished workouts as a list or a calendar of training days; each opens its detail (edit, delete, PRs). */
 export default function History() {
@@ -45,7 +46,7 @@ export default function History() {
 
   return (
     <section>
-      <p><Link to="/workout">← {t('tabs.workout')}</Link></p>
+      <BackLink to="/workout" label={t('tabs.workout')} />
       <h1>{t('history.title')}</h1>
       <div className="segmented" role="group" aria-label={t('history.view')}>
         <button className={view === 'list' ? 'on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('history.list')}</button>
