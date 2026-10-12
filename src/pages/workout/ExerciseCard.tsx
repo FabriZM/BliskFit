@@ -6,6 +6,7 @@ import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
 import { addSet, completeSet, deleteSet, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
 import { primeAudio } from '../../lib/alerts'
+import { platform } from '../../lib/platform'
 import { formatSet } from '../../lib/format'
 import type { GroupPos } from '../../lib/routines'
 import { computePRs } from '../../lib/prs'
@@ -20,6 +21,12 @@ import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
 import SetRow from './SetRow'
 import { BulbIcon, FlameIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
+
+// Rest-over notifications are on by default: the first completed set (a tap, which browsers require for the prompt)
+// asks for permission if it was never answered. Blocked stays blocked; the workout menu says so.
+const askForNotifications = () => {
+  void platform.notifications.permission().then((p) => { if (p === 'prompt') void platform.notifications.request() })
+}
 
 export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, defaultRest, onSwap }: {
   session: WorkoutSession
@@ -195,6 +202,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 onChange={(patch) => void updateSet(s.id, patch)}
                 onDone={() => {
                   primeAudio()
+                  askForNotifications()
                   // Between warm-ups a short rest; after the last one, the usual rest before the work.
                   const sec = s.setType === 'warmup' && sorted[i + 1]?.setType === 'warmup' ? Math.min(rest.sec, WARMUP_REST_SEC) : rest.sec
                   void completeSet(s.id, shouldStartRest(session.exercises, item.id) && sec > 0 ? sec : null)

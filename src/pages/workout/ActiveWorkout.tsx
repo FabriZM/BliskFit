@@ -83,8 +83,6 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
               </select>
             </label>
           )}
-          {notif.permission === 'prompt' && <button onClick={() => void notif.request()}>{t('workout.enableReminders')}</button>}
-          {notif.permission === 'granted' && <span className="muted small">{t('workout.remindersOn')}</span>}
           {notif.permission === 'denied' && <span className="muted small">{t('workout.remindersDenied')}</span>}
           <button className="danger" onClick={() => setConfirmFinish(true)}>{t('workout.discard')}</button>
         </div>
