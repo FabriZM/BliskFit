@@ -67,7 +67,14 @@ export function similarity(target: Exercise, cand: Exercise, byId: Map<ID, Muscl
 
 // ---- recent performance -----------------------------------------------------------------------------
 
-const usable = (sets: SetLog[]) => sets.filter((s) => s.doneAt !== undefined && s.setType !== 'warmup')
+// Beyond these a logged set is a typo (2200 kg × 1100 reps), and extrapolating from it suggests absurd weights.
+const MAX_REPS = 100
+const MAX_LOAD_KG = 1000
+/** Epley is meaningless past ~30 reps; such sets don't feed a 1RM estimate. */
+const MAX_E1RM_REPS = 30
+const plausible = (s: SetLog) => (s.reps ?? 0) <= MAX_REPS && (s.weight ?? 0) <= MAX_LOAD_KG && (s.extraWeight ?? 0) <= MAX_LOAD_KG
+
+const usable = (sets: SetLog[]) => sets.filter((s) => s.doneAt !== undefined && s.setType !== 'warmup' && plausible(s))
 
 /** The most recent workouts' done sets, newest first. */
 function recentSessions(sets: SetLog[]): SetLog[][] {
@@ -84,10 +91,10 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
 }
 
-/** Mean over recent workouts of the best estimated 1RM; sets above 12 reps are ignored when others exist. */
+/** Mean over recent workouts of the best estimated 1RM; sets above 12 reps are ignored when others exist, above 30 always. */
 function recentE1rm(sets: SetLog[], loadOf: (s: SetLog) => number | undefined): number | undefined {
   const bests = recentSessions(sets).flatMap((g) => {
-    const withLoad = g.filter((s) => (loadOf(s) ?? 0) > 0 && (s.reps ?? 0) >= 1)
+    const withLoad = g.filter((s) => (loadOf(s) ?? 0) > 0 && (s.reps ?? 0) >= 1 && s.reps! <= MAX_E1RM_REPS)
     const low = withLoad.filter((s) => s.reps! <= 12)
     const pool = low.length ? low : withLoad
     return pool.length ? [Math.max(...pool.map((s) => epley(loadOf(s)!, s.reps!)))] : []

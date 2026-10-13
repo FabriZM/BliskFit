@@ -44,6 +44,15 @@ describe('similarity', () => {
 })
 
 describe('suggestStart: weighted lifts', () => {
+  it('ignores implausible logged sets instead of extrapolating from them', () => {
+    const typo = hist(ex('db-ohp', { equipment: 'dumbbell' }), [['s1', 10_000, [[2200, 1100]]]])
+    expect(suggestStart(ex('ohp'), [typo], MS)).toBeUndefined()
+    const bench = hist(ex('bench'), [['s1', 10_000, [[100, 5]]]])
+    const s = suggestStart(ex('incline'), [bench, typo], MS)!
+    expect(s.weightKg).toBe(75)
+    expect(s.basedOn.map((b) => b.id)).toEqual(['bench'])
+  })
+
   it('suggests from a similar exercise with the same equipment, conservatively', () => {
     const bench = hist(ex('bench'), [['s1', 10_000, [[100, 5]]]])
     const s = suggestStart(ex('incline'), [bench], MS)!
