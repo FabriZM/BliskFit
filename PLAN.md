@@ -302,7 +302,7 @@ Done when: on the phone, the rest pupil closes as the timer ends, and a cold sta
 
 **Phase 4: Form and type**
 - **Display font** (done): **Barlow Condensed 700**, chosen over Fraunces after a side-by-side. Used for headings and big numbers only (`--font-display`: h1, workout timer, set inputs, rest ring and bar, in-progress timer, stat values, and the share image's title and stat numbers); body text stays system. Self-hosted Latin-subset `woff2` (15 KB, OFL) in `src/assets/fonts`, `font-display: swap`, `size-adjust: 116%` so it matches the system face at the same font-size, tabular numbers. Precached by the service worker (`globPatterns` adds `woff2`). The share image waits for it (`loadCardFonts`) and falls back to the system font.
-- **Scale texture** (done): `--scales`, a seamless fish-scale tile at 4% opacity, on the week card only. Not on the launch screen or share image (kept clean), never on lists or forms.
+- **Scale texture** (done): `--scales`, a seamless fish-scale tile at 1.4% opacity (down from 4%, which competed with the day circles), on the week card only. Not on the launch screen or share image (kept clean), never on lists or forms.
 - **Dropped: serpent curve** (the weekly goal as a coiled arc on the week card); not tried.
 Done when: the font is in and offline-safe, and the texture is on the week card with no readability loss.
 
