@@ -45,6 +45,21 @@ export function finalizeSession(s: WorkoutSession, endedAt: number): WorkoutSess
   }
 }
 
+/**
+ * A finished session with a new start and end (`endedAt` > `startedAt`): pauses are cut to fit (dropped if left
+ * empty). Its sets' times are moved separately (see clampToSession).
+ */
+export function retimeSession(s: WorkoutSession, startedAt: number, endedAt: number): WorkoutSession {
+  const pausedIntervals = s.pausedIntervals
+    .map((p) => ({ start: Math.max(p.start, startedAt), end: Math.min(p.end ?? endedAt, endedAt) }))
+    .filter((p) => p.end > p.start)
+  return { ...s, startedAt, endedAt, pausedIntervals }
+}
+
+/** A set's done time pulled inside the session's start and end. */
+export const clampToSession = (doneAt: number, s: Pick<WorkoutSession, 'startedAt' | 'endedAt'>) =>
+  Math.min(Math.max(doneAt, s.startedAt), s.endedAt ?? doneAt)
+
 // ---- forgotten session --------------------------------------------------------------------------
 
 export const lastDoneAt = (sets: SetLog[]): number | undefined =>

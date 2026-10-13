@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SetLog } from '../../db/types'
 import { discardSession } from '../../db/workout'
-import { deleteSet, setGym, shiftSession, updateSet } from '../../db/workout'
+import { deleteSet, setGym, setSessionTimes, shiftSession, updateSet } from '../../db/workout'
 import PRBadge from '../../components/PRBadge'
 import { formatSet } from '../../lib/format'
 import { computeAllPRs } from '../../lib/prs'
@@ -31,11 +31,25 @@ function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; i
   return <textarea rows={3} value={text} placeholder={placeholder} onChange={(e) => setText(e.target.value)} onBlur={() => save(text)} />
 }
 
-/** Value for <input type="datetime-local"> (local time, minute precision). */
-const toLocalInput = (ms: number) => {
-  const d = new Date(ms), p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+// Values for <input type="date"> and <input type="time">, in local time.
+const p2 = (n: number) => String(n).padStart(2, '0')
+const toDateInput = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}` }
+const toTimeInput = (ms: number) => { const d = new Date(ms); return `${p2(d.getHours())}:${p2(d.getMinutes())}` }
+/** `ms`'s day at the time "HH:MM" (local). */
+const atTime = (ms: number, hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number)
+  const d = new Date(ms)
+  d.setHours(h, m, 0, 0)
+  return d.getTime()
 }
+/** `ms` moved to the day "YYYY-MM-DD", same time of day (local). */
+const onDate = (ms: number, ymd: string) => {
+  const [y, mo, day] = ymd.split('-').map(Number)
+  const d = new Date(ms)
+  d.setFullYear(y, mo - 1, day)
+  return d.getTime()
+}
+const DAY_MS = 24 * 60 * 60 * 1000
 
 const PREFIX = { warmup: 'W ', drop: 'D ', working: '' } as const
 
@@ -106,10 +120,29 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
 
       {editing && (
         <div className="edit-meta form">
-          <label>{t('detail.dateTime')}
-            <input type="datetime-local" value={toLocalInput(session.startedAt)}
-              onChange={(e) => { const ms = new Date(e.target.value).getTime(); if (Number.isFinite(ms)) void shiftSession(id, ms) }} />
+          {/* The date moves the whole workout; start and end change its length. An end before the start is the next day. */}
+          <label>{t('detail.date')}
+            <input type="date" value={toDateInput(session.startedAt)}
+              onChange={(e) => { if (e.target.value) void shiftSession(id, onDate(session.startedAt, e.target.value)) }} />
           </label>
+          {session.endedAt !== undefined && (
+            <div className="time-pair">
+              <label>{t('detail.start')}
+                <input type="time" value={toTimeInput(session.startedAt)} onChange={(e) => {
+                  if (!e.target.value) return
+                  const start = atTime(session.startedAt, e.target.value)
+                  if (start < session.endedAt!) void setSessionTimes(id, start, session.endedAt!)
+                }} />
+              </label>
+              <label>{t('detail.end')}
+                <input type="time" value={toTimeInput(session.endedAt)} onChange={(e) => {
+                  if (!e.target.value) return
+                  const end = atTime(session.startedAt, e.target.value)
+                  void setSessionTimes(id, session.startedAt, end > session.startedAt ? end : end + DAY_MS)
+                }} />
+              </label>
+            </div>
+          )}
           {gyms.length > 0 && (
             <label>{t('gyms.gym')}
               <select value={session.gymId && gyms.some((g) => g.id === session.gymId) ? session.gymId : ''} onChange={(e) => void setGym(id, e.target.value || undefined)}>

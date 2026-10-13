@@ -418,7 +418,9 @@
     "notes": "Notas",
     "notesPlaceholder": "¿Cómo fue?",
     "noSets": "No hay series en este entreno.",
-    "dateTime": "Fecha y hora"
+    "date": "Fecha",
+    "start": "Inicio",
+    "end": "Fin"
   },
   "records": {
     "title": "Récords",

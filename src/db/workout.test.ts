@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { db, newId } from './db'
 import { ensureSeed } from './seed'
 import {
-  addExercisesToSession, addSet, completeSet, discardSession, editSet, finishSession, getActiveSession, logSet, moveItem, pause,
+  addExercisesToSession, addSet, completeSet, discardSession, editSet, finishSession, setSessionTimes, getActiveSession, logSet, moveItem, pause,
   removeItem, resume, setWarmups, startSession, swapExercise, toggleSkip,
 } from './workout'
 import { pickLastTime } from '../lib/workout'
@@ -62,6 +62,27 @@ describe('live workout flow', () => {
     await completeSet(second.id, null)
     expect((await db.setLogs.get(second.id))!.copied).toBeUndefined()
     await discardSession(id)
+  })
+
+  it('setSessionTimes changes the start and end of a finished workout, keeping its sets and pauses inside', async () => {
+    const id = await startSession(routineId)
+    const t0 = 1_000_000_000_000, min = 60_000
+    const [a, b] = (await sets(id)).sort((x, y) => x.order - y.order)
+    await db.setLogs.update(a.id, { weight: 50, reps: 5, doneAt: t0 + 5 * min })
+    await db.setLogs.update(b.id, { weight: 50, reps: 5, doneAt: t0 + 50 * min })
+    await db.sessions.update(id, { startedAt: t0, pausedIntervals: [{ start: t0 + 10 * min, end: t0 + 20 * min }, { start: t0 + 55 * min, end: t0 + 58 * min }] })
+    await finishSession(id, t0 + 60 * min)
+
+    await setSessionTimes(id, t0 + 15 * min, t0 + 40 * min)
+    const s = (await db.sessions.get(id))!
+    expect([s.startedAt, s.endedAt]).toEqual([t0 + 15 * min, t0 + 40 * min])
+    expect(s.pausedIntervals).toEqual([{ start: t0 + 15 * min, end: t0 + 20 * min }]) // cut to fit; the one after the end is gone
+    expect((await db.setLogs.get(a.id))!.doneAt).toBe(t0 + 15 * min)
+    expect((await db.setLogs.get(b.id))!.doneAt).toBe(t0 + 40 * min)
+
+    await setSessionTimes(id, t0 + 40 * min, t0 + 30 * min) // ends before it starts: ignored
+    expect((await db.sessions.get(id))!.startedAt).toBe(t0 + 15 * min)
+    await db.sessions.delete(id)
   })
 
   it('removing an exercise also deletes its logged sets', async () => {

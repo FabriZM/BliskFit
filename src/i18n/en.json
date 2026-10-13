@@ -418,7 +418,9 @@
     "notes": "Notes",
     "notesPlaceholder": "How did it go?",
     "noSets": "No sets in this workout.",
-    "dateTime": "Date and time"
+    "date": "Date",
+    "start": "Start",
+    "end": "End"
   },
   "records": {
     "title": "Records",

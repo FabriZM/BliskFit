@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS, type Exercise, type ID, type SessionExercise, type Se
 import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
-import { VALUE_KEYS, fillFollowing, finalizeSession, isFilled, pauseSession, pickLastTime, restAfterSet, restDefaults, resumeSession, valuesOf, withoutCopied, type LastTime, type RestTimes, type SetValues } from '../lib/workout'
+import { VALUE_KEYS, clampToSession, fillFollowing, finalizeSession, isFilled, pauseSession, pickLastTime, restAfterSet, restDefaults, resumeSession, retimeSession, valuesOf, withoutCopied, type LastTime, type RestTimes, type SetValues } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
 
@@ -267,7 +267,21 @@ export async function shiftSession(id: ID, newStartedAt: number): Promise<void> 
   })
 }
 
-/** Rest for this exercise in this session only (a superset/circuit shares one rest, so it applies to the group). */
+/**
+ * New start and end for a finished session (the end must come after the start). The duration follows; sets
+ * logged outside the new times move to the nearest edge, and pauses are cut to fit.
+ */
+export async function setSessionTimes(id: ID, startedAt: number, endedAt: number): Promise<void> {
+  if (!(endedAt > startedAt)) return
+  await db.transaction('rw', db.sessions, db.setLogs, async () => {
+    const s = await db.sessions.get(id)
+    if (!s || s.status !== 'finished') return
+    const next = retimeSession(s, startedAt, endedAt)
+    await db.sessions.put(next)
+    await db.setLogs.where('sessionId').equals(id).modify((l) => { if (l.doneAt !== undefined) l.doneAt = clampToSession(l.doneAt, next) })
+  })
+}
+
 /** A session's exercise list with `rests` set on item `i` (and its superset, which rests as one). */
 function withRests(exs: SessionExercise[], i: number, rests: Partial<RestTimes> | undefined): SessionExercise[] {
   const group = exs[i].supersetGroup
