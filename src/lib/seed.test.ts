@@ -99,6 +99,13 @@ describe('seed + filter', () => {
     expect((await db.exercises.get('x:Barbell_Squat'))?.level).toBe('beginner')
   })
 
+  it('every seeded exercise has Spanish how-to steps matching the English ones', async () => {
+    const rows = (await import('../data/seed-exercises.json')).default as { id: string; h: string[] }[]
+    const es = (await import('../data/seed-instructions-es.json')).default as Record<string, string[]>
+    expect(rows.filter((r) => es[r.id]?.length !== r.h.length).map((r) => r.id)).toEqual([])
+    expect(Object.values(es).flat().every((s) => s.trim().length > 0)).toBe(true)
+  })
+
   it('search ignores accents and case', () => {
     const e: Exercise = { id: '1', name: 'Sentadilla Búlgara', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom' as const }
     expect(filterExercises([e], { query: 'BULGARA', muscleIds: new Set(), equipment: '' })).toHaveLength(1)

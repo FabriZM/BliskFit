@@ -7,6 +7,7 @@ import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { compressImage } from '../../lib/image'
 import { muscleLabel } from '../../lib/muscles'
 import { describeExercise } from '../../lib/describe'
+import { useInstructions } from '../../lib/useInstructions'
 import { demoImageUrls } from '../../lib/seed'
 import { useBlobUrl } from '../../lib/useBlobUrl'
 import EquipmentSettings from '../../components/EquipmentSettings'
@@ -43,6 +44,7 @@ export default function ExerciseDetail() {
   const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
   const photoUrl = useBlobUrl(ex?.photo)
   const favorites = useFavorites()
+  const steps = useInstructions(ex, i18n.language)
 
   const [text, setText] = useState('')
   const [gymId, setGymId] = useState('')
@@ -107,10 +109,10 @@ export default function ExerciseDetail() {
             {ex.secondaryMuscleIds.length > 0 && <p><strong>{t('exercises.secondary')}:</strong> {ex.secondaryMuscleIds.map(name).join(', ')}</p>}
             {ex.videoUrl && <p><a href={ex.videoUrl} target="_blank" rel="noreferrer noopener"><PlayIcon /> {t('exercises.video')}</a></p>}
 
-            {ex.instructions && ex.instructions.length > 0 && (
+            {steps && steps.length > 0 && (
               <>
                 <h2>{t('exercises.howTo')}</h2>
-                <ol className="steps">{ex.instructions.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                <ol className="steps">{steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
               </>
             )}
             {ex.source === 'custom' && (
