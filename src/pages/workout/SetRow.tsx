@@ -29,20 +29,45 @@ const fromDisplay = (f: Field, v: number | undefined, units: Units) =>
   v === undefined ? undefined : f.kind === 'weight' ? displayToKg(v, units) : f.kind === 'min' ? Math.round(v * 60) : f.kind === 'km' ? Math.round(v * 1000) : v
 
 const RPE = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
-const SET_TYPES: SetType[] = ['working', 'warmup', 'drop']
+/** What the set-type selector shows: a working set taken to failure (the `failure` flag) is its own kind there. */
+type SetKind = SetType | 'failure'
+const SET_KINDS: SetKind[] = ['working', 'warmup', 'drop', 'failure']
+export const setKind = (s: SetLog): SetKind => (s.failure && s.setType === 'working' ? 'failure' : s.setType)
+const kindPatch = (k: SetKind): Partial<SetLog> => (k === 'failure' ? { setType: 'working', failure: true } : { setType: k, failure: undefined })
 
 /**
  * The number inputs for one set, by tracking type. Shared by the live workout and the history editor. Weights are
  * typed and shown in the set's own unit (see `setUnit`; `units` is the fallback) and saved with it.
  */
-export function SetFields({ set, tracking, units: fallback, hint, onChange }: {
-  set: SetLog; tracking: TrackingType; units: Units; hint?: SetLog; onChange: (patch: Partial<SetLog>) => void
-}) {
+const useUnitLabel = (tracking: TrackingType, units: Units) => {
   const { t } = useTranslation()
-  const units = setUnit(set, fallback, hint)
-  const unitLabel = (f: Field) =>
+  return (f: Field) =>
     f.kind === 'weight' ? (tracking === 'assisted_bodyweight' ? `−${units}` : tracking === 'bodyweight_added' ? `+${units}` : units)
       : f.kind === 'reps' ? t('workout.repsUnit') : f.kind === 'sec' ? t('workout.secUnit') : f.kind === 'min' ? t('workout.minUnit') : t('workout.kmUnit')
+}
+
+/** Column headers above an exercise's set rows ("previous", "kg", "reps"…), lined up with `SetRow`'s columns. */
+export function SetsHeader({ tracking, units }: { tracking: TrackingType; units: Units }) {
+  const { t } = useTranslation()
+  const unitLabel = useUnitLabel(tracking, units)
+  return (
+    <div className="sets-head" aria-hidden>
+      <span className="sets-head-label" />
+      <span className="prev-field">{t('workout.previous')}</span>
+      {FIELDS[tracking].map((f) => <span key={f.key} className="field">{unitLabel(f)}</span>)}
+      <span className="sets-head-check" />
+    </div>
+  )
+}
+
+export function SetFields({ set, tracking, units: fallback, hint, captions = true, onChange }: {
+  set: SetLog; tracking: TrackingType; units: Units; hint?: SetLog
+  /** Unit under each input; off when a `SetsHeader` names the columns. */
+  captions?: boolean
+  onChange: (patch: Partial<SetLog>) => void
+}) {
+  const units = setUnit(set, fallback, hint)
+  const unitLabel = useUnitLabel(tracking, units)
   return (
     <>
       {FIELDS[tracking].map((f) => {
@@ -52,7 +77,7 @@ export function SetFields({ set, tracking, units: fallback, hint, onChange }: {
             <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
               value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
               onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units), ...(f.kind === 'weight' && { unit: units }) })} />
-            <span>{unitLabel(f)}</span>
+            {captions && <span>{unitLabel(f)}</span>}
           </label>
         )
       })}
@@ -134,9 +159,9 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
       <div className="swipe-bg" aria-hidden><TrashIcon size={22} /></div>
       <div className="set-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .15s' }}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}>
-      <div className="set-main">
+      <div className="set-main bare">
         <span className="label-wrap">
-          <button className={`set-label ${set.setType}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
+          <button className={`set-label ${set.setType} ${setKind(set)}`} aria-expanded={expanded} aria-label={t('workout.details')} onClick={onToggle}>{label}</button>
           {done && pr && pr.length > 0 && <PRBadge kinds={pr} />}
         </span>
         <span className="field prev-field">
@@ -144,9 +169,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
             aria-label={previous ? `${t('workout.useLastSet')}: ${formatSet(previous, tracking, fallback)}` : t('workout.noPrevious')}>
             {previous ? formatSet(previous, tracking, fallback) : '—'}
           </button>
-          <span aria-hidden>{t('workout.previous')}</span>
         </span>
-        <SetFields set={set} tracking={tracking} units={fallback} hint={hint} onChange={onChange} />
+        <SetFields set={set} tracking={tracking} units={fallback} hint={hint} captions={false} onChange={onChange} />
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
           onClick={done ? onUndo : onDone}><CheckIcon size={24} /></button>
       </div>
@@ -162,8 +186,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
             </button>
           )}
           <label>{t('workout.setType')}
-            <select value={set.setType} onChange={(e) => onChange({ setType: e.target.value as SetType })}>
-              {SET_TYPES.map((x) => <option key={x} value={x}>{t(`workout.type.${x}`)}</option>)}
+            <select value={setKind(set)} onChange={(e) => onChange(kindPatch(e.target.value as SetKind))}>
+              {SET_KINDS.map((x) => <option key={x} value={x}>{t(`workout.type.${x}`)}</option>)}
             </select>
           </label>
           {usesWeight(tracking) && (
@@ -184,7 +208,6 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
               {RPE.map((x) => <option key={x} value={x}>{x}</option>)}
             </select>
           </label>
-          <label className="inline"><input type="checkbox" checked={!!set.failure} onChange={(e) => onChange({ failure: e.target.checked || undefined })} /> {t('workout.failure')}</label>
           <div className="set-actions">
             <button className="danger" disabled={!onDelete} onClick={onDelete}>{t('workout.deleteSet')}</button>
           </div>

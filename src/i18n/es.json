@@ -271,7 +271,8 @@
     "type": {
       "working": "Efectiva",
       "warmup": "Calentamiento",
-      "drop": "Drop set"
+      "drop": "Drop set",
+      "failure": "Al fallo"
     },
     "rpe": "RPE",
     "failure": "Al fallo",

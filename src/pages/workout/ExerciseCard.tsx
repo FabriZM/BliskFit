@@ -19,7 +19,7 @@ import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
 import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
-import SetRow from './SetRow'
+import SetRow, { SetsHeader } from './SetRow'
 import { BulbIcon, FlameIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
 
 // Rest-over notifications are on by default: the first completed set (a tap, which browsers require for the prompt)
@@ -192,6 +192,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
               <button onClick={useSuggestion}>{t('workout.useSuggestion')}</button>
             </div>
           )}
+          <SetsHeader tracking={tracking} units={units} />
           <ul className="sets">
             {sorted.map((s, i) => (
               <SetRow key={s.id} set={s} tracking={tracking} units={units} label={labelOf(s, i)}

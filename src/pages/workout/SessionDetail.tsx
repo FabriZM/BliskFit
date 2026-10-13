@@ -12,7 +12,7 @@ import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
-import { SetFields } from './SetRow'
+import { SetFields, setKind } from './SetRow'
 import SummaryImage from './SummaryImage'
 import { autoBackupToDrive } from '../../db/driveBackup'
 import { BackLink } from '../../components/PageHeader'
@@ -147,7 +147,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
                       return (
                         <li className="set" key={s.id}>
                           <div className="set-body"><div className="set-main">
-                            <span className="label-wrap"><span className={`set-label static ${s.setType}`}>{label}</span>
+                            <span className="label-wrap"><span className={`set-label static ${s.setType} ${setKind(s)}`}>{label}</span>
                               {prs.get(s.id) && <PRBadge kinds={prs.get(s.id)!} />}</span>
                             <SetFields set={s} tracking={trackingOf(s.exerciseId)} units={units} onChange={(patch) => void updateSet(s.id, patch)} />
                             <button className="icon" aria-label={t('workout.deleteSet')} onClick={() => void deleteSet(s.id)}><TrashIcon /></button>

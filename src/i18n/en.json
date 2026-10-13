@@ -271,7 +271,8 @@
     "type": {
       "working": "Working",
       "warmup": "Warm-up",
-      "drop": "Drop set"
+      "drop": "Drop set",
+      "failure": "To failure"
     },
     "rpe": "RPE",
     "failure": "To failure",

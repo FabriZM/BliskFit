@@ -7,7 +7,7 @@ import { addMeasurement, deleteMeasurement, updateMeasurement } from '../../db/b
 import DecimalInput from '../../components/DecimalInput'
 import { BackLink } from '../../components/PageHeader'
 import { measurementLabel } from '../../components/stats/measurementLabel'
-import { SIDED, measurementType, measurementUnit, parseMeasurementType, type Side } from '../../lib/body'
+import { SIDED, STANDARD_MEASUREMENTS, measurementType, measurementUnit, parseMeasurementType, type Side } from '../../lib/body'
 import { formatNum } from '../../lib/units'
 import { ChartCard, DateField, EntryRow, History, today } from './shared'
 
@@ -34,6 +34,8 @@ export default function MeasurementPage() {
   const shown = rows.filter((m) => m.type === type)
   const unit = measurementUnit(base)
   const pct = unit === '%'
+  // Tape placement guide; only the standard circumferences have one.
+  const isStandard = (STANDARD_MEASUREMENTS as readonly string[]).includes(base)
   // A percentage has to be below 100; circumferences only need to be positive.
   const ready = sided ? !!(left || right) : !!value && (!pct || value < 100)
   const show = (v: number) => (pct ? `${formatNum(v)}%` : `${formatNum(v)} cm`)
@@ -42,6 +44,13 @@ export default function MeasurementPage() {
     <section>
       <BackLink to="/profile/body" label={t('body.title')} />
       <h1>{title}</h1>
+      {isStandard && (
+        <details className="plan-editor">
+          <summary>{t('body.howTo')}</summary>
+          <p>{t(`body.how_${base}`)}</p>
+          <p className="muted small">{t('body.howTip')}</p>
+        </details>
+      )}
       {sided && (
         <div className="segmented" role="group" aria-label={t('body.side')}>
           {(['l', 'r'] as const).map((s) => <button type="button" key={s} className={side === s ? 'on' : ''} aria-pressed={side === s} onClick={() => setSide(s)}>{t(s === 'l' ? 'body.left' : 'body.right')}</button>)}

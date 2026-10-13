@@ -15,6 +15,8 @@
   --danger: #f2555a; --danger-bg: #7a1f22; --danger-fg: #ffd4d5;
   --info: #6aa8f0; --info-soft: #1e3a5f55;
   --warmup: #7a4a0e; --drop: #4a2a80;
+  /* set kinds: label text color, on a soft tint of it */
+  --set-warmup: #ff9a3c; --set-drop: #b48cff; --set-failure: #f2555a;
   /* charts */
   --chart-grid: #22332f; --chart-missed: #5f736f; --chart-goal: var(--silver); --chart-trend: var(--silver); --chart-push: var(--info);
   /* legacy alias */
@@ -417,6 +419,16 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .set.done .prev { color: var(--muted); opacity: .6; }
 .set-main .wide-num { padding-left: 2px; padding-right: 2px; }
 .set-main { gap: 6px; } .set-main .prev-field { flex-basis: 60px; }
+/* Column headers above the live workout's set rows, which then drop their own captions. Same padding, gap and
+   column widths as the rows (body padding + border; label 40px; check 52px) so each header sits over its column. */
+.set-main.bare { padding-bottom: 0; }
+/* Set kinds color the set's label: orange warm-up, purple drop, red failure (also once the set is done). */
+.set-label.warmup, .set-label.static.warmup, .set.done .set-label.warmup { color: var(--set-warmup); background: color-mix(in srgb, var(--set-warmup) 18%, transparent); }
+.set-label.drop, .set-label.static.drop, .set.done .set-label.drop { color: var(--set-drop); background: color-mix(in srgb, var(--set-drop) 18%, transparent); }
+.set-label.failure, .set-label.static.failure, .set.done .set-label.failure { color: var(--set-failure); background: color-mix(in srgb, var(--set-failure) 18%, transparent); }
+.sets-head { display: flex; gap: 6px; padding: 0 7px; margin: 8px 0 -4px; font-size: var(--text-xs); color: var(--muted); text-align: center; }
+.sets-head .sets-head-label { flex: 0 0 40px; } .sets-head .sets-head-check { flex: 0 0 52px; }
+.sets-head .prev-field { flex: 0 0 60px; } .sets-head .field { display: block; flex: 1; min-width: 0; }
 a.rx-name { color: var(--fg); text-decoration: none; } a.rx-name:active { color: var(--accent); }
 .list.grouped .body-item { flex-direction: row; align-items: center; gap: 8px; padding: var(--space-3) 0; } .body-item-text { flex: 1; display: flex; flex-direction: column; min-width: 0; } .body-item > .ico, .body-item > svg { color: var(--muted); flex: none; }
 
