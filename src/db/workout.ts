@@ -1,9 +1,9 @@
 import { db, newId } from './db'
-import type { Exercise, ID, SessionExercise, SetLog, SetType, WorkoutSession } from './types'
+import { DEFAULT_SETTINGS, type Exercise, type ID, type SessionExercise, type SetLog, type SetType, type WorkoutSession } from './types'
 import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
-import { finalizeSession, learnRest, pauseSession, restGaps, resumeSession, valuesOf } from '../lib/workout'
+import { finalizeSession, isFilled, learnRest, pauseSession, pickLastTime, restAfterSet, restFor, restGaps, resumeSession, valuesOf, type LastTime, type SetValues } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
 
@@ -139,6 +139,40 @@ export async function completeSet(setId: ID, restSec: number | null): Promise<vo
     if (restSec !== null) next = { ...next, rest: { startedAt: now, endsAt: now + restSec * 1000, exerciseId: set.exerciseId } }
     await db.sessions.put(next)
   })
+}
+
+/** The exercise's sets from the last workout before `session` (the same gym's when there is one). */
+export async function loadLastTime(exerciseId: ID, session: WorkoutSession): Promise<LastTime | undefined> {
+  const logs = await db.setLogs.where('exerciseId').equals(exerciseId).filter((x) => x.doneAt !== undefined).toArray()
+  const ids = [...new Set(logs.map((x) => x.sessionId))]
+  const sessions = new Map((await db.sessions.bulkGet(ids)).filter((x) => !!x).map((x) => [x!.id, x!]))
+  return pickLastTime({ logs, sessions, gymId: session.gymId, excludeSessionId: session.id })
+}
+
+/**
+ * Logs a set from outside the workout screen (the rest notification's Done): fills it with `values` if it is still
+ * blank, then completes it with the rest the app would start. False (nothing changed) if the set is gone, already
+ * done, not in the running workout, or blank with no values.
+ */
+export async function logSet(setId: ID, values: SetValues | undefined): Promise<boolean> {
+  const set = await db.setLogs.get(setId)
+  if (!set || set.doneAt !== undefined || !set.itemId) return false
+  const session = await getActiveSession()
+  const item = session?.id === set.sessionId ? session.exercises.find((x) => x.id === set.itemId) : undefined
+  if (!session || !item) return false
+  const [exercise, settings, itemSets] = await Promise.all([
+    db.exercises.get(item.exerciseId),
+    db.settings.get('settings'),
+    db.setLogs.where('sessionId').equals(session.id).filter((x) => x.itemId === item.id).toArray(),
+  ])
+  if (!isFilled(set, exercise?.trackingType ?? 'weight_reps')) {
+    if (!values) return false
+    await db.setLogs.update(setId, values)
+  }
+  const sorted = itemSets.sort((a, b) => a.order - b.order)
+  const rest = restFor(item, exercise, settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec).sec
+  await completeSet(setId, restAfterSet(sorted, sorted.findIndex((x) => x.id === setId), rest, session.exercises, item.id))
+  return true
 }
 
 export const uncompleteSet = (setId: ID) => db.setLogs.update(setId, { doneAt: undefined })

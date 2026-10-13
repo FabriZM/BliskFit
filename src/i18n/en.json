@@ -309,7 +309,16 @@
     "removeBody_other": "This also deletes {{count}} logged sets.",
     "restOverShort": "Go!",
     "dismiss": "Hide",
-    "restNotification": "Time for your next set.",
+    "restNotice": {
+      "over": "Rest over",
+      "next": "Next: {{name}} · {{set}} · {{values}}",
+      "nextEnter": "Next: {{name}} · {{set}}. Tap to enter your numbers.",
+      "allDone": "All sets done",
+      "setN": "Set {{n}}",
+      "done": "Done",
+      "plus": "+15s",
+      "pending": "Saved when you open BliskFit."
+    },
     "swapShort": "Swap",
     "skipShort": "Skip",
     "routines": "Routines",

@@ -11,6 +11,25 @@ export interface ScheduledNotification {
   body: string
 }
 
+/** The rest notification in the Android app: a countdown with the next set, and buttons that work without opening the app. */
+export interface RestNotice {
+  endsAt: number
+  /** Title while counting down, and once the rest is over. */
+  title: string
+  overTitle: string
+  /** The next set, e.g. "Next: Bench Press · Set 2 · 80×8". */
+  text: string
+  /** Button labels; there is a Done button only when there is a `payload` to log. */
+  labels: { done: string; plus: string; skip: string }
+  /** Handed back by Done: which set to log and with what (see RestAction), so a stale tap can't log something else. */
+  payload?: string
+  /** Shown after Done when the app isn't running to save it yet. */
+  pendingText: string
+}
+
+/** A tap on the rest notification: its buttons, or the notification itself ('open'). */
+export type RestAction = { action: 'done'; payload: string } | { action: 'plus' | 'skip' | 'open' }
+
 export interface AppFile { name: string; mtime: number; size: number }
 
 /** Files in the app's private storage (kept across app updates, removed with the app). */
@@ -64,6 +83,13 @@ export interface Platform {
   appFiles?: AppFiles
   /** Shares a link through the system share sheet, or copies it where there's none. */
   shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'dismissed'>
+  /** Only in the Android app; elsewhere rest uses the plain "rest over" notification. */
+  restNotification?: {
+    show(n: RestNotice): Promise<void>
+    hide(): Promise<void>
+    /** Taps on the notification, including ones made while the app wasn't running. Returns an unsubscribe function. */
+    onAction(cb: (a: RestAction) => void): () => void
+  }
   notifications: {
     permission(): Promise<PermissionState>
     request(): Promise<PermissionState>

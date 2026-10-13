@@ -1,4 +1,5 @@
-import type { Exercise, ID, SessionExercise, SetLog, TrackingType, WorkoutSession } from '../db/types'
+import type { Exercise, ID, SessionExercise, SetLog, TrackingType, Units, WorkoutSession } from '../db/types'
+import { WARMUP_REST_SEC } from './warmup'
 
 export const FORGOTTEN_MS = 2 * 60 * 60 * 1000
 const SEC = 1000
@@ -161,6 +162,18 @@ export function valuesOf(s: SetLog): SetValues {
   return { weight: s.weight, extraWeight: s.extraWeight, unit: s.unit, reps: s.reps, durationSec: s.durationSec, distanceM: s.distanceM }
 }
 
+/** Values to fill a set with from another one, unit included; sets from before units were kept were typed in `appUnits`. */
+export function copyValues(src: SetLog, appUnits: Units): SetValues {
+  const { unit, ...v } = valuesOf(src)
+  return v.weight !== undefined || v.extraWeight !== undefined ? { ...v, unit: unit ?? appUnits } : v
+}
+
+/** Each set's index among its exercise's non-warm-up sets (-1 for warm-ups): "set 2 last time" lines up with set 2 now. */
+export function workingIndexes(sorted: SetLog[]): number[] {
+  let w = 0
+  return sorted.map((s) => (s.setType === 'warmup' ? -1 : w++))
+}
+
 /** Source set for the n-th planned set: same index, or the last one if last time had fewer sets. */
 export const lastSetFor = (last: LastTime | undefined, workingIndex: number): SetLog | undefined =>
   last?.sets[Math.min(workingIndex, last.sets.length - 1)]
@@ -176,6 +189,15 @@ export function restFor(item: SessionExercise, ex: Exercise | undefined, default
   if (ex?.learnedRestSec !== undefined) return { sec: ex.learnedRestSec, source: 'learned' }
   if (ex?.defaultRestSec !== undefined) return { sec: ex.defaultRestSec, source: 'exercise' }
   return { sec: defaultSec, source: 'default' }
+}
+
+/**
+ * Rest to start after finishing `sorted[i]` (its exercise's sets, in order), or null for none: a short one between
+ * warm-ups, and none until the last member of a superset.
+ */
+export function restAfterSet(sorted: SetLog[], i: number, restSec: number, items: SessionExercise[], itemId: ID): number | null {
+  const sec = sorted[i].setType === 'warmup' && sorted[i + 1]?.setType === 'warmup' ? Math.min(restSec, WARMUP_REST_SEC) : restSec
+  return shouldStartRest(items, itemId) && sec > 0 ? sec : null
 }
 
 /** Supersets/circuits rest once, after the last member of the group; singles rest after every set. */

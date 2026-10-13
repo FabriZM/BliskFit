@@ -309,7 +309,16 @@
     "removeBody_other": "También se eliminan {{count}} series registradas.",
     "restOverShort": "¡Vamos!",
     "dismiss": "Ocultar",
-    "restNotification": "Hora de tu siguiente serie.",
+    "restNotice": {
+      "over": "Descanso terminado",
+      "next": "Sigue: {{name}} · {{set}} · {{values}}",
+      "nextEnter": "Sigue: {{name}} · {{set}}. Toca para cargar tus números.",
+      "allDone": "Todas las series hechas",
+      "setN": "Serie {{n}}",
+      "done": "Hecho",
+      "plus": "+15s",
+      "pending": "Se guarda al abrir BliskFit."
+    },
     "swapShort": "Cambiar",
     "skipShort": "Saltar",
     "routines": "Rutinas",

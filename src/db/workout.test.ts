@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { db, newId } from './db'
 import { ensureSeed } from './seed'
 import {
-  addExercisesToSession, addSet, completeSet, discardSession, finishSession, getActiveSession, moveItem, pause,
+  addExercisesToSession, addSet, completeSet, discardSession, finishSession, getActiveSession, logSet, moveItem, pause,
   removeItem, resume, setWarmups, startSession, swapExercise, toggleSkip,
 } from './workout'
 import { pickLastTime } from '../lib/workout'
@@ -21,6 +21,26 @@ describe('live workout flow', () => {
         { id: 'r2', exerciseId: 'x:Barbell_Shoulder_Press', targetSets: 2, repMin: 8, repMax: 12, supersetGroup: 'g' },
       ],
     })
+  })
+
+  it('logSet (the rest notification\'s Done) fills a blank set, completes it and rests like the app', async () => {
+    const id = await startSession(routineId)
+    const [a, b] = (await db.sessions.get(id))!.exercises
+    const first = (await sets(id)).filter((x) => x.itemId === a.id).sort((x, y) => x.order - y.order)[0]
+    expect(await logSet(first.id, undefined)).toBe(false) // blank and nothing to fill it with
+    expect(await logSet(first.id, { weight: 60, reps: 8, unit: 'kg' })).toBe(true)
+    expect(await db.setLogs.get(first.id)).toMatchObject({ weight: 60, reps: 8 })
+    expect((await db.setLogs.get(first.id))!.doneAt).toBeDefined()
+    expect((await db.sessions.get(id))!.rest).toBeUndefined() // mid-superset: no rest yet
+    expect(await logSet(first.id, { weight: 70, reps: 8 })).toBe(false) // a stale second tap changes nothing
+    expect((await db.setLogs.get(first.id))!.weight).toBe(60)
+
+    const other = (await sets(id)).filter((x) => x.itemId === b.id).sort((x, y) => x.order - y.order)[0]
+    await db.setLogs.update(other.id, { weight: 40, reps: 10 })
+    expect(await logSet(other.id, { weight: 99, reps: 1 })).toBe(true) // typed values win over the notification's
+    expect(await db.setLogs.get(other.id)).toMatchObject({ weight: 40, reps: 10 })
+    expect((await db.sessions.get(id))!.rest).toBeDefined() // end of the superset round
+    await discardSession(id)
   })
 
   it('removing an exercise also deletes its logged sets', async () => {

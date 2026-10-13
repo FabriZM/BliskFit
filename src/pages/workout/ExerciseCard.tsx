@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
-import { addSet, completeSet, deleteSet, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
+import { addSet, completeSet, deleteSet, loadLastTime, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
 import { primeAudio } from '../../lib/alerts'
 import { platform } from '../../lib/platform'
 import { formatSet } from '../../lib/format'
@@ -13,8 +13,8 @@ import { computePRs } from '../../lib/prs'
 import { barWeight, isPlateLoaded, setUnit, usesWeight, weightUnitFor } from '../../lib/plates'
 import { displayToKg, formatClock, kgToDisplay } from '../../lib/units'
 import EquipmentSettings from '../../components/EquipmentSettings'
-import { lastSetFor, pickLastTime, restFor, shouldStartRest, valuesOf } from '../../lib/workout'
-import { WARMUP_REST_SEC, warmupSets } from '../../lib/warmup'
+import { copyValues, lastSetFor, restAfterSet, restFor, workingIndexes } from '../../lib/workout'
+import { warmupSets } from '../../lib/warmup'
 import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
 import PlateSheet from './PlateSheet'
@@ -57,12 +57,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const rest = restFor(item, exercise, defaultRest)
   const doneCount = sorted.filter((s) => s.doneAt !== undefined).length
 
-  const last = useLiveQuery(async () => {
-    const logs = await db.setLogs.where('exerciseId').equals(item.exerciseId).filter((x) => x.doneAt !== undefined).toArray()
-    const ids = [...new Set(logs.map((x) => x.sessionId))]
-    const sessions = new Map((await db.sessions.bulkGet(ids)).filter((x) => !!x).map((x) => [x!.id, x!]))
-    return pickLastTime({ logs, sessions, gymId: session.gymId, excludeSessionId: session.id })
-  }, [item.exerciseId, session.gymId, session.id])
+  const last = useLiveQuery(() => loadLastTime(item.exerciseId, session), [item.exerciseId, session.gymId, session.id])
 
   // Records are always recomputed from every done set of this exercise (history + this session), so undoing or
   // editing a set can never leave a stale badge.
@@ -79,15 +74,11 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
     return { ...base, unit: base.weight !== undefined || base.extraWeight !== undefined ? units : undefined } as SetLog
   }, [suggestion, tracking, units])
 
-  // Copying a set copies what was typed, unit included; sets from before units were kept were typed in the app's.
-  const copyOf = (src: SetLog) => {
-    const { unit, ...v } = valuesOf(src)
-    return v.weight !== undefined || v.extraWeight !== undefined ? { ...v, unit: unit ?? appUnits } : v
-  }
+  // Copying a set copies what was typed, unit included.
+  const copyOf = (src: SetLog) => copyValues(src, appUnits)
 
   // Index among non-warm-up sets: "set 2 last time" lines up with set 2 now.
-  let w = 0
-  const workingIdx = sorted.map((s) => (s.setType === 'warmup' ? -1 : w++))
+  const workingIdx = workingIndexes(sorted)
   const labelOf = (s: SetLog, i: number) => (s.setType === 'warmup' ? 'W' : s.setType === 'drop' ? 'D' : String(workingIdx[i] + 1))
   const hintFor = (i: number) => (workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) ?? suggestedSet : undefined)
   const nextId = sorted.find((s) => s.doneAt === undefined)?.id
@@ -204,9 +195,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 onDone={() => {
                   primeAudio()
                   askForNotifications()
-                  // Between warm-ups a short rest; after the last one, the usual rest before the work.
-                  const sec = s.setType === 'warmup' && sorted[i + 1]?.setType === 'warmup' ? Math.min(rest.sec, WARMUP_REST_SEC) : rest.sec
-                  void completeSet(s.id, shouldStartRest(session.exercises, item.id) && sec > 0 ? sec : null)
+                  void completeSet(s.id, restAfterSet(sorted, i, rest.sec, session.exercises, item.id))
                 }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onUseLast={() => { const src = workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined; if (src) void updateSet(s.id, copyOf(src)) }}

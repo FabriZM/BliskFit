@@ -41,6 +41,9 @@
 
         </activity>
 
+        <!-- Rest notification: its buttons and the end-of-rest alarm (RestTimerReceiver) -->
+        <receiver android:name=".RestTimerReceiver" android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

@@ -1,5 +1,6 @@
 import { registerPlugin } from '@capacitor/core'
-import { GoogleAuthError, type AppFiles, type GoogleAuth, type PermissionState, type Platform, type ScheduledNotification } from './types'
+import type { PluginListenerHandle } from '@capacitor/core'
+import { GoogleAuthError, type AppFiles, type GoogleAuth, type PermissionState, type Platform, type RestAction, type RestNotice, type ScheduledNotification } from './types'
 
 /** Capacitor (Android) implementation. Plugins are imported lazily so the plain PWA never loads them. */
 const CHANNEL = 'timers'
@@ -54,6 +55,15 @@ const googleAuth: GoogleAuth = {
   revoke: (_token, email) => GoogleDrive.revoke({ email }),
 }
 
+/** Our own plugin (android/.../RestTimerPlugin.java): the rest notification. */
+interface RestTimerPlugin {
+  show(n: RestNotice): Promise<void>
+  hide(): Promise<void>
+  takePending(): Promise<{ actions: RestAction[] }>
+  addListener(event: 'action', cb: (a: RestAction) => void): Promise<PluginListenerHandle>
+}
+const RestTimer = registerPlugin<RestTimerPlugin>('RestTimer')
+
 const BACKUP_DIR = 'backups'
 const fs = () => import('@capacitor/filesystem')
 
@@ -96,6 +106,20 @@ export const nativePlatform: Platform = {
       else handle = h
     })
     return () => { stopped = true; void handle?.remove() }
+  },
+  restNotification: {
+    show: (n) => RestTimer.show(n),
+    hide: () => RestTimer.hide(),
+    onAction(cb) {
+      let handle: PluginListenerHandle | undefined
+      let stopped = false
+      void RestTimer.addListener('action', cb).then((h) => {
+        if (stopped) void h.remove()
+        else handle = h
+      })
+      void RestTimer.takePending().then(({ actions }) => { if (!stopped) actions.forEach(cb) })
+      return () => { stopped = true; void handle?.remove() }
+    },
   },
   vibrate(pattern = [250, 120, 250]) {
     const duration = Math.min(600, pattern.reduce((a, b) => a + b, 0))
