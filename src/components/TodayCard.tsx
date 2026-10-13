@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { getActiveProgramId } from '../db/programs'
 import { getActiveSession, startSession } from '../db/workout'
+import { useWorkoutView } from '../stores/workoutView'
 import { suggestToday } from '../lib/programs'
 import { useSettings } from '../stores/settings'
 import { ArrowRightIcon } from './Icons'
@@ -13,6 +14,7 @@ export default function TodayCard() {
   const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const weekStartDay = useSettings((s) => s.settings.weekStartDay)
+  const setCollapsed = useWorkoutView((s) => s.setCollapsed)
   const data = useLiveQuery(async () => {
     const pid = await getActiveProgramId()
     const [program, routines, sessions, exercises] = await Promise.all([
@@ -52,7 +54,7 @@ export default function TodayCard() {
     <div className="card today-card">
       <h2>{t('today.title')}{program ? <span className="muted small"> · {program.name}</span> : null}</h2>
       {body}
-      {active && <button className="primary" onClick={() => nav('/workout')}>{t('workout.resumeWorkout')}</button>}
+      {active && <button className="primary" onClick={() => { setCollapsed(false); nav('/workout') }}>{t('workout.resumeWorkout')}</button>}
     </div>
   )
 }

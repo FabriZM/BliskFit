@@ -9,8 +9,8 @@ import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
 import { ChevronRightIcon } from '../../components/Icons'
 
-/** Routines (start / open / create) and the entry to programs: the heart of the Workout tab. */
-export default function RoutinesSection() {
+/** Routines (start / open / create) and the entry to programs: the heart of the Workout tab. `running`: a workout is on, so no starting another. */
+export default function RoutinesSection({ running = false }: { running?: boolean }) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const [showArchived, setShowArchived] = useState(false)
@@ -38,7 +38,7 @@ export default function RoutinesSection() {
         ? <p className="muted">{t('routines.noArchived')}</p>
         : <EmptyState icon={<WorkoutIcon />} action={<button className="primary" onClick={() => void create()}>+ {t('routines.new')}</button>}>{t('routines.none')}</EmptyState>)}
       {visible.length > 0 && <ul className="list grouped">
-        {visible.map((r) => <RoutineItem key={r.id} routine={r} />)}
+        {visible.map((r) => <RoutineItem key={r.id} routine={r} canStart={!running} />)}
       </ul>}
       {(archivedCount > 0 || showArchived) && (
         <button onClick={() => setShowArchived(!showArchived)}>

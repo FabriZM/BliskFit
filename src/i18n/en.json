@@ -323,6 +323,7 @@
     "swapShort": "Swap",
     "skipShort": "Skip",
     "routines": "Routines",
+    "minimize": "Minimize workout",
     "inProgress": "Workout in progress",
     "suggested": "Suggested start",
     "basedOn": "based on {{names}}",

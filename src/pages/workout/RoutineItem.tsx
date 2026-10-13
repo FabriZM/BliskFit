@@ -16,7 +16,7 @@ const SWIPE_AT = 100
  * One routine in the Workout list. Swipe right to archive (or restore, when archived), swipe left to delete (asks
  * first). The ... button opens the routine's options: duplicate, archive / restore, share, delete.
  */
-export default function RoutineItem({ routine: r }: { routine: Routine }) {
+export default function RoutineItem({ routine: r, canStart = true }: { routine: Routine; canStart?: boolean }) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const [menu, setMenu] = useState(false)
@@ -74,7 +74,7 @@ export default function RoutineItem({ routine: r }: { routine: Routine }) {
             <strong>{r.name}</strong>
             <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}</span>
           </Link>
-          {!r.archived && <button className="primary" onClick={() => void startSession(r.id)}>{t('workout.start')}</button>}
+          {!r.archived && canStart && <button className="primary" onClick={() => void startSession(r.id)}>{t('workout.start')}</button>}
           <button className="icon" aria-expanded={menu} aria-label={t('routines.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
         </div>
         {menu && (

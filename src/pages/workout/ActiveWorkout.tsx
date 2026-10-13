@@ -24,7 +24,8 @@ import ReminderSetup from '../../components/ReminderSetup'
 import RestPopup from './RestPopup'
 import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
-import { MoreIcon, PauseIcon } from '../../components/Icons'
+import { ChevronDownIcon, MoreIcon, PauseIcon } from '../../components/Icons'
+import { useWorkoutView } from '../../stores/workoutView'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
@@ -44,6 +45,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
   const notif = useNotificationState()
+  const minimize = useWorkoutView((s) => s.setCollapsed)
   useWakeLock(true)
 
   const sets = useLiveQuery(() => db.setLogs.where('sessionId').equals(session.id).toArray(), [session.id]) ?? []
@@ -94,6 +96,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
           <span className="muted small"> {paused ? <><PauseIcon /> {t('workout.paused')}</> : (routineName ?? t('workout.empty'))}</span>
         </div>
         <div className="wk-actions">
+          <button className="icon" aria-label={t('workout.minimize')} title={t('workout.minimize')} onClick={() => minimize(true)}><ChevronDownIcon /></button>
           <button onClick={() => void (paused ? resume(session.id) : pause(session.id))}>{paused ? t('workout.resumeBtn') : t('workout.pause')}</button>
           <button className="primary" onClick={() => (doneCount ? void finish() : setConfirmFinish(true))}>{t('workout.finish')}</button>
           <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
