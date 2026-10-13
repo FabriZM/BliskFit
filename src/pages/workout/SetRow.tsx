@@ -75,6 +75,7 @@ export function SetFields({ set, tracking, units: fallback, hint, captions = tru
         return (
           <label key={f.key} className="field">
             <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
+              className={set.copied?.includes(f.key) ? 'copied' : undefined}
               value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
               onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units), ...(f.kind === 'weight' && { unit: units }) })} />
             {captions && <span>{unitLabel(f)}</span>}
@@ -85,7 +86,7 @@ export function SetFields({ set, tracking, units: fallback, hint, captions = tru
   )
 }
 
-export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, previous, barOf, onToggle, onChange, onDone, onUndo, onUseLast, onDelete, onPlates }: {
+export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, previous, barOf, onToggle, onChange, onEdit, onDone, onUndo, onUseLast, onDelete, onPlates }: {
   set: SetLog
   tracking: TrackingType
   /** The exercise's weight unit (its own, else the app's), for sets with no unit of their own yet. */
@@ -104,6 +105,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   barOf?: (unit: Units) => number
   onToggle: () => void
   onChange: (patch: Partial<SetLog>) => void
+  /** A value typed into one of the set's fields (`onChange` when omitted). */
+  onEdit?: (patch: Partial<SetLog>) => void
   onDone: () => void
   onUndo: () => void
   onUseLast: () => void
@@ -170,7 +173,7 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
             {previous ? formatSet(previous, tracking, fallback) : '—'}
           </button>
         </span>
-        <SetFields set={set} tracking={tracking} units={fallback} hint={hint} captions={false} onChange={onChange} />
+        <SetFields set={set} tracking={tracking} units={fallback} hint={hint} captions={false} onChange={onEdit ?? onChange} />
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
           onClick={done ? onUndo : onDone}><CheckIcon size={24} /></button>
       </div>

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { formatNum, parseDecimal } from '../lib/units'
 
 /** Number field that tolerates mid-edit text ("82.", ",5") and only commits parsed values. */
-export default function DecimalInput({ value, onCommit, placeholder, label, integer = false }: {
+export default function DecimalInput({ value, onCommit, placeholder, label, integer = false, className }: {
   value: number | undefined
+  /** Extra classes for the input. */
+  className?: string
   onCommit: (v: number | undefined) => void
   placeholder?: string
   label: string
@@ -15,7 +17,7 @@ export default function DecimalInput({ value, onCommit, placeholder, label, inte
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only resync when the stored value changes
   }, [value])
   return (
-    <input className="num wide-num" type="text" inputMode={integer ? 'numeric' : 'decimal'} aria-label={label}
+    <input className={`num wide-num${className ? ` ${className}` : ''}`} type="text" inputMode={integer ? 'numeric' : 'decimal'} aria-label={label}
       placeholder={placeholder} value={text}
       onChange={(e) => {
         const v = e.target.value.replace(integer ? /[^\d]/g : /[^\d.,]/g, '')

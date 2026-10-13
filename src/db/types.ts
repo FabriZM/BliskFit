@@ -172,11 +172,19 @@ export interface SetLog {
   reps?: number
   durationSec?: number
   distanceM?: number
+  /**
+   * Fields whose value was carried over from an earlier set as it was typed (shown dimmer), not entered here. They
+   * keep following that set until typed over; cleared once the set is done.
+   */
+  copied?: SetValueKey[]
   rpe?: number
   rir?: number
   failure?: boolean
   doneAt?: number
 }
+
+/** A set's typed values (the unit goes with the weights). */
+export type SetValueKey = 'weight' | 'extraWeight' | 'reps' | 'durationSec' | 'distanceM'
 
 export interface ExerciseNote {
   id: ID

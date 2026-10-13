@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS, type Exercise, type ID, type SessionExercise, type Se
 import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
-import { finalizeSession, isFilled, learnRest, pauseSession, pickLastTime, restAfterSet, restFor, restGaps, resumeSession, valuesOf, type LastTime, type SetValues } from '../lib/workout'
+import { VALUE_KEYS, fillFollowing, finalizeSession, isFilled, learnRest, pauseSession, pickLastTime, restAfterSet, restFor, restGaps, resumeSession, valuesOf, withoutCopied, type LastTime, type SetValues } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
 
@@ -124,7 +124,26 @@ export const setWarmups = (id: ID, itemId: ID, warmups: Pick<SetLog, 'weight' | 
 
 export const deleteSet = (setId: ID) => db.setLogs.delete(setId)
 
-export const updateSet = (setId: ID, patch: Partial<SetLog>) => db.setLogs.update(setId, patch)
+/** Changes a set. Values it sets (typed, last time's, plates…) are its own from then on, no longer copies. */
+export const updateSet = (setId: ID, patch: Partial<SetLog>) =>
+  db.transaction('rw', db.setLogs, async () => {
+    const set = await db.setLogs.get(setId)
+    if (!set) return
+    const own = VALUE_KEYS.filter((k) => k in patch)
+    await db.setLogs.update(setId, own.length && set.copied ? { ...patch, copied: withoutCopied(set.copied, own) } : patch)
+  })
+/** A value typed into a set's field: saved, and carried to the later sets that follow it (see fillFollowing). */
+export const editSet = (setId: ID, patch: Partial<SetLog>) =>
+  db.transaction('rw', db.setLogs, async () => {
+    const set = await db.setLogs.get(setId)
+    if (!set) return
+    // Read inside the transaction, so each keystroke sees what the previous one saved.
+    const sorted = (await db.setLogs.where('sessionId').equals(set.sessionId).filter((x) => x.itemId === set.itemId).toArray())
+      .sort((a, b) => a.order - b.order)
+    const later = fillFollowing(sorted, sorted.findIndex((x) => x.id === setId), patch)
+    await db.setLogs.update(setId, { ...patch, copied: withoutCopied(set.copied, VALUE_KEYS.filter((k) => k in patch)) })
+    for (const u of later) await db.setLogs.update(u.id, u.patch)
+  })
 
 /** Marks a set done. `restSec` starts the rest timer (null = no rest, e.g. mid-superset). Resumes a paused session. */
 export async function completeSet(setId: ID, restSec: number | null): Promise<void> {
@@ -132,7 +151,7 @@ export async function completeSet(setId: ID, restSec: number | null): Promise<vo
   if (!set) return
   const now = Date.now()
   await db.transaction('rw', db.sessions, db.setLogs, async () => {
-    await db.setLogs.update(setId, { doneAt: now })
+    await db.setLogs.update(setId, { doneAt: now, copied: undefined }) // done: the values are this set's own
     const s = await db.sessions.get(set.sessionId)
     if (!s) return
     let next = resumeSession(s, now)

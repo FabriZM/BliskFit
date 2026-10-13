@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { db, newId } from './db'
 import { ensureSeed } from './seed'
 import {
-  addExercisesToSession, addSet, completeSet, discardSession, finishSession, getActiveSession, logSet, moveItem, pause,
+  addExercisesToSession, addSet, completeSet, discardSession, editSet, finishSession, getActiveSession, logSet, moveItem, pause,
   removeItem, resume, setWarmups, startSession, swapExercise, toggleSkip,
 } from './workout'
 import { pickLastTime } from '../lib/workout'
@@ -40,6 +40,27 @@ describe('live workout flow', () => {
     expect(await logSet(other.id, { weight: 99, reps: 1 })).toBe(true) // typed values win over the notification's
     expect(await db.setLogs.get(other.id)).toMatchObject({ weight: 40, reps: 10 })
     expect((await db.sessions.get(id))!.rest).toBeDefined() // end of the superset round
+    await discardSession(id)
+  })
+
+  it('editSet copies each keystroke to the sets after it; editing or finishing a copy makes it the set\'s own', async () => {
+    const id = await startSession(routineId)
+    const item = (await db.sessions.get(id))!.exercises[0]
+    const mine = async () => (await sets(id)).filter((x) => x.itemId === item.id).sort((a, b) => a.order - b.order)
+    const [first, second, third] = await mine()
+    await db.setLogs.update(third.id, { reps: 6 })
+    await Promise.all([editSet(first.id, { weight: 8, unit: 'kg' }), editSet(first.id, { weight: 80, unit: 'kg' })]) // fast typing
+    await editSet(first.id, { reps: 10 })
+    expect((await mine()).map((x) => [x.weight, x.reps, x.copied])).toEqual([
+      [80, 10, undefined], [80, 10, ['weight', 'reps']], [80, 6, ['weight']],
+    ])
+
+    await editSet(second.id, { weight: 85, unit: 'kg' }) // typed over: its own now, and the copy after it follows it
+    await editSet(first.id, { weight: 90, unit: 'kg' })
+    expect((await mine()).map((x) => [x.weight, x.copied])).toEqual([[90, undefined], [85, ['reps']], [85, ['weight']]])
+
+    await completeSet(second.id, null)
+    expect((await db.setLogs.get(second.id))!.copied).toBeUndefined()
     await discardSession(id)
   })
 

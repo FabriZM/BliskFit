@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
-import { addSet, completeSet, deleteSet, loadLastTime, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet } from '../../db/workout'
+import { addSet, completeSet, deleteSet, loadLastTime, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet, editSet } from '../../db/workout'
 import { primeAudio } from '../../lib/alerts'
 import { platform } from '../../lib/platform'
 import { formatSet } from '../../lib/format'
@@ -192,6 +192,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 expanded={expanded === s.id} previous={workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined}
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
+                onEdit={(patch) => void editSet(s.id, patch)}
                 onDone={() => {
                   primeAudio()
                   askForNotifications()

@@ -426,6 +426,8 @@ section > .row.head:has(> h2) { padding: var(--space-5) 0 var(--space-3); border
 .set-label.warmup, .set-label.static.warmup, .set.done .set-label.warmup { color: var(--set-warmup); background: color-mix(in srgb, var(--set-warmup) 18%, transparent); }
 .set-label.drop, .set-label.static.drop, .set.done .set-label.drop { color: var(--set-drop); background: color-mix(in srgb, var(--set-drop) 18%, transparent); }
 .set-label.failure, .set-label.static.failure, .set.done .set-label.failure { color: var(--set-failure); background: color-mix(in srgb, var(--set-failure) 18%, transparent); }
+/* A value copied from an earlier set as it was typed: dimmer than one typed here, brighter than last time's hint. */
+.set-main .wide-num.copied { color: color-mix(in srgb, var(--fg) 68%, transparent); }
 .sets-head { display: flex; gap: 6px; padding: 0 7px; margin: 8px 0 -4px; font-size: var(--text-xs); color: var(--muted); text-align: center; }
 .sets-head .sets-head-label { flex: 0 0 40px; } .sets-head .sets-head-check { flex: 0 0 52px; }
 .sets-head .prev-field { flex: 0 0 60px; } .sets-head .field { display: block; flex: 1; min-width: 0; }

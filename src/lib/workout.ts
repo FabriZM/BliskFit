@@ -1,4 +1,4 @@
-import type { Exercise, ID, SessionExercise, SetLog, TrackingType, Units, WorkoutSession } from '../db/types'
+import type { Exercise, ID, SessionExercise, SetLog, SetValueKey, TrackingType, Units, WorkoutSession } from '../db/types'
 import { WARMUP_REST_SEC } from './warmup'
 
 export const FORGOTTEN_MS = 2 * 60 * 60 * 1000
@@ -166,6 +166,46 @@ export function valuesOf(s: SetLog): SetValues {
 export function copyValues(src: SetLog, appUnits: Units): SetValues {
   const { unit, ...v } = valuesOf(src)
   return v.weight !== undefined || v.extraWeight !== undefined ? { ...v, unit: unit ?? appUnits } : v
+}
+
+export const VALUE_KEYS: SetValueKey[] = ['weight', 'extraWeight', 'reps', 'durationSec', 'distanceM']
+
+/** `copied` without the fields in `own` (now entered on the set itself), or undefined when none are left. */
+export function withoutCopied(copied: SetValueKey[] | undefined, own: SetValueKey[]): SetValueKey[] | undefined {
+  const left = copied?.filter((k) => !own.includes(k))
+  return left?.length ? left : undefined
+}
+
+/**
+ * Typing a value into `sorted[i]` (an exercise's sets, in order) copies it to the later sets of the same type that
+ * aren't done and are blank in that field or hold a copy there (`copied`): typing 80 once fills the sets after it,
+ * and since fields save on every keystroke, "8" then "80" (or a later fix) keeps the copies in step. A value typed
+ * on a set itself is never overwritten, and copying stops there: the sets after it hold copies of that one.
+ * Clearing the field clears its copies. Returns the changes for later sets.
+ */
+export function fillFollowing(sorted: SetLog[], i: number, patch: Partial<SetLog>): { id: ID; patch: Partial<SetLog> }[] {
+  const src = sorted[i]
+  // Fields still being carried: a later set with its own value (typed, or done) takes over from there.
+  let keys = VALUE_KEYS.filter((k) => k in patch)
+  if (!src || !keys.length) return []
+  return sorted.slice(i + 1).flatMap((s) => {
+    if (s.setType !== src.setType) return []
+    const own = (k: SetValueKey) => s[k] !== undefined && (s.doneAt !== undefined || !s.copied?.includes(k))
+    const carry = keys.filter((k) => !own(k))
+    keys = carry
+    if (s.doneAt !== undefined) return []
+    const p: Partial<SetLog> = {}
+    let copied = s.copied ?? []
+    for (const k of carry) {
+      if (s[k] === patch[k]) continue
+      p[k] = patch[k]
+      copied = patch[k] === undefined ? copied.filter((x) => x !== k) : copied.includes(k) ? copied : [...copied, k]
+    }
+    if (!Object.keys(p).length) return []
+    if ((p.weight !== undefined || p.extraWeight !== undefined) && patch.unit) p.unit = patch.unit
+    p.copied = copied.length ? copied : undefined
+    return [{ id: s.id, patch: p }]
+  })
 }
 
 /** Each set's index among its exercise's non-warm-up sets (-1 for warm-ups): "set 2 last time" lines up with set 2 now. */

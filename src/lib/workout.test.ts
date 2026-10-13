@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise, SessionExercise, SetLog, WorkoutSession } from '../db/types'
 import {
-  FORGOTTEN_MS, elapsedMs, finalizeSession, forgottenDueAt, forgottenEndTime, isFilled, isForgotten, learnRest,
+  FORGOTTEN_MS, elapsedMs, fillFollowing, finalizeSession, forgottenDueAt, forgottenEndTime, isFilled, isForgotten, learnRest,
   muscleSetCounts, pauseSession, pickLastTime, restFor, restGaps, resumeSession, sessionStats, shouldStartRest,
 } from './workout'
 
@@ -139,5 +139,35 @@ describe('rest', () => {
     expect(learnRest(undefined, [90, 105, 120])).toBe(105)
     expect(learnRest(120, [60])).toBe(100)
     expect(learnRest(120, [])).toBe(120)
+  })
+})
+
+describe('fillFollowing', () => {
+  const s = (id: string, extra: Partial<SetLog> = {}): SetLog => ({ id, sessionId: 'x', exerciseId: 'e', order: 0, setType: 'working', ...extra })
+
+  it('copies a typed value to later blank sets of the same type, marked as copied', () => {
+    const sorted = [s('w', { setType: 'warmup' }), s('a'), s('b', { reps: 5 }), s('c', { doneAt: 1 }), s('d', { setType: 'drop' }), s('e', { weight: 70 }), s('f')]
+    // A done set with no weight doesn't stop it; e's own weight does (f copies e from now on).
+    expect(fillFollowing(sorted, 1, { weight: 80, unit: 'kg' })).toEqual([{ id: 'b', patch: { weight: 80, unit: 'kg', copied: ['weight'] } }])
+    expect(fillFollowing(sorted, 1, { reps: 8 })).toEqual([]) // b typed its own reps: the ones after follow b
+  })
+
+  it('keeps copies in step, but never a value typed on the set itself, even an equal one', () => {
+    const sorted = [s('a', { weight: 8 }), s('b', { weight: 8, copied: ['weight'] }), s('c', { weight: 8 })]
+    expect(fillFollowing(sorted, 0, { weight: 80 })).toEqual([{ id: 'b', patch: { weight: 80, copied: ['weight'] } }])
+    expect(fillFollowing(sorted, 0, { weight: undefined })).toEqual([{ id: 'b', patch: { weight: undefined, copied: undefined } }])
+  })
+
+  it('stops at a set with its own value (typed or done): the copies after it are that set\'s', () => {
+    const sorted = [s('a'), s('b', { weight: 85 }), s('c', { weight: 85, copied: ['weight'] })]
+    expect(fillFollowing(sorted, 0, { weight: 90 })).toEqual([])
+    const done = [s('a'), s('b', { weight: 85, copied: ['weight'], doneAt: 1 }), s('c', { weight: 85, copied: ['weight'] })]
+    expect(fillFollowing(done, 0, { weight: 90 })).toEqual([])
+  })
+
+  it('never touches earlier sets, and warm-ups only fill warm-ups', () => {
+    expect(fillFollowing([s('a'), s('b')], 1, { weight: 80 })).toEqual([])
+    const sorted = [s('w1', { setType: 'warmup' }), s('w2', { setType: 'warmup' }), s('a')]
+    expect(fillFollowing(sorted, 0, { weight: 40 }).map((x) => x.id)).toEqual(['w2'])
   })
 })
