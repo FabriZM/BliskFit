@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { Routine, RoutineExercise } from '../db/types'
+import type { Routine, RoutineExercise, SessionExercise, SetLog } from '../db/types'
 import {
   addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise, replaceExercise,
-  normalizeGroups, removeExercise, setRepRange, setRest, unlinkFromNext,
+  normalizeGroups, removeExercise, routineUpdate, setRepRange, setRest, unlinkFromNext,
 } from './routines'
 
 const ex = (id: string, extra: Partial<RoutineExercise> = {}): RoutineExercise => ({ id, exerciseId: 'x' + id, targetSets: 3, ...extra })
@@ -103,5 +103,34 @@ describe('replaceExercise', () => {
   it('drops the rep range for time-based exercises', () => {
     const out = replaceExercise(r, 'old', { ...base, id: 'plank', trackingType: 'duration' }).exercises[0]
     expect(out.repMin).toBeUndefined()
+  })
+})
+
+describe('routineUpdate', () => {
+  const r = (id: string, exerciseId: string, extra: Partial<RoutineExercise> = {}): RoutineExercise => ({ id, exerciseId, targetSets: 3, repMin: 8, repMax: 12, ...extra })
+  const routine: Routine = { id: 'R', name: 'Push', archived: false, exercises: [r('r1', 'bench'), r('r2', 'press', { restSec: 60 }), r('r3', 'dips')] }
+  const it_ = (id: string, exerciseId: string, extra: Partial<SessionExercise> = {}): SessionExercise => ({ id, exerciseId, targetSets: 3, repMin: 8, repMax: 12, ...extra })
+  const setsFor = (counts: Record<string, number>): SetLog[] =>
+    Object.entries(counts).flatMap(([itemId, n]) => Array.from({ length: n }, (_, k) => ({ id: `${itemId}${k}`, sessionId: 's', itemId, exerciseId: 'x', order: k, setType: 'working' as const })))
+
+  it('is null when the workout followed the plan, even with exercises skipped', () => {
+    const items = [it_('a', 'bench'), it_('b', 'press', { skipped: true, restSec: 30 }), it_('c', 'dips')]
+    expect(routineUpdate(routine, items, setsFor({ a: 3, b: 3, c: 3 }))).toBeNull()
+  })
+
+  it('reports order, added and removed exercises and set counts, keeping the routine\'s own fields', () => {
+    const items = [it_('b', 'press'), it_('a', 'bench'), it_('x', 'flyes', { repMin: 10, repMax: 15 })]
+    const u = routineUpdate(routine, items, setsFor({ b: 4, a: 3, x: 2 }))!
+    expect(u).toMatchObject({ reordered: true, added: ['flyes'], removed: ['dips'], sets: [{ exerciseId: 'press', from: 3, to: 4 }] })
+    expect(u.exercises.map((e) => [e.id === 'r2' || e.id === 'r1' ? e.id : 'new', e.exerciseId, e.targetSets])).toEqual([['r2', 'press', 4], ['r1', 'bench', 3], ['new', 'flyes', 2]])
+    expect(u.exercises[0].restSec).toBe(60) // rests stay the routine's
+    expect(u.exercises[2]).toMatchObject({ repMin: 10, repMax: 15 })
+  })
+
+  it('sees supersets linked during the workout as a change in order', () => {
+    const items = [it_('a', 'bench', { supersetGroup: 'g' }), it_('b', 'press', { supersetGroup: 'g' }), it_('c', 'dips')]
+    const u = routineUpdate(routine, items, setsFor({ a: 3, b: 3, c: 3 }))!
+    expect(u.reordered).toBe(true)
+    expect(u.exercises.map((e) => e.supersetGroup)).toEqual(['g', 'g', undefined])
   })
 })

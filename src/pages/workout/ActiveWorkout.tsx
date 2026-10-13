@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { db } from '../../db/db'
 import type { Exercise, SetLog, WorkoutSession } from '../../db/types'
 import {
-  addExercisesToSession, discardSession, finishSession, pause, resume, setGym, swapExercise, type SwapScope,
+  addExercisesToSession, discardSession, finishSession, moveItem, pause, resume, setGym, swapExercise, type SwapScope,
 } from '../../db/workout'
-import { groupPositions } from '../../lib/routines'
+import { groupPositions, routineUpdate, type RoutineChanges } from '../../lib/routines'
 import { formatClock } from '../../lib/units'
 import { useNotificationState } from '../../lib/platform/hooks'
 import { useNow } from '../../lib/useNow'
@@ -36,6 +38,11 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const [swapTo, setSwapTo] = useState<Exercise | null>(null)
   const [menu, setMenu] = useState(false)
   const [confirmFinish, setConfirmFinish] = useState(false)
+  const [routineChanges, setRoutineChanges] = useState<RoutineChanges | null>(null)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
   const notif = useNotificationState()
   useWakeLock(true)
 
@@ -55,7 +62,23 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const paused = session.status === 'paused'
   const doneCount = sets.filter((s) => s.doneAt !== undefined).length
 
-  const finish = async () => { await finishSession(session.id); nav(`/workout/summary/${session.id}`, { replace: true }) }
+  const end = async (updateRoutine?: RoutineChanges) => {
+    if (updateRoutine && session.routineId) await db.routines.update(session.routineId, { exercises: updateRoutine.exercises })
+    await finishSession(session.id)
+    nav(`/workout/summary/${session.id}`, { replace: true })
+  }
+  // A workout started from a routine whose plan changed on the way (order, exercises, sets) asks whether to keep that.
+  const finish = async () => {
+    const routine = session.routineId ? await db.routines.get(session.routineId) : undefined
+    const changes = routine ? routineUpdate(routine, session.exercises, sets) : null
+    if (changes) setRoutineChanges(changes)
+    else await end()
+  }
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (over && active.id !== over.id) void moveItem(session.id, String(active.id), String(over.id))
+  }
+  const removedNames = useLiveQuery(async () => new Map((await db.exercises.bulkGet(routineChanges?.removed ?? [])).filter((e): e is Exercise => !!e).map((e) => [e.id, e.name])), [routineChanges])
+  const nameOf = (exId: string) => exMap.get(exId)?.name ?? removedNames?.get(exId) ?? '…'
   const doSwap = async (scope: SwapScope) => {
     if (swapping && swapTo) await swapExercise(session.id, swapping, swapTo, scope)
     setSwapping(null); setSwapTo(null)
@@ -63,6 +86,8 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
 
   return (
     <section className="workout">
+      {/* Header and rest bar stay at the top, clear of the fields being typed in (and the keyboard). */}
+      <div className="wk-top">
       <div className="wk-head">
         <div>
           <strong className="wk-timer" role="timer">{formatClock(elapsedMs(session, now))}</strong>
@@ -73,6 +98,8 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
           <button className="primary" onClick={() => (doneCount ? void finish() : setConfirmFinish(true))}>{t('workout.finish')}</button>
           <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
         </div>
+      </div>
+      <RestBar session={session} />
       </div>
 
       {menu && (
@@ -93,17 +120,20 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       <MuscleCounter sets={sets} exercises={exMap} />
 
       {session.exercises.length === 0 && <EmptyState icon={<WorkoutIcon />}>{t('workout.emptyHint')}</EmptyState>}
-      <ul className="rx-list">
-        {session.exercises.map((item, i) => (
-          <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
-            sets={byItem.get(item.id) ?? []} pos={positions[i]}
-            units={units} rests={rests} onSwap={() => setSwapping(item.id)} />
-        ))}
-      </ul>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={session.exercises.map((e) => e.id)} strategy={verticalListSortingStrategy}>
+          <ul className="rx-list">
+            {session.exercises.map((item, i) => (
+              <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
+                sets={byItem.get(item.id) ?? []} pos={positions[i]}
+                units={units} rests={rests} onSwap={() => setSwapping(item.id)} />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
       <button className="primary wide" onClick={() => setAdding(true)}>+ {t('routines.addExercises')}</button>
 
       <ReminderSetup />
-      <RestBar session={session} />
       {restPopup && <RestPopup session={session} />}
 
       {adding && <ExercisePicker onClose={() => setAdding(false)} onAdd={(exs) => { void addExercisesToSession(session.id, exs); setAdding(false) }} />}
@@ -118,6 +148,23 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
             <button onClick={() => void doSwap('routine')}>{t('workout.scopeRoutine')}</button>
             <button onClick={() => void doSwap('all')}>{t('workout.scopeAll')}</button>
             <button onClick={() => { setSwapping(null); setSwapTo(null) }}>{t('common.cancel')}</button>
+          </div>
+        </div>
+      )}
+      {routineChanges && (
+        <div className="modal" role="dialog" aria-modal="true" aria-label={t('workout.updateRoutineTitle', { name: routineName ?? '' })}>
+          <div className="modal-card">
+            <h2>{t('workout.updateRoutineTitle', { name: routineName ?? '' })}</h2>
+            <p className="muted">{t('workout.updateRoutineBody')}</p>
+            <ul className="change-list">
+              {routineChanges.reordered && <li>{t('workout.changeOrder')}</li>}
+              {routineChanges.added.map((x, i) => <li key={`a${i}`}>{t('workout.changeAdded', { name: nameOf(x) })}</li>)}
+              {routineChanges.removed.map((x, i) => <li key={`r${i}`}>{t('workout.changeRemoved', { name: nameOf(x) })}</li>)}
+              {routineChanges.sets.map((c, i) => <li key={`s${i}`}>{t('workout.changeSets', { name: nameOf(c.exerciseId), from: c.from, to: c.to })}</li>)}
+            </ul>
+            <button className="primary" onClick={() => void end(routineChanges)}>{t('workout.updateRoutine')}</button>
+            <button onClick={() => void end()}>{t('workout.keepRoutine')}</button>
+            <button className="link plain" onClick={() => setRoutineChanges(null)}>{t('workout.keepGoing')}</button>
           </div>
         </div>
       )}

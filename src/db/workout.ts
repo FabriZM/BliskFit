@@ -1,6 +1,6 @@
 import { db, newId } from './db'
 import { DEFAULT_SETTINGS, type Exercise, type ID, type SessionExercise, type SetLog, type SetType, type WorkoutSession } from './types'
-import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
+import { defaultsFor, moveExercise, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
 import { VALUE_KEYS, clampToSession, fillFollowing, finalizeSession, isFilled, pauseSession, pickLastTime, restAfterSet, restDefaults, resumeSession, retimeSession, valuesOf, withoutCopied, type LastTime, type RestTimes, type SetValues } from '../lib/workout'
@@ -71,14 +71,11 @@ export const addExercisesToSession = (id: ID, exercises: Exercise[]) =>
     return { ...s, exercises: [...s.exercises, ...items] }
   })
 
-export const moveItem = (id: ID, itemId: ID, dir: -1 | 1) =>
+/** Moves an exercise to another position (dragged), keeping supersets valid. */
+export const moveItem = (id: ID, itemId: ID, toItemId: ID) =>
   mutate(id, (s) => {
-    const i = s.exercises.findIndex((x) => x.id === itemId)
-    const j = i + dir
-    if (i < 0 || j < 0 || j >= s.exercises.length) return
-    const list = [...s.exercises]
-    ;[list[i], list[j]] = [list[j], list[i]]
-    return { ...s, exercises: list }
+    const list = moveExercise(s.exercises, s.exercises.findIndex((x) => x.id === itemId), s.exercises.findIndex((x) => x.id === toItemId))
+    return list === s.exercises ? undefined : { ...s, exercises: list }
   })
 
 export const toggleSkip = (id: ID, itemId: ID) =>

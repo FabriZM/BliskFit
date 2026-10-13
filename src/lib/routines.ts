@@ -1,4 +1,4 @@
-import type { Exercise, Routine, RoutineExercise } from '../db/types'
+import type { Exercise, ID, Routine, RoutineExercise, SessionExercise, SetLog } from '../db/types'
 import { newId } from './id'
 
 export function defaultsFor(ex: Exercise): Omit<RoutineExercise, 'id' | 'exerciseId'> {
@@ -14,11 +14,14 @@ export function addExercises(r: Routine, exs: Exercise[]): Routine {
   return { ...r, exercises: [...r.exercises, ...added] }
 }
 
+/** What superset grouping needs from a routine's or a session's exercises. */
+type Grouped = { supersetGroup?: string; restSec?: number }
+
 /**
  * Keeps superset groups valid: members are contiguous, a group has 2+ members, and all members share the
  * last rest value set in the group (one shared timer per group). Non-contiguous runs of one id become separate groups.
  */
-export function normalizeGroups(exs: RoutineExercise[]): RoutineExercise[] {
+export function normalizeGroups<T extends Grouped>(exs: T[]): T[] {
   const out = exs.map((e) => ({ ...e }))
   const seen = new Set<string>()
   let i = 0
@@ -45,7 +48,7 @@ export function normalizeGroups(exs: RoutineExercise[]): RoutineExercise[] {
   return out
 }
 
-export function moveExercise(exs: RoutineExercise[], from: number, to: number): RoutineExercise[] {
+export function moveExercise<T extends Grouped>(exs: T[], from: number, to: number): T[] {
   if (from === to || from < 0 || to < 0 || from >= exs.length || to >= exs.length) return exs
   const next = [...exs]
   const [item] = next.splice(from, 1)
@@ -142,4 +145,53 @@ export function replaceExercise(r: Routine, oldId: string, next: Exercise, all =
       return out
     }),
   }
+}
+
+/** What a workout changed in its routine's plan (see routineUpdate). */
+export interface RoutineChanges {
+  /** The routine's exercises as the workout left them. */
+  exercises: RoutineExercise[]
+  added: ID[]
+  removed: ID[]
+  /** Exercises reordered, or supersets linked or split. */
+  reordered: boolean
+  /** Exercises whose number of sets changed. */
+  sets: { exerciseId: ID; from: number; to: number }[]
+}
+
+/** Each exercise with the index of the first member of its superset (or its own), to compare grouping. */
+const layout = (exs: { exerciseId: ID; supersetGroup?: string }[]) =>
+  exs.map((e, i) => `${e.exerciseId}@${e.supersetGroup ? exs.findIndex((x) => x.supersetGroup === e.supersetGroup) : i}`).join('|')
+
+/**
+ * The routine as this workout left it: exercises in the workout's order and supersets, exercises added or removed
+ * during it, and each one's number of sets (done or not). Rep ranges and rests stay the routine's; skipping an
+ * exercise doesn't count. Workout exercises are matched to the routine's by exercise, in order. Null if nothing
+ * changed.
+ */
+export function routineUpdate(routine: Routine, items: SessionExercise[], sets: SetLog[]): RoutineChanges | null {
+  const unused = [...routine.exercises]
+  const matched = items.map((it) => {
+    const k = unused.findIndex((r) => r.exerciseId === it.exerciseId)
+    return k < 0 ? undefined : unused.splice(k, 1)[0]
+  })
+  const count = (it: SessionExercise) => Math.max(1, sets.filter((s) => s.itemId === it.id).length)
+  const exercises = normalizeGroups(items.map((it, i): RoutineExercise => {
+    const r = matched[i]
+    const e: RoutineExercise = r ? { ...r, targetSets: count(it), supersetGroup: it.supersetGroup }
+      : { id: newId(), exerciseId: it.exerciseId, targetSets: count(it), repMin: it.repMin, repMax: it.repMax, supersetGroup: it.supersetGroup }
+    if (e.supersetGroup === undefined) delete e.supersetGroup
+    for (const k of ['repMin', 'repMax'] as const) if (e[k] === undefined) delete e[k]
+    return e
+  }))
+  const added = items.filter((_, i) => !matched[i]).map((it) => it.exerciseId)
+  const removed = unused.map((r) => r.exerciseId)
+  const kept = routine.exercises.filter((r) => !unused.includes(r))
+  const reordered = layout(kept) !== layout(exercises.filter((_, i) => matched[i]))
+  const setChanges = items.flatMap((it, i) => {
+    const r = matched[i]
+    return r && r.targetSets !== count(it) ? [{ exerciseId: it.exerciseId, from: r.targetSets, to: count(it) }] : []
+  })
+  if (!added.length && !removed.length && !reordered && !setChanges.length) return null
+  return { exercises, added, removed, reordered, sets: setChanges }
 }

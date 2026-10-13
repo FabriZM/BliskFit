@@ -47,7 +47,7 @@ export default function RestPopup({ session }: { session: WorkoutSession }) {
         <div className="rest-actions">
           <button onClick={() => void adjustRest(session.id, -15)}>−15</button>
           <button onClick={() => void adjustRest(session.id, 15)}>+15</button>
-          <button onClick={() => { void clearRest(session.id); close() }}>{t('workout.skipRest')}</button>
+          <button onClick={() => { void clearRest(session.id); close() }}>{over ? t('common.close') : t('workout.skipRest')}</button>
         </div>
         <button className="primary" onClick={close}>{t('workout.dismiss')}</button>
       </div>

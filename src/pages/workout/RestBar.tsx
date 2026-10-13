@@ -10,7 +10,8 @@ import { useNow } from '../../lib/useNow'
 import BasiliskEye from '../../components/BasiliskEye'
 
 /**
- * Sticky rest countdown derived from stored timestamps; vibrates and beeps once when it reaches zero. The basilisk's
+ * Rest countdown in the workout's sticky header, derived from stored timestamps; the fill drains from right to left.
+ * It vibrates and beeps once when it reaches zero. The basilisk's
  * pupil narrows from round to a slit as rest runs out: at zero the gaze is locked, time to lift.
  */
 export default function RestBar({ session }: { session: WorkoutSession }) {
@@ -36,7 +37,7 @@ export default function RestBar({ session }: { session: WorkoutSession }) {
   const total = Math.max(1, rest.endsAt - rest.startedAt)
   return (
     <div className={`restbar${over ? ' over' : ''}`} role="timer" aria-live="off">
-      <div className="restbar-fill" style={{ width: `${Math.min(100, Math.max(0, (1 - remaining / total) * 100))}%` }} />
+      <div className="restbar-fill" style={{ width: `${Math.min(100, Math.max(0, (remaining / total) * 100))}%` }} />
       <button onClick={() => void adjustRest(session.id, -15)}>−15</button>
       <strong><BasiliskEye className="rest-eye" size={22} pupil={over ? 0 : remaining / total} />{over ? t('workout.restOver') : `${t('workout.rest')} ${formatClock(remaining)}`}</strong>
       <button onClick={() => void adjustRest(session.id, 15)}>+15</button>

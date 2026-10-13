@@ -2,6 +2,8 @@ import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { db } from '../../db/db'
 import type { Exercise, SessionExercise, SetLog, Units, WorkoutSession } from '../../db/types'
 import { addSet, completeSet, deleteSet, loadLastTime, removeItem, setWarmups, toggleSkip, uncompleteSet, updateSet, editSet } from '../../db/workout'
@@ -20,7 +22,7 @@ import ExerciseNotes from './ExerciseNotes'
 import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
 import SetRow, { SetsHeader } from './SetRow'
-import { BulbIcon, FlameIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
+import { BulbIcon, FlameIcon, GripIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
 
 // Rest-over notifications are on by default: the first completed set (a tap, which browsers require for the prompt)
 // asks for permission if it was never answered. Blocked stays blocked; the workout menu says so.
@@ -41,6 +43,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   onSwap: () => void
 }) {
   const { t } = useTranslation()
+  // Dragged by its handle to reorder the workout (ActiveWorkout owns the drag context).
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [menu, setMenu] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [addingNote, setAddingNote] = useState(false)
@@ -133,12 +137,14 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const cancelSwipe = () => { drag.current = null; setDx(0) }
 
   return (
-    <li className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}`}>
+    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}${isDragging ? ' dragging' : ''}`}>
       <div className="swipe-bg" aria-hidden><TrashIcon /> {t('workout.removeExercise')}</div>
       <div className="swipe-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={cancelSwipe}>
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
+        <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         {/* The exercise page's back button returns here (see ExerciseDetail). */}
         <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: '/workout' }}>{exercise?.name ?? '…'}</Link>
         <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>

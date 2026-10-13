@@ -154,7 +154,7 @@ describe('live workout flow', () => {
     await addExercisesToSession(id, [(await db.exercises.get('x:Plank'))!])
     let s = (await db.sessions.get(id))!
     expect(s.exercises).toHaveLength(3)
-    await moveItem(id, s.exercises[2].id, -1)
+    await moveItem(id, s.exercises[2].id, s.exercises[1].id)
     s = (await db.sessions.get(id))!
     expect(s.exercises[1].exerciseId).toBe('x:Plank')
     await toggleSkip(id, press.id)
