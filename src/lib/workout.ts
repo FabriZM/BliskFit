@@ -1,8 +1,6 @@
-import type { Exercise, ID, SessionExercise, SetLog, SetValueKey, TrackingType, Units, WorkoutSession } from '../db/types'
-import { WARMUP_REST_SEC } from './warmup'
+import type { Exercise, ID, SessionExercise, SetLog, SetValueKey, Settings, TrackingType, Units, WorkoutSession } from '../db/types'
 
 export const FORGOTTEN_MS = 2 * 60 * 60 * 1000
-const SEC = 1000
 
 // ---- time -------------------------------------------------------------------------------------
 
@@ -220,24 +218,39 @@ export const lastSetFor = (last: LastTime | undefined, workingIndex: number): Se
 
 // ---- rest -------------------------------------------------------------------------------------
 
-export type RestSource = 'routine' | 'custom' | 'learned' | 'exercise' | 'default'
+export type RestSource = 'routine' | 'custom' | 'exercise' | 'default'
+/** Rest timers go by the kind of set coming next; to-failure sets are working sets. */
+export type RestKind = 'working' | 'drop' | 'warmup'
+export type RestTimes = Record<RestKind, number>
 
-export function restFor(item: SessionExercise, ex: Exercise | undefined, defaultSec: number): { sec: number; source: RestSource } {
-  // Order: this exercise in the routine/session > your saved "always" value > learned > exercise default > global.
-  if (item.restSec !== undefined) return { sec: item.restSec, source: 'routine' }
-  if (ex?.customRestSec !== undefined) return { sec: ex.customRestSec, source: 'custom' }
-  if (ex?.learnedRestSec !== undefined) return { sec: ex.learnedRestSec, source: 'learned' }
-  if (ex?.defaultRestSec !== undefined) return { sec: ex.defaultRestSec, source: 'exercise' }
-  return { sec: defaultSec, source: 'default' }
+/** The app's rest timers (Settings). */
+export const restDefaults = (s: Pick<Settings, 'defaultRestSec' | 'dropRestSec' | 'warmupRestSec'>): RestTimes =>
+  ({ working: s.defaultRestSec, drop: s.dropRestSec, warmup: s.warmupRestSec })
+
+export function restFor(item: SessionExercise, ex: Exercise | undefined, defaults: RestTimes, kind: RestKind = 'working'): { sec: number; source: RestSource } {
+  // Order: this session (or its routine) > your saved "always" value > the exercise's default (working only) > the app's.
+  const [session, custom, exercise] = kind === 'drop' ? [item.dropRestSec, ex?.customDropRestSec, undefined]
+    : kind === 'warmup' ? [item.warmupRestSec, ex?.customWarmupRestSec, undefined]
+      : [item.restSec, ex?.customRestSec, ex?.defaultRestSec]
+  if (session !== undefined) return { sec: session, source: 'routine' }
+  if (custom !== undefined) return { sec: custom, source: 'custom' }
+  if (exercise !== undefined) return { sec: exercise, source: 'exercise' }
+  return { sec: defaults[kind], source: 'default' }
+}
+
+/** The kind of rest after finishing `sorted[i]`: the next set's in this exercise, or working once it's all done. */
+export function restKindAfter(sorted: SetLog[], i: number): RestKind {
+  const next = sorted.slice(i + 1).find((s) => s.doneAt === undefined)
+  return next?.setType === 'drop' ? 'drop' : next?.setType === 'warmup' ? 'warmup' : 'working'
 }
 
 /**
- * Rest to start after finishing `sorted[i]` (its exercise's sets, in order), or null for none: a short one between
- * warm-ups, and none until the last member of a superset.
+ * Rest to start after finishing `sorted[i]` (its exercise's sets, in order), or null for none: timed for the set
+ * coming next (so the last warm-up gets the full working rest), and none until the last member of a superset.
  */
-export function restAfterSet(sorted: SetLog[], i: number, restSec: number, items: SessionExercise[], itemId: ID): number | null {
-  const sec = sorted[i].setType === 'warmup' && sorted[i + 1]?.setType === 'warmup' ? Math.min(restSec, WARMUP_REST_SEC) : restSec
-  return shouldStartRest(items, itemId) && sec > 0 ? sec : null
+export function restAfterSet(sorted: SetLog[], i: number, item: SessionExercise, ex: Exercise | undefined, defaults: RestTimes, items: SessionExercise[]): number | null {
+  const sec = restFor(item, ex, defaults, restKindAfter(sorted, i)).sec
+  return shouldStartRest(items, item.id) && sec > 0 ? sec : null
 }
 
 /** Supersets/circuits rest once, after the last member of the group; singles rest after every set. */
@@ -249,30 +262,3 @@ export function shouldStartRest(items: SessionExercise[], itemId: ID): boolean {
   return members[members.length - 1]?.id === itemId
 }
 
-/**
- * Seconds between consecutive done sets of one exercise that look like rests (20s–10min). Warm-ups are left out:
- * their short rests would pull the learned rest of the working sets down.
- */
-export function restGaps(sets: SetLog[]): number[] {
-  const t = sets.filter((x) => x.doneAt !== undefined && x.setType !== 'warmup').map((x) => x.doneAt!).sort((a, b) => a - b)
-  const gaps: number[] = []
-  for (let i = 1; i < t.length; i++) {
-    const g = (t[i] - t[i - 1]) / SEC
-    if (g >= 20 && g <= 600) gaps.push(g)
-  }
-  return gaps
-}
-
-const median = (xs: number[]) => {
-  const s = [...xs].sort((a, b) => a - b)
-  const m = Math.floor(s.length / 2)
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
-}
-const round5 = (n: number) => Math.round(n / 5) * 5
-
-/** Blend this session's typical rest into the exercise's learned rest (70% history, 30% new). */
-export function learnRest(prev: number | undefined, gaps: number[]): number | undefined {
-  if (!gaps.length) return prev
-  const m = median(gaps)
-  return round5(prev === undefined ? m : 0.7 * prev + 0.3 * m)
-}

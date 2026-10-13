@@ -3,40 +3,44 @@ import { useTranslation } from 'react-i18next'
 import NumInput from '../../components/NumInput'
 import type { Exercise, SessionExercise, WorkoutSession } from '../../db/types'
 import { clearExerciseRest, setExerciseRest, setSessionRest } from '../../db/workout'
-import { formatClock } from '../../lib/units'
-import { restFor } from '../../lib/workout'
+import { restFor, type RestKind, type RestTimes } from '../../lib/workout'
 
-const PRESETS = [30, 60, 90, 120, 180]
+const KINDS: RestKind[] = ['working', 'drop', 'warmup']
 
-/** Change this exercise's rest time for the running workout only, or for it from now on. 0 = no rest timer. */
-export default function RestEditor({ session, item, exercise, defaultRest, onClose }: {
-  session: WorkoutSession; item: SessionExercise; exercise?: Exercise; defaultRest: number; onClose: () => void
+/**
+ * This exercise's rest timers, by the kind of set coming next (to-failure sets use the working one), for the
+ * running workout only or from now on. 0 = no timer.
+ */
+export default function RestEditor({ session, item, exercise, rests, onClose }: {
+  session: WorkoutSession; item: SessionExercise; exercise?: Exercise; rests: RestTimes; onClose: () => void
 }) {
   const { t } = useTranslation()
-  const current = restFor(item, exercise, defaultRest)
-  const [sec, setSec] = useState(current.sec)
+  const [sec, setSec] = useState<RestTimes>(() => ({
+    working: restFor(item, exercise, rests, 'working').sec,
+    drop: restFor(item, exercise, rests, 'drop').sec,
+    warmup: restFor(item, exercise, rests, 'warmup').sec,
+  }))
+  const set = (k: RestKind, v: number) => setSec((s) => ({ ...s, [k]: Math.min(3600, Math.max(0, v)) }))
   const ctx = { sessionId: session.id, itemId: item.id }
-  const step = (d: number) => setSec((v) => Math.min(3600, Math.max(0, v + d)))
   const done = async (action: () => Promise<unknown>) => { await action(); onClose() }
 
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-label={t('workout.restTimer')} onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <h2>{t('workout.restTimer')}</h2>
-        <p className="muted small">{exercise?.name} · {t('workout.restNow', { time: current.sec === 0 ? t('workout.restOff') : formatClock(current.sec * 1000) })} ({t(`workout.restSource_${current.source}`)})</p>
+        <p className="muted small">{exercise?.name}</p>
 
-        <div className="rest-stepper">
-          <button aria-label="−15" onClick={() => step(-15)}>−15</button>
-          <label className="rest-field">
-            <NumInput label={t('workout.restSeconds')} value={sec} min={0} max={3600} onCommit={(v) => v !== undefined && setSec(v)} />
-            <span>{t('workout.secUnit')}</span>
-          </label>
-          <button aria-label="+15" onClick={() => step(15)}>+15</button>
-        </div>
-        <p className="muted small center">{sec === 0 ? t('workout.restOffHint') : formatClock(sec * 1000)}</p>
-        <div className="chips center">
-          {PRESETS.map((p) => (
-            <button key={p} className={`chip${sec === p ? ' on' : ''}`} aria-pressed={sec === p} onClick={() => setSec(p)}>{formatClock(p * 1000)}</button>
+        <div className="rest-kinds">
+          {KINDS.map((k) => (
+            <div key={k} className="rest-kind">
+              <span className="rest-kind-name">{t(`workout.restKind.${k}`)}</span>
+              <button aria-label={`${t(`workout.restKind.${k}`)} −15`} onClick={() => set(k, sec[k] - 15)}>−15</button>
+              <label className="rest-field">
+                <NumInput label={`${t(`workout.restKind.${k}`)} (${t('workout.secUnit')})`} value={sec[k]} min={0} max={3600} onCommit={(v) => v !== undefined && set(k, v)} />
+                <span>{sec[k] === 0 ? t('workout.restOff') : t('workout.secUnit')}</span>
+              </label>
+              <button aria-label={`${t(`workout.restKind.${k}`)} +15`} onClick={() => set(k, sec[k] + 15)}>+15</button>
+            </div>
           ))}
         </div>
 

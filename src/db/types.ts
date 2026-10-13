@@ -36,10 +36,15 @@ export interface Exercise {
   photo?: Blob
   demoUrl?: string
   videoUrl?: string
+  /** Rest before working sets, from the exercise form. */
   defaultRestSec?: number
-  learnedRestSec?: number
-  /** Set by the user from a workout ("always for this exercise"); wins over learned and default rest. 0 = no timer. */
+  /**
+   * Rest before working (and to-failure), drop and warm-up sets, set from a workout ("always for this exercise");
+   * they win over the exercise's and the app's defaults. 0 = no timer.
+   */
   customRestSec?: number
+  customDropRestSec?: number
+  customWarmupRestSec?: number
   /** Unit printed on this exercise's equipment (e.g. a machine in lb); absent = the app's units. Weights stay stored in kg. */
   weightUnit?: Units
   /** Plate calculator on or off; absent = on for barbells and EZ bars (see lib/plates). */
@@ -123,7 +128,11 @@ export interface SessionExercise {
   targetSets: number
   repMin?: number
   repMax?: number
+  /** Rest before working sets for this session (from the routine, or "this session only"). */
   restSec?: number
+  /** "This session only" rest before drop sets and warm-ups. */
+  dropRestSec?: number
+  warmupRestSec?: number
   supersetGroup?: string
   skipped?: boolean
 }
@@ -242,7 +251,10 @@ export interface Settings {
   weekStartDay: number
   units: Units
   language: Language
+  /** Rest timers by the kind of set coming next, unless the exercise has its own: working (and to failure), drop, warm-up. */
   defaultRestSec: number
+  dropRestSec: number
+  warmupRestSec: number
   prBadges: boolean
   /** Weekdays (0 = Sunday) with a training reminder; empty = reminders off. */
   reminderDays: number[]
@@ -269,6 +281,8 @@ export const DEFAULT_SETTINGS: Settings = {
   units: 'kg',
   language: 'en',
   defaultRestSec: 90,
+  dropRestSec: 15,
+  warmupRestSec: 45,
   prBadges: true,
   reminderDays: [],
   reminderTime: '18:00',

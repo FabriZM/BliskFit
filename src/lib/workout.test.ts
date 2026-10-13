@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise, SessionExercise, SetLog, WorkoutSession } from '../db/types'
 import {
-  FORGOTTEN_MS, elapsedMs, fillFollowing, finalizeSession, forgottenDueAt, forgottenEndTime, isFilled, isForgotten, learnRest,
-  muscleSetCounts, pauseSession, pickLastTime, restFor, restGaps, resumeSession, sessionStats, shouldStartRest,
+  FORGOTTEN_MS, elapsedMs, fillFollowing, finalizeSession, forgottenDueAt, forgottenEndTime, isFilled, isForgotten,
+  muscleSetCounts, pauseSession, pickLastTime, restAfterSet, restFor, restKindAfter, resumeSession, sessionStats, shouldStartRest,
 } from './workout'
 
 const MIN = 60_000, H = 60 * MIN
@@ -113,16 +113,26 @@ describe('pickLastTime', () => {
 describe('rest', () => {
   const item = (extra: Partial<SessionExercise> = {}): SessionExercise => ({ id: 'i', exerciseId: 'e', targetSets: 3, ...extra })
   const ex = (extra: Partial<Exercise> = {}): Exercise => ({ id: 'e', name: 'x', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom', ...extra })
-  it('your saved "always" value beats learned and the exercise default, but not a routine/session override', () => {
-    expect(restFor(item({ restSec: 45 }), ex({ customRestSec: 150, learnedRestSec: 100 }), 90)).toEqual({ sec: 45, source: 'routine' })
-    expect(restFor(item(), ex({ customRestSec: 150, learnedRestSec: 100, defaultRestSec: 60 }), 90)).toEqual({ sec: 150, source: 'custom' })
-    expect(restFor(item(), ex({ customRestSec: 0, learnedRestSec: 100 }), 90)).toEqual({ sec: 0, source: 'custom' }) // 0 = no timer, not "unset"
+  const D = { working: 90, drop: 15, warmup: 45 }
+  it('your saved "always" value beats the exercise default, but not a routine/session override', () => {
+    expect(restFor(item({ restSec: 45 }), ex({ customRestSec: 150 }), D)).toEqual({ sec: 45, source: 'routine' })
+    expect(restFor(item(), ex({ customRestSec: 150, defaultRestSec: 60 }), D)).toEqual({ sec: 150, source: 'custom' })
+    expect(restFor(item(), ex({ customRestSec: 0 }), D)).toEqual({ sec: 0, source: 'custom' }) // 0 = no timer, not "unset"
+    expect(restFor(item(), ex({ defaultRestSec: 60 }), D)).toEqual({ sec: 60, source: 'exercise' })
+    expect(restFor(item(), undefined, D)).toEqual({ sec: 90, source: 'default' })
   })
-  it('resolves routine > learned > exercise > default', () => {
-    expect(restFor(item({ restSec: 45 }), ex({ learnedRestSec: 100 }), 90)).toEqual({ sec: 45, source: 'routine' })
-    expect(restFor(item(), ex({ learnedRestSec: 100, defaultRestSec: 60 }), 90)).toEqual({ sec: 100, source: 'learned' })
-    expect(restFor(item(), ex({ defaultRestSec: 60 }), 90)).toEqual({ sec: 60, source: 'exercise' })
-    expect(restFor(item(), undefined, 90)).toEqual({ sec: 90, source: 'default' })
+  it('drop and warm-up timers resolve the same way, each on its own', () => {
+    const e = ex({ customRestSec: 150, customDropRestSec: 5, defaultRestSec: 60 })
+    expect(restFor(item(), e, D, 'drop')).toEqual({ sec: 5, source: 'custom' })
+    expect(restFor(item(), e, D, 'warmup')).toEqual({ sec: 45, source: 'default' }) // the exercise default is for working sets
+    expect(restFor(item({ restSec: 30, warmupRestSec: 20 }), e, D, 'warmup')).toEqual({ sec: 20, source: 'routine' })
+  })
+  it('times the rest for the set coming next; failure sets are working sets', () => {
+    const sorted = [set({ id: 'w1', setType: 'warmup' }), set({ id: 'w2', setType: 'warmup' }), set({ id: 'a', failure: true }), set({ id: 'd', setType: 'drop' })]
+    expect([0, 1, 2, 3].map((i) => restKindAfter(sorted, i))).toEqual(['warmup', 'working', 'drop', 'working'])
+    const it_ = item({ id: 'x' })
+    expect(restAfterSet(sorted, 1, it_, ex({ customWarmupRestSec: 30 }), D, [it_])).toBe(90) // the last warm-up gets the full rest
+    expect(restAfterSet(sorted, 2, it_, ex({ customDropRestSec: 0 }), D, [it_])).toBeNull() // 0 = no timer
   })
   it('rests once per round of a superset, after its last member', () => {
     const items = [item({ id: 'a', supersetGroup: 'g' }), item({ id: 'b', supersetGroup: 'g' }), item({ id: 'c' })]
@@ -130,15 +140,6 @@ describe('rest', () => {
     expect(shouldStartRest(items, 'b')).toBe(true)
     expect(shouldStartRest(items, 'c')).toBe(true)
     expect(shouldStartRest([items[0], { ...items[1], skipped: true }], 'a')).toBe(true)
-  })
-  it('learns from plausible gaps only and blends with history', () => {
-    const at = (...secs: number[]) => secs.map((s) => set({ doneAt: s * 1000 }))
-    expect(restGaps(at(0, 90, 95, 200, 2000))).toEqual([90, 105])
-    const warm = (sec: number) => set({ doneAt: sec * 1000, setType: 'warmup' })
-    expect(restGaps([warm(0), warm(40), ...at(100, 220)])).toEqual([120])
-    expect(learnRest(undefined, [90, 105, 120])).toBe(105)
-    expect(learnRest(120, [60])).toBe(100)
-    expect(learnRest(120, [])).toBe(120)
   })
 })
 

@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS, type Exercise, type ID, type SessionExercise, type Se
 import { defaultsFor, replaceExercise, setRest } from '../lib/routines'
 import { getActiveProgramId } from './programs'
 import { programIncludesRoutine } from '../lib/gymVisits'
-import { VALUE_KEYS, fillFollowing, finalizeSession, isFilled, learnRest, pauseSession, pickLastTime, restAfterSet, restFor, restGaps, resumeSession, valuesOf, withoutCopied, type LastTime, type SetValues } from '../lib/workout'
+import { VALUE_KEYS, fillFollowing, finalizeSession, isFilled, pauseSession, pickLastTime, restAfterSet, restDefaults, resumeSession, valuesOf, withoutCopied, type LastTime, type RestTimes, type SetValues } from '../lib/workout'
 
 export type SwapScope = 'session' | 'routine' | 'all'
 
@@ -189,8 +189,8 @@ export async function logSet(setId: ID, values: SetValues | undefined): Promise<
     await db.setLogs.update(setId, values)
   }
   const sorted = itemSets.sort((a, b) => a.order - b.order)
-  const rest = restFor(item, exercise, settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec).sec
-  await completeSet(setId, restAfterSet(sorted, sorted.findIndex((x) => x.id === setId), rest, session.exercises, item.id))
+  const defaults = restDefaults({ ...DEFAULT_SETTINGS, ...settings })
+  await completeSet(setId, restAfterSet(sorted, sorted.findIndex((x) => x.id === setId), item, exercise, defaults, session.exercises))
   return true
 }
 
@@ -231,19 +231,13 @@ export const swapExercise = (id: ID, itemId: ID, next: Exercise, scope: SwapScop
     return { ...s, exercises }
   })
 
-/** Ends the session (default: now), drops blank sets, and updates each exercise's learned rest. */
+/** Ends the session (default: now) and drops blank sets. */
 export async function finishSession(id: ID, endedAt = Date.now()): Promise<void> {
-  await db.transaction('rw', db.sessions, db.setLogs, db.exercises, async () => {
+  await db.transaction('rw', db.sessions, db.setLogs, async () => {
     const s = await db.sessions.get(id)
     if (!s) return
     const all = await db.setLogs.where('sessionId').equals(id).toArray()
     await db.setLogs.bulkDelete(all.filter((x) => x.doneAt === undefined).map((x) => x.id))
-    const done = all.filter((x) => x.doneAt !== undefined)
-    for (const exId of new Set(done.map((x) => x.exerciseId))) {
-      const ex = await db.exercises.get(exId)
-      const learned = learnRest(ex?.learnedRestSec, restGaps(done.filter((x) => x.exerciseId === exId)))
-      if (ex && learned !== undefined && learned !== ex.learnedRestSec) await db.exercises.update(exId, { learnedRestSec: learned })
-    }
     await db.sessions.put(finalizeSession(s, endedAt))
   })
 }
@@ -274,41 +268,54 @@ export async function shiftSession(id: ID, newStartedAt: number): Promise<void> 
 }
 
 /** Rest for this exercise in this session only (a superset/circuit shares one rest, so it applies to the group). */
-export const setSessionRest = (id: ID, itemId: ID, sec: number | undefined) =>
+/** A session's exercise list with `rests` set on item `i` (and its superset, which rests as one). */
+function withRests(exs: SessionExercise[], i: number, rests: Partial<RestTimes> | undefined): SessionExercise[] {
+  const group = exs[i].supersetGroup
+  return setRest(exs, i, rests?.working).map((e, k) => {
+    if (k !== i && !(group && e.supersetGroup === group)) return e
+    const next = { ...e, dropRestSec: rests?.drop, warmupRestSec: rests?.warmup }
+    if (next.dropRestSec === undefined) delete next.dropRestSec
+    if (next.warmupRestSec === undefined) delete next.warmupRestSec
+    return next
+  })
+}
+
+/** "This session only": the rest timers for this exercise (and its superset) in the running workout. */
+export const setSessionRest = (id: ID, itemId: ID, rests: RestTimes) =>
   mutate(id, (s) => {
     const i = s.exercises.findIndex((x) => x.id === itemId)
-    return i < 0 ? undefined : { ...s, exercises: setRest(s.exercises, i, sec) }
+    return i < 0 ? undefined : { ...s, exercises: withRests(s.exercises, i, rests) }
   })
 
 /**
- * "This and future sessions": remembers `sec` on the exercise, and also updates any routine that already
- * overrides this exercise's rest (so an older routine value can't silently beat your new choice). With a
+ * "This and future sessions": remembers the timers on the exercise, and also updates any routine that already
+ * overrides this exercise's working rest (so an older routine value can't silently beat your new choice). With a
  * session context it applies to the running workout too.
  */
-export async function setExerciseRest(exerciseId: ID, sec: number, ctx?: { sessionId: ID; itemId: ID }): Promise<void> {
+export async function setExerciseRest(exerciseId: ID, rests: RestTimes, ctx?: { sessionId: ID; itemId: ID }): Promise<void> {
   await db.transaction('rw', db.exercises, db.routines, db.sessions, async () => {
-    await db.exercises.update(exerciseId, { customRestSec: sec })
+    await db.exercises.update(exerciseId, { customRestSec: rests.working, customDropRestSec: rests.drop, customWarmupRestSec: rests.warmup })
     for (const r of await db.routines.toArray()) {
       let list = r.exercises
-      list.forEach((e, i) => { if (e.exerciseId === exerciseId && e.restSec !== undefined && e.restSec !== sec) list = setRest(list, i, sec) })
+      list.forEach((e, i) => { if (e.exerciseId === exerciseId && e.restSec !== undefined && e.restSec !== rests.working) list = setRest(list, i, rests.working) })
       if (list !== r.exercises) await db.routines.put({ ...r, exercises: list })
     }
     if (ctx) {
       const s = await db.sessions.get(ctx.sessionId)
       const i = s?.exercises.findIndex((x) => x.id === ctx.itemId) ?? -1
-      if (s && i >= 0) await db.sessions.put({ ...s, exercises: setRest(s.exercises, i, sec) })
+      if (s && i >= 0) await db.sessions.put({ ...s, exercises: withRests(s.exercises, i, rests) })
     }
   })
 }
 
-/** Back to automatic: forgets the saved value (and this session's override); routine overrides are left alone. */
+/** Back to the defaults: forgets the saved timers (and this session's overrides); routine overrides are left alone. */
 export async function clearExerciseRest(exerciseId: ID, ctx?: { sessionId: ID; itemId: ID }): Promise<void> {
   await db.transaction('rw', db.exercises, db.sessions, async () => {
-    await db.exercises.update(exerciseId, { customRestSec: undefined })
+    await db.exercises.update(exerciseId, { customRestSec: undefined, customDropRestSec: undefined, customWarmupRestSec: undefined })
     if (ctx) {
       const s = await db.sessions.get(ctx.sessionId)
       const i = s?.exercises.findIndex((x) => x.id === ctx.itemId) ?? -1
-      if (s && i >= 0) await db.sessions.put({ ...s, exercises: setRest(s.exercises, i, undefined) })
+      if (s && i >= 0) await db.sessions.put({ ...s, exercises: withRests(s.exercises, i, undefined) })
     }
   })
 }

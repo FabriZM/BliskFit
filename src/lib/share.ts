@@ -8,7 +8,7 @@ import type { Exercise, ID, Program, Routine, RoutineExercise, TrackingType } fr
 export const SHARE_APP = 'bliskfit-share'
 export const SHARE_FORMAT = 1
 
-/** Exercise definition as shared: what's needed to recreate a custom one. Photos and learned rest stay home. */
+/** Exercise definition as shared: what's needed to recreate a custom one. Photos and your rest timers stay home. */
 export type SharedExercise = Pick<Exercise, 'id' | 'name' | 'trackingType' | 'equipment' | 'mechanic' | 'primaryMuscleIds'
   | 'secondaryMuscleIds' | 'demoUrl' | 'videoUrl' | 'defaultRestSec' | 'description' | 'instructions'>
 

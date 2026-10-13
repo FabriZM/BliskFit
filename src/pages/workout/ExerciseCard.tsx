@@ -13,7 +13,7 @@ import { computePRs } from '../../lib/prs'
 import { barWeight, isPlateLoaded, setUnit, usesWeight, weightUnitFor } from '../../lib/plates'
 import { displayToKg, formatClock, kgToDisplay } from '../../lib/units'
 import EquipmentSettings from '../../components/EquipmentSettings'
-import { copyValues, lastSetFor, restAfterSet, restFor, workingIndexes } from '../../lib/workout'
+import { copyValues, lastSetFor, restAfterSet, restFor, workingIndexes, type RestTimes } from '../../lib/workout'
 import { warmupSets } from '../../lib/warmup'
 import { useStartingSuggestion } from './useStartingSuggestion'
 import ExerciseNotes from './ExerciseNotes'
@@ -28,7 +28,7 @@ const askForNotifications = () => {
   void platform.notifications.permission().then((p) => { if (p === 'prompt') void platform.notifications.request() })
 }
 
-export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, defaultRest, onSwap }: {
+export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, rests, onSwap }: {
   session: WorkoutSession
   item: SessionExercise
   exercise?: Exercise
@@ -36,7 +36,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   pos: GroupPos
   /** The app's units; the exercise's own unit wins for its weights. */
   units: Units
-  defaultRest: number
+  /** The app's rest timers. */
+  rests: RestTimes
   onSwap: () => void
 }) {
   const { t } = useTranslation()
@@ -54,7 +55,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const units = weightUnitFor(exercise, appUnits)
   const barOf = exercise && isPlateLoaded(exercise) ? (u: Units) => barWeight(exercise, u) : undefined
   const sorted = [...sets].sort((a, b) => a.order - b.order)
-  const rest = restFor(item, exercise, defaultRest)
+  const rest = restFor(item, exercise, rests)
   const doneCount = sorted.filter((s) => s.doneAt !== undefined).length
 
   const last = useLiveQuery(() => loadLastTime(item.exerciseId, session), [item.exerciseId, session.gymId, session.id])
@@ -145,7 +146,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       <p className="muted small meta">
         <button className="icon tiny" aria-label={t('workout.addNote')} title={t('workout.addNote')} onClick={() => setAddingNote(true)}><NoteIcon /></button>
         {item.targetSets} × {item.repMin ? (item.repMax && item.repMax !== item.repMin ? `${item.repMin}–${item.repMax}` : item.repMin) : '—'}
-        {' · '}{t('workout.rest')} {rest.sec === 0 ? t('workout.restOff') : formatClock(rest.sec * 1000)}{rest.source === 'learned' ? ` (${t('workout.learned')})` : rest.source === 'custom' ? ` (${t('workout.custom')})` : ''}
+        {' · '}{t('workout.rest')} {rest.sec === 0 ? t('workout.restOff') : formatClock(rest.sec * 1000)}{rest.source === 'custom' ? ` (${t('workout.custom')})` : ''}
         {item.skipped ? ` · ${t('workout.skipped')}` : ''}
       </p>
 
@@ -196,7 +197,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 onDone={() => {
                   primeAudio()
                   askForNotifications()
-                  void completeSet(s.id, restAfterSet(sorted, i, rest.sec, session.exercises, item.id))
+                  void completeSet(s.id, restAfterSet(sorted, i, item, exercise, rests, session.exercises))
                 }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onUseLast={() => { const src = workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined; if (src) void updateSet(s.id, copyOf(src)) }}
@@ -225,7 +226,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           </div>
         </div>
       )}
-      {editingRest && <RestEditor session={session} item={item} exercise={exercise} defaultRest={defaultRest} onClose={() => setEditingRest(false)} />}
+      {editingRest && <RestEditor session={session} item={item} exercise={exercise} rests={rests} onClose={() => setEditingRest(false)} />}
       {confirmRemove && (
         <div className="modal" role="alertdialog" aria-modal="true">
           <div className="modal-card">

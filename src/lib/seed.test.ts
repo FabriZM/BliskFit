@@ -50,7 +50,7 @@ describe('seed + filter', () => {
     const db = new GymDB('test-' + newId())
     await ensureSeed(db)
     const id = 'x:Barbell_Bench_Press_-_Medium_Grip'
-    const mine = { learnedRestSec: 100, customRestSec: 0, weightUnit: 'lb', plateLoaded: false, barKg: 15 } as const
+    const mine = { customWarmupRestSec: 100, customRestSec: 0, weightUnit: 'lb', plateLoaded: false, barKg: 15 } as const
     await db.exercises.update(id, mine)
     await db.meta.put({ key: 'seedVersion', value: 0 })
     await ensureSeed(db)
@@ -75,12 +75,12 @@ describe('seed + filter', () => {
   it('re-seeding adds new fields but keeps learned and saved rest times', async () => {
     const db = new GymDB('test-' + newId())
     await ensureSeed(db)
-    await db.exercises.update('x:Plank', { learnedRestSec: 75, customRestSec: 150 })
+    await db.exercises.update('x:Plank', { customDropRestSec: 75, customRestSec: 150 })
     await db.exercises.update('x:Barbell_Squat', { customRestSec: 0 }) // 0 (no timer) is a real value and must survive too
     await db.meta.put({ key: 'seedVersion', value: 1 }) // simulate an older install
     await db.exercises.update('x:Barbell_Squat', { mechanic: undefined })
     await ensureSeed(db)
-    expect((await db.exercises.get('x:Plank'))?.learnedRestSec).toBe(75)
+    expect((await db.exercises.get('x:Plank'))?.customDropRestSec).toBe(75)
     expect((await db.exercises.get('x:Plank'))?.customRestSec).toBe(150)
     expect((await db.exercises.get('x:Barbell_Squat'))?.customRestSec).toBe(0)
     expect((await db.exercises.get('x:Barbell_Squat'))?.mechanic).toBe('compound')

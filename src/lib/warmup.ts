@@ -64,6 +64,3 @@ function weightedBodyweight(i: WarmupInput): WarmupSet[] {
   const half = Math.floor((i.work * 0.5) / step) * step
   return [{ weight: 0, reps: 5 }, ...(half >= step && half <= i.work - step ? [{ weight: half, reps: 3 }] : [])]
 }
-
-/** Rest after a warm-up that is followed by another warm-up: short, and never longer than the usual rest. */
-export const WARMUP_REST_SEC = 45

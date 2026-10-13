@@ -4,6 +4,7 @@ import { setWeeklyGoal } from '../db/goals'
 import { orderedWeekdays, weekdayNames } from '../lib/dates'
 import { platform } from '../lib/platform'
 import { useNotificationState } from '../lib/platform/hooks'
+import NumInput from '../components/NumInput'
 import { useSettings } from '../stores/settings'
 import { useAppUpdate } from '../db/appUpdate'
 import { useInstall } from '../components/UpdateBanner'
@@ -60,6 +61,17 @@ export default function Settings() {
         {t('profile.restPopup')}
         <input type="checkbox" className="toggle" checked={settings.restPopup} onChange={(e) => void update({ restPopup: e.target.checked })} />
       </label>
+      <h2>{t('profile.restTimers')}</h2>
+      <p className="muted small help">{t('profile.restTimersHelp')}</p>
+      {([['defaultRestSec', 'working'], ['dropRestSec', 'drop'], ['warmupRestSec', 'warmup']] as const).map(([key, kind]) => (
+        <label key={key} className="row">
+          {t(`workout.restKind.${kind}`)}
+          <span className="rest-setting">
+            <NumInput label={`${t(`workout.restKind.${kind}`)} (${t('workout.secUnit')})`} value={settings[key]} min={0} max={3600}
+              onCommit={(v) => v !== undefined && void update({ [key]: v })} /> {t('workout.secUnit')}
+          </span>
+        </label>
+      ))}
       <h2>{t('reminders.title')}</h2>
       <div className="row">
         {t('reminders.notifications')}

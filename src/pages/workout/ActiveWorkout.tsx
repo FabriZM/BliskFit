@@ -12,7 +12,7 @@ import { formatClock } from '../../lib/units'
 import { useNotificationState } from '../../lib/platform/hooks'
 import { useNow } from '../../lib/useNow'
 import { useWakeLock } from '../../lib/useWakeLock'
-import { elapsedMs } from '../../lib/workout'
+import { elapsedMs, restDefaults } from '../../lib/workout'
 import { useSettings } from '../../stores/settings'
 import ExercisePicker from '../routines/ExercisePicker'
 import ExerciseCard from './ExerciseCard'
@@ -27,7 +27,9 @@ import { MoreIcon, PauseIcon } from '../../components/Icons'
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { units, defaultRestSec, restPopup } = useSettings((s) => s.settings)
+  const settings = useSettings((s) => s.settings)
+  const { units, restPopup } = settings
+  const rests = restDefaults(settings)
   const now = useNow(1000)
   const [adding, setAdding] = useState(false)
   const [swapping, setSwapping] = useState<string | null>(null)
@@ -95,7 +97,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
         {session.exercises.map((item, i) => (
           <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
             sets={byItem.get(item.id) ?? []} pos={positions[i]}
-            units={units} defaultRest={defaultRestSec} onSwap={() => setSwapping(item.id)} />
+            units={units} rests={rests} onSwap={() => setSwapping(item.id)} />
         ))}
       </ul>
       <button className="primary wide" onClick={() => setAdding(true)}>+ {t('routines.addExercises')}</button>

@@ -4,7 +4,7 @@ import { ShareError, androidAppIntent, decodeLinkData, encodeLinkData, linkDataF
 
 const custom: Exercise = {
   id: 'c1', name: 'Landmine press', trackingType: 'weight_reps', primaryMuscleIds: ['m:shoulders'], secondaryMuscleIds: [],
-  source: 'custom', photo: new Blob([new Uint8Array(3)]), learnedRestSec: 77, videoUrl: 'https://youtu.be/x',
+  source: 'custom', photo: new Blob([new Uint8Array(3)]), customDropRestSec: 77, videoUrl: 'https://youtu.be/x',
 }
 const seeded: Exercise = { id: 'x:Squat', name: 'Squat', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'seeded' }
 const exercises = new Map([[custom.id, custom], [seeded.id, seeded]])
@@ -13,14 +13,14 @@ const routine = (id: string, name: string, exIds: string[]): Routine =>
 const reason = (fn: () => unknown) => { try { fn(); return 'ok' } catch (e) { return (e as ShareError).reason } }
 
 describe('sharing routines and programs', () => {
-  it('packs a routine with only its custom exercises, without photos, learned rest or item ids', () => {
+  it('packs a routine with only its custom exercises, without photos, rest timers or item ids', () => {
     const p = packRoutine(routine('r', 'Push', ['x:Squat', 'c1']), exercises)
     expect(p.kind).toBe('routine')
     expect(p.routines[0]).toEqual({ name: 'Push', exercises: [
       { exerciseId: 'x:Squat', targetSets: 3, repMin: 8, repMax: 12 }, { exerciseId: 'c1', targetSets: 3, repMin: 8, repMax: 12 }] })
     expect(p.exercises).toHaveLength(1)
     expect(p.exercises[0]).not.toHaveProperty('photo')
-    expect(p.exercises[0]).not.toHaveProperty('learnedRestSec')
+    expect(p.exercises[0]).not.toHaveProperty('customDropRestSec')
     expect(p.exercises[0].videoUrl).toBe('https://youtu.be/x')
   })
 
