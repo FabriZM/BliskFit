@@ -34,7 +34,8 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
   const results = useMemo(() => {
     if (!exercises) return []
     const ids = shownMuscle ? withDescendants(muscles, shownMuscle) : new Set<string>()
-    const list = filterExercises(exercises, { query, muscleIds: ids, equipment: '', favorites, favoritesOnly, primaryOnly: !!replacing })
+    const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
+    const list = filterExercises(exercises, { query, equipmentLabel, muscleIds: ids, equipment: '', favorites, favoritesOnly, primaryOnly: !!replacing })
     if (!replacing) return list
     // Real alternatives first: the same kind of exercise (lifting vs timed/stretching vs cardio), then the same exact
     // main muscle (lats before the rest of the back). The sort is stable, so favorites and names keep their order.
@@ -42,7 +43,7 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
     const target = replacing.primaryMuscleIds[0]
     const rank = (e: Exercise) => (kind(e) === kind(replacing) ? 0 : 2) + (e.primaryMuscleIds.includes(target) ? 0 : 1)
     return list.filter((e) => e.id !== replacing.id).sort((a, b) => rank(a) - rank(b))
-  }, [exercises, muscles, query, shownMuscle, favorites, favoritesOnly, replacing])
+  }, [exercises, muscles, query, shownMuscle, favorites, favoritesOnly, replacing, t])
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : single ? [id] : [...p, id]))
 

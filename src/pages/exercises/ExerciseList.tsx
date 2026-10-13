@@ -53,8 +53,9 @@ export default function ExerciseList() {
   const results = useMemo(() => {
     if (!exercises || !muscles) return []
     const ids = muscle ? withDescendants(muscles, muscle) : new Set<string>()
-    return filterExercises(exercises, { query, muscleIds: ids, equipment, favorites, favoritesOnly })
-  }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly])
+    const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
+    return filterExercises(exercises, { query, equipmentLabel, muscleIds: ids, equipment, favorites, favoritesOnly })
+  }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly, t])
 
   const reset = (fn: () => void) => { fn(); setShown(PAGE) }
 

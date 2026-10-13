@@ -21,6 +21,7 @@ import { ExercisesIcon } from '../../components/TabIcons'
 import { CloseIcon, GripIcon, LinkIcon } from '../../components/Icons'
 
 interface RowProps {
+  routineId: string
   item: RoutineExercise
   exercise?: Exercise
   pos: ReturnType<typeof groupPositions>[number]
@@ -32,7 +33,7 @@ interface RowProps {
   onToggleLink: () => void
 }
 
-function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
+function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
   const { t } = useTranslation()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const hasReps = exercise ? !['duration', 'cardio'].includes(exercise.trackingType) : true
@@ -44,7 +45,8 @@ function Row({ item, exercise, pos, canLink, defaultRest, onChange, onRest, onRe
       {pos.pos === 'start' && <span className="group-tag">{pos.size > 2 ? t('routines.circuit') : t('routines.superset')} · {t('routines.sharedRest')}</span>}
       <div className="rx-head">
         <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
-        <strong className="rx-name">{exercise?.name ?? '…'}</strong>
+        {/* The exercise page's back button returns here (see ExerciseDetail). */}
+        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: `/routines/${routineId}` }}>{exercise?.name ?? '…'}</Link>
         <button className="icon" aria-label={t('common.delete')} onClick={onRemove}><CloseIcon /></button>
       </div>
       <div className="rx-fields">
@@ -123,7 +125,7 @@ export default function RoutineEditor() {
         <SortableContext items={list.map((e) => e.id)} strategy={verticalListSortingStrategy}>
           <ul className="rx-list">
             {list.map((item, i) => (
-              <Row key={item.id} item={item} exercise={names.get(item.exerciseId)} pos={positions[i]}
+              <Row routineId={routine.id} key={item.id} item={item} exercise={names.get(item.exerciseId)} pos={positions[i]}
                 canLink={i < list.length - 1} defaultRest={defaultRest}
                 onChange={(next) => setExercises(list.map((e, k) => (k === i ? next : e)))}
                 onRest={(v) => setExercises(setRest(list, i, v))}

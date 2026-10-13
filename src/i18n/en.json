@@ -173,6 +173,7 @@
     "confirmDelete": "Delete this gym? Its notes are kept."
   },
   "routines": {
+    "routine": "Routine",
     "new": "New routine",
     "untitled": "New routine",
     "name": "Routine name",

@@ -173,6 +173,7 @@
     "confirmDelete": "¿Eliminar este gimnasio? Sus notas se conservan."
   },
   "routines": {
+    "routine": "Rutina",
     "new": "Nueva rutina",
     "untitled": "Nueva rutina",
     "name": "Nombre de la rutina",

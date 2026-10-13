@@ -1,7 +1,10 @@
 import type { Exercise, ID } from '../db/types'
 
 export interface ExerciseFilter {
+  /** Words to find in the name or the equipment (see matchesQuery). */
   query: string
+  /** The equipment's name as shown (translated), so it can be searched too. */
+  equipmentLabel?: (equipment: string) => string
   /** Muscle ids already expanded with descendants; empty = no muscle filter. */
   muscleIds: Set<ID>
   equipment: string
@@ -14,11 +17,23 @@ export interface ExerciseFilter {
 
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
+/**
+ * The exercise search used everywhere: every word typed must appear in the exercise's name or its equipment (as
+ * stored, e.g. "body only", or as shown via `equipmentLabel`), ignoring case and accents. "cable row" finds rows on
+ * a cable; an empty query matches everything.
+ */
+export function matchesQuery(e: Pick<Exercise, 'name' | 'equipment'>, query: string, equipmentLabel?: (equipment: string) => string): boolean {
+  const words = norm(query).split(/\s+/).filter(Boolean)
+  if (!words.length) return true
+  const eq = e.equipment ?? 'none'
+  const hay = norm(`${e.name} ${eq} ${equipmentLabel?.(eq) ?? ''}`)
+  return words.every((w) => hay.includes(w))
+}
+
 export function filterExercises(list: Exercise[], f: ExerciseFilter): Exercise[] {
-  const q = norm(f.query.trim())
   return list
     .filter((e) => {
-      if (q && !norm(e.name).includes(q)) return false
+      if (!matchesQuery(e, f.query, f.equipmentLabel)) return false
       if (f.equipment && (e.equipment ?? 'none') !== f.equipment) return false
       if (f.favoritesOnly && !f.favorites?.has(e.id)) return false
       if (f.muscleIds.size) {

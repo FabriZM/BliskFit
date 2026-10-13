@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import SeriesCard from '../../components/stats/SeriesCard'
+import { matchesQuery } from '../../lib/exerciseFilter'
 import { weightUnitFor } from '../../lib/plates'
 import { exerciseSeries, isPlateau, metricsFor } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
@@ -27,11 +28,11 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
   }, [data.sets, ctx.exById])
 
   const matches = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
     return done
-      .filter((r) => !q || r.ex.name.toLowerCase().includes(q))
+      .filter((r) => matchesQuery(r.ex, query, equipmentLabel))
       .sort((a, b) => Number(data.favorites.has(b.ex.id)) - Number(data.favorites.has(a.ex.id)) || b.at - a.at)
-  }, [done, query, data.favorites])
+  }, [done, query, data.favorites, t])
 
   const selectedId = params.get('ex') ?? [...done].sort((a, b) => b.at - a.at)[0]?.ex.id
   const selected = selectedId ? ctx.exById.get(selectedId) : undefined

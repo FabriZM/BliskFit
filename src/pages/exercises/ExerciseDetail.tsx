@@ -30,9 +30,10 @@ export default function ExerciseDetail() {
   const nav = useNavigate()
   const id = decodeURIComponent(useParams().id ?? '')
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
-  // Opened from a running workout: back goes to the workout, not the exercise list.
+  // Opened from a running workout or a routine: back goes there, not to the exercise list.
   const location = useLocation()
-  const fromWorkout = (location.state as { back?: string } | null)?.back === '/workout'
+  const back = (location.state as { back?: string } | null)?.back
+  const backTo = back === '/workout' || back?.startsWith('/routines/') ? back : '/exercises'
   // The tab lives in the URL so going back to this page reopens it.
   const [params, setParams] = useSearchParams()
   const tab: Tab = TABS.find((x) => x === params.get('tab')) ?? 'about'
@@ -75,7 +76,7 @@ export default function ExerciseDetail() {
 
   return (
     <section>
-      <BackLink to={fromWorkout ? '/workout' : '/exercises'} label={fromWorkout ? t('tabs.workout') : t('tabs.exercises')} />
+      <BackLink to={backTo} label={backTo === '/workout' ? t('tabs.workout') : backTo === '/exercises' ? t('tabs.exercises') : t('routines.routine')} />
       <div className="row head">
         <h1>{ex.name}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}
