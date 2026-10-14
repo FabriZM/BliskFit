@@ -13,6 +13,8 @@ export interface ScheduledNotification {
 
 /** The rest notification in the Android app: a countdown with the next set, and buttons that work without opening the app. */
 export interface RestNotice {
+  /** Epoch ms the rest began; with `endsAt` it sizes the notification's draining bar. */
+  startedAt: number
   endsAt: number
   /** Title while counting down, and once the rest is over. */
   title: string

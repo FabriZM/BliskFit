@@ -9,6 +9,9 @@ import { formatClock } from '../../lib/units'
 import { useNow } from '../../lib/useNow'
 import BasiliskEye from '../../components/BasiliskEye'
 
+/** Seconds left at which the rest buzzes a short warning. */
+const REST_WARN_SECS = [10, 3, 2, 1]
+
 /**
  * Rest countdown in the workout's sticky header, derived from stored timestamps; the fill drains from right to left.
  * It vibrates and beeps once when it reaches zero. The basilisk's
@@ -31,6 +34,17 @@ export default function RestBar({ session }: { session: WorkoutSession }) {
       alerted.current = rest.endsAt
     }
   }, [rest, remaining, now, osAlerts])
+
+  // Short pulses as the rest runs out (the Android app's countdown service does the same with the app in the background).
+  const secsLeft = rest ? Math.ceil(remaining / 1000) : 0
+  const warned = useRef<{ endsAt: number; secs: number } | null>(null)
+  useEffect(() => {
+    if (!rest || osAlerts || secsLeft <= 0 || !REST_WARN_SECS.includes(secsLeft)) return
+    // Once per second mark; adding time (+15) moves endsAt, so the marks fire again on the way down.
+    if (warned.current?.endsAt === rest.endsAt && warned.current.secs === secsLeft) return
+    warned.current = { endsAt: rest.endsAt, secs: secsLeft }
+    vibrate([80])
+  }, [rest, osAlerts, secsLeft])
 
   if (!rest) return null
   const over = remaining <= 0

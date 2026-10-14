@@ -44,6 +44,16 @@
         <!-- Rest notification: its buttons and the end-of-rest alarm (RestTimerReceiver) -->
         <receiver android:name=".RestTimerReceiver" android:exported="false" />
 
+        <!-- Re-posts the rest notification every second so its progress bar drains, and buzzes as the rest runs out -->
+        <service
+            android:name=".RestTimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Rest timer countdown shown in a notification during a workout" />
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -63,6 +73,9 @@
     <!-- Lets those notifications fire on time with the screen locked; the user grants it in system settings -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- The rest countdown service (draining bar and warning buzzes while the app is in the background) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <!-- Keep the screen on during a workout -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

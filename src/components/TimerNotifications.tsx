@@ -55,6 +55,7 @@ export default function TimerNotifications() {
 
   // Rest timer
   const restEndsAt = session?.rest?.endsAt
+  const restStartedAt = session?.rest?.startedAt
   const next = data?.next
   const nextText = !next ? t('workout.restNotice.allDone') : t(next.shown ? 'workout.restNotice.next' : 'workout.restNotice.nextEnter', {
     name: next.exercise, values: next.shown,
@@ -64,20 +65,20 @@ export default function TimerNotifications() {
   useEffect(() => {
     if (!loaded) return
     const rn = platform.restNotification
-    if (restEndsAt === undefined) {
+    if (restEndsAt === undefined || restStartedAt === undefined) {
       void (rn ? rn.hide() : platform.notifications.cancel(NOTIFICATION_IDS.rest))
       return
     }
     if (rn) {
       void rn.show({
-        endsAt: restEndsAt, title: t('workout.rest'), overTitle: t('workout.restNotice.over'), text: nextText, payload,
+        startedAt: restStartedAt, endsAt: restEndsAt, title: t('workout.rest'), overTitle: t('workout.restNotice.over'), text: nextText, payload,
         labels: { done: t('workout.restNotice.done'), plus: t('workout.restNotice.plus'), skip: t('workout.skipRest') },
         pendingText: t('workout.restNotice.pending'),
       })
       return
     }
     void platform.notifications.schedule({ id: NOTIFICATION_IDS.rest, at: restEndsAt, title: t('workout.restOverShort'), body: nextText })
-  }, [loaded, restEndsAt, nextText, payload, t])
+  }, [loaded, restStartedAt, restEndsAt, nextText, payload, t])
 
   // Taps on the rest notification (Android), including ones made while the app was closed.
   useEffect(() => platform.restNotification?.onAction(async (a) => {

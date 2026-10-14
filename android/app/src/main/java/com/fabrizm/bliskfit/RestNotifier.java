@@ -1,6 +1,7 @@
 package com.fabrizm.bliskfit;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -103,6 +104,17 @@ final class RestNotifier {
     static void post(Context c, JSONObject n, boolean alert) {
         NotificationManagerCompat nm = NotificationManagerCompat.from(c);
         if (!nm.areNotificationsEnabled()) return;
+        try {
+            // A sounding update must not be swallowed by "only alert once" on the silent countdown it replaces.
+            if (alert) nm.cancel(ID);
+            nm.notify(ID, build(c, n, alert));
+        } catch (SecurityException e) {
+            // Notification permission withdrawn meanwhile.
+        }
+    }
+
+    /** The notification for a notice; also what the countdown service holds as its foreground notification. */
+    static Notification build(Context c, JSONObject n, boolean alert) {
         ensureChannels(c);
         long endsAt = n.optLong("endsAt");
         boolean over = System.currentTimeMillis() >= endsAt - 500;
@@ -124,7 +136,16 @@ final class RestNotifier {
             .setSilent(!alert)
             .setShowWhen(endsAt > 0)
             .setWhen(endsAt);
-        if (!over) b.setUsesChronometer(true).setChronometerCountDown(true);
+        if (!over) {
+            b.setUsesChronometer(true).setChronometerCountDown(true);
+            // The draining bar: full at the start of the rest, empty at its end (RestTimerService re-posts it every second).
+            long startedAt = n.optLong("startedAt");
+            if (endsAt > startedAt && startedAt > 0) {
+                int total = (int) Math.max(1, (endsAt - startedAt) / 1000);
+                int left = (int) Math.min(total, Math.max(0, (endsAt - System.currentTimeMillis() + 999) / 1000));
+                b.setProgress(total, left, false);
+            }
+        }
 
         if (labels != null) {
             if (!payload.isEmpty() && labels.has("done")) {
@@ -136,13 +157,7 @@ final class RestNotifier {
                 b.addAction(0, labels.optString("skip"), broadcast(c, 3, new Intent(c, RestTimerReceiver.class).setAction(A_SKIP)));
             }
         }
-        try {
-            // A sounding update must not be swallowed by "only alert once" on the silent countdown it replaces.
-            if (alert) nm.cancel(ID);
-            nm.notify(ID, b.build());
-        } catch (SecurityException e) {
-            // Notification permission withdrawn meanwhile.
-        }
+        return b.build();
     }
 
     /** After Done with the app not running: the set is saved once it opens, so say that and drop the buttons. */
@@ -160,9 +175,10 @@ final class RestNotifier {
     }
 
     static void hide(Context c) {
+        // Forget the notice first: the service sees that and takes its own foreground notification down with it.
+        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(NOTICE).commit();
         cancelEnd(c);
         NotificationManagerCompat.from(c).cancel(ID);
-        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(NOTICE).apply();
     }
 
     // ---- end-of-rest alarm ------------------------------------------------------------------------------
@@ -181,6 +197,7 @@ final class RestNotifier {
     }
 
     static void cancelEnd(Context c) {
+        RestTimerService.stop(c);
         c.getSystemService(AlarmManager.class).cancel(endIntent(c));
     }
 

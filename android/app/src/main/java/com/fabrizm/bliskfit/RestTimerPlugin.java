@@ -77,6 +77,7 @@ public class RestTimerPlugin extends Plugin {
         RestNotifier.save(getContext(), n);
         RestNotifier.post(getContext(), n, false);
         RestNotifier.scheduleEnd(getContext(), n.optLong("endsAt"));
+        RestTimerService.start(getContext());
         call.resolve();
     }
 
