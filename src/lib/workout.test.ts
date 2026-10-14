@@ -78,6 +78,8 @@ describe('sets', () => {
     ]
     const t = (id: string) => (id === 'bench' ? 'weight_reps' : id === 'pull' ? 'bodyweight_added' : 'duration') as 'weight_reps'
     expect(sessionStats(sets, t)).toEqual({ sets: 3, volume: 500 + 60, exercises: 3 })
+    // Paired dumbbells: the logged weight is per dumbbell, so volume counts two (not the added weight of a pull-up).
+    expect(sessionStats(sets, t, () => 2).volume).toBe(1000 + 60)
   })
   it('counts primary fully and secondary partially, ignoring warm-ups', () => {
     const ex = new Map<string, Exercise>([['b', { id: 'b', name: 'Bench', trackingType: 'weight_reps', primaryMuscleIds: ['chest'], secondaryMuscleIds: ['triceps'], source: 'seeded' }]])

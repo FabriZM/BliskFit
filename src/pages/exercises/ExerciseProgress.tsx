@@ -6,7 +6,7 @@ import type { Exercise, ExerciseMetric, StatsRange } from '../../db/types'
 import LineChart from '../../components/stats/LineChart'
 import PinButton from '../../components/stats/PinButton'
 import { formatDelta, formatValue, metricUnit } from '../../lib/pinCards'
-import { weightUnitFor } from '../../lib/plates'
+import { volumeFactor, weightUnitFor } from '../../lib/plates'
 import { changeOver, exerciseSeries, lowerIsBetter, metricPoints, metricsFor, RANGES, rangeStart } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import ExerciseRecords from './ExerciseRecords'
@@ -27,7 +27,7 @@ export default function ExerciseProgress({ exercise }: { exercise: Exercise }) {
     const sessions = await db.sessions.bulkGet([...new Set(sets.map((s) => s.sessionId))])
     return { sets, sessions: sessions.filter((s) => s !== undefined) }
   }, [exercise.id])
-  const series = useMemo(() => (data ? exerciseSeries(data.sets, data.sessions, exercise.id, exercise.trackingType) : []), [data, exercise.id, exercise.trackingType])
+  const series = useMemo(() => (data ? exerciseSeries(data.sets, data.sessions, exercise.id, exercise.trackingType, volumeFactor(exercise)) : []), [data, exercise])
 
   if (!data) return null
   const points = metricPoints(series, metric, rangeStart(range, new Date()))

@@ -47,6 +47,11 @@ export interface Exercise {
   customWarmupRestSec?: number
   /** Unit printed on this exercise's equipment (e.g. a machine in lb); absent = the app's units. Weights stay stored in kg. */
   weightUnit?: Units
+  /**
+   * Weights are logged per dumbbell (or per hand) and two are lifted, so volume counts both. Absent = on for
+   * dumbbell exercises not done one-handed or with a single dumbbell (see lib/plates).
+   */
+  pairedWeights?: boolean
   /** Plate calculator on or off; absent = on for barbells and EZ bars (see lib/plates). */
   plateLoaded?: boolean
   /** Bar or sled weight, in kg; absent = the usual bar for the equipment. Logged weights always include it. */

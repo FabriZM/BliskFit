@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatSet } from '../../lib/format'
 import { exercisesAtSeveralGyms, gymComparison } from '../../lib/stats'
-import { weightUnitFor } from '../../lib/plates'
+import { volumeFactor, weightUnitFor } from '../../lib/plates'
 import { formatNum, kgToDisplay } from '../../lib/units'
 import type { StatsCtx } from './ctx'
 import { useExerciseName } from '../../lib/exerciseName'
@@ -20,7 +20,7 @@ export default function GymsSection({ ctx }: { ctx: StatsCtx }) {
 
   const units = weightUnitFor(ex, ctx.units)
   const gymName = new Map(data.gyms.map((g) => [g.id, g.name]))
-  const rows = gymComparison(data.sets, data.sessions, ex.id, ex.trackingType)
+  const rows = gymComparison(data.sets, data.sessions, ex.id, ex.trackingType, volumeFactor(ex))
   const w = (kg: number) => `${formatNum(kgToDisplay(kg, units))} ${units}`
   const weighted = ex.trackingType === 'weight_reps' || ex.trackingType === 'bodyweight_added'
 

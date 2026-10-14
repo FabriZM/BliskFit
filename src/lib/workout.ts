@@ -96,20 +96,21 @@ export function isFilled(set: SetLog, t: TrackingType): boolean {
   }
 }
 
-export function setVolume(set: SetLog, t: TrackingType): number {
+/** Load × reps (× `factor`, 2 for paired dumbbells); warm-ups and undone sets carry none. */
+export function setVolume(set: SetLog, t: TrackingType, factor = 1): number {
   if (set.setType === 'warmup' || set.doneAt === undefined) return 0
-  if (t === 'weight_reps') return (set.weight ?? 0) * (set.reps ?? 0)
+  if (t === 'weight_reps') return (set.weight ?? 0) * (set.reps ?? 0) * factor
   if (t === 'bodyweight_added') return (set.extraWeight ?? 0) * (set.reps ?? 0)
   return 0
 }
 
 export interface SessionStats { sets: number; volume: number; exercises: number }
 
-export function sessionStats(sets: SetLog[], trackingOf: (exerciseId: ID) => TrackingType): SessionStats {
+export function sessionStats(sets: SetLog[], trackingOf: (exerciseId: ID) => TrackingType, volumeFactorOf: (exerciseId: ID) => number = () => 1): SessionStats {
   const done = sets.filter((x) => x.doneAt !== undefined)
   return {
     sets: done.filter((x) => x.setType !== 'warmup').length,
-    volume: done.reduce((v, x) => v + setVolume(x, trackingOf(x.exerciseId)), 0),
+    volume: done.reduce((v, x) => v + setVolume(x, trackingOf(x.exerciseId), volumeFactorOf(x.exerciseId)), 0),
     exercises: new Set(done.map((x) => x.exerciseId)).size,
   }
 }

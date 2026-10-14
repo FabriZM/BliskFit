@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import SeriesCard from '../../components/stats/SeriesCard'
 import { matchesQuery } from '../../lib/exerciseFilter'
 import { muscleSearchText } from '../../lib/muscles'
-import { weightUnitFor } from '../../lib/plates'
+import { volumeFactor, weightUnitFor } from '../../lib/plates'
 import { exerciseSeries, isPlateau, metricsFor } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import ExerciseRecords from '../exercises/ExerciseRecords'
@@ -44,7 +44,7 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
 
   if (!done.length) return <div className="card muted">{t('stats.noExerciseHistory')}</div>
 
-  const points = selected ? exerciseSeries(data.sets, data.sessions, selected.id, selected.trackingType) : []
+  const points = selected ? exerciseSeries(data.sets, data.sessions, selected.id, selected.trackingType, volumeFactor(selected)) : []
   const metrics = selected ? metricsFor(selected.trackingType) : []
   // Charts of an exercise whose equipment is in other units than the app's read in that unit.
   const exCtx = { ...ctx, units: weightUnitFor(selected, ctx.units) }

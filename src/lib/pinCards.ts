@@ -7,6 +7,7 @@ import {
   type ExerciseLite, type Point, type SessionLite, type WeekBucket,
 } from './stats'
 import { formatClock, formatNum, kgToDisplay } from './units'
+import { volumeFactor } from './plates'
 
 /** What one stat card (in the Stats panel or pinned on Profile) plots. */
 export type ValueUnit = 'weight' | 'reps' | 'sec' | 'm' | 'pace' | 'sessions' | 'sets' | 'cm' | 'pct'
@@ -55,7 +56,7 @@ export function pinSeries(pin: PinSpec, input: CardInput, weekStartDay: number, 
     case 'exercise': {
       const ex = pin.exerciseId ? input.exById.get(pin.exerciseId) : undefined
       if (!ex || !pin.metric) return undefined
-      const points = exerciseSeries(input.sets, input.sessions, ex.id, ex.trackingType)
+      const points = exerciseSeries(input.sets, input.sessions, ex.id, ex.trackingType, volumeFactor(ex))
       return { unit: metricUnit(pin.metric), lowerBetter: pin.metric === 'minAssist' || pin.metric === 'pace', points: metricPoints(points, pin.metric, from) }
     }
     case 'bodyweight': {

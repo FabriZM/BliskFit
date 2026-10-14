@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise } from '../db/types'
-import { barWeight, describeSide, formatPlate, isPlateLoaded, loadFor, PLATES, retypeKg, setUnit, totalWeight, weightUnitFor } from './plates'
+import { barWeight, describeSide, formatPlate, isPlateLoaded, loadFor, pairedWeights, PLATES, retypeKg, setUnit, totalWeight, volumeFactor, weightUnitFor } from './plates'
 import { displayToKg, kgToDisplay } from './units'
 
 const ex = (p: Partial<Exercise> = {}): Exercise => ({
@@ -99,5 +99,22 @@ describe('setUnit and retypeKg', () => {
     expect(kgToDisplay(retypeKg(displayToKg(45, 'lb'), 'lb', 'kg')!, 'kg')).toBe(45)
     expect(retypeKg(80, 'kg', 'kg')).toBe(80)
     expect(retypeKg(undefined, 'kg', 'lb')).toBeUndefined()
+  })
+})
+
+describe('pairedWeights / volumeFactor', () => {
+  const db = (name: string, extra: Partial<Exercise> = {}) => ({ name, equipment: 'dumbbell', trackingType: 'weight_reps' as const, ...extra })
+  it('dumbbell exercises lift two weights unless one-handed, alternating or a single dumbbell', () => {
+    for (const n of ['Dumbbell Bench Press', 'Hammer Curls', 'Dumbbell Lunges', 'Bent Over Two-Dumbbell Row', 'Dumbbell Shrug']) expect(pairedWeights(db(n))).toBe(true)
+    for (const n of ['One-Arm Dumbbell Row', 'One Arm Dumbbell Bench Press', 'Dumbbell Alternate Bicep Curl', 'Concentration Curls',
+      'Straight-Arm Dumbbell Pullover', 'Dumbbell Side Bend', 'Single Dumbbell Raise', 'Dumbbell Seated One-Leg Calf Raise',
+      'Standing Dumbbell Triceps Extension', 'Seated Triceps Press', 'Plie Dumbbell Squat']) expect(pairedWeights(db(n))).toBe(false)
+  })
+  it('the exercise\'s own setting wins; only weight_reps and dumbbells by default', () => {
+    expect(pairedWeights(db('One-Arm Dumbbell Row', { pairedWeights: true }))).toBe(true)
+    expect(pairedWeights(db('Dumbbell Bench Press', { pairedWeights: false }))).toBe(false)
+    expect(pairedWeights({ name: 'Bench Press', equipment: 'barbell', trackingType: 'weight_reps' })).toBe(false)
+    expect(pairedWeights(db('Weighted Pull Up', { trackingType: 'bodyweight_added' }))).toBe(false)
+    expect([volumeFactor(db('Hammer Curls')), volumeFactor(db('Concentration Curls')), volumeFactor(undefined)]).toEqual([2, 1, 1])
   })
 })

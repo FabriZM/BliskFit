@@ -754,6 +754,7 @@
     "short": "Equip.",
     "unit": "Weights on this equipment",
     "unitDefault": "App setting ({{units}})",
+    "paired": "Weight is per dumbbell, two lifted (×2 for volume)",
     "plateLoaded": "Loaded with plates (plate calculator)",
     "bar": "Bar or sled ({{unit}})",
     "hint": "New sets are typed in this unit. Each set keeps the unit it was typed in, so earlier workouts never change; numbers already typed in the running workout keep their value. A single set can be switched in its details.",

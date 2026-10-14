@@ -11,6 +11,7 @@ import { formatSet } from '../../lib/format'
 import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
+import { volumeFactor } from '../../lib/plates'
 import { useSettings } from '../../stores/settings'
 import { SetFields, setKind } from './SetRow'
 import SummaryImage from './SummaryImage'
@@ -95,7 +96,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
 
   const trackingOf = (eid: string) => exercises.get(eid)?.trackingType ?? 'weight_reps'
   const prs = computeAllPRs(history, trackingOf)
-  const stats = sessionStats(sets, trackingOf)
+  const stats = sessionStats(sets, trackingOf, (eid) => volumeFactor(exercises.get(eid)))
   const prCount = sets.filter((s) => (prs.get(s.id)?.length ?? 0) > 0).length
   const items = session.exercises.filter((it) => sets.some((s) => s.itemId === it.id))
   const byItem = (itemId: string): SetLog[] => sets.filter((s) => s.itemId === itemId).sort((a, b) => a.order - b.order)

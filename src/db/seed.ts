@@ -3,7 +3,7 @@ import type { Exercise } from './types'
 import { SEED_VERSION, seedExercise, seedMuscles, type SeedRow } from '../lib/seed'
 
 /** Fields of a seeded exercise that belong to the user or the app, not the dataset. */
-const KEPT = ['customRestSec', 'customDropRestSec', 'customWarmupRestSec', 'weightUnit', 'plateLoaded', 'barKg'] as const satisfies readonly (keyof Exercise)[]
+const KEPT = ['customRestSec', 'customDropRestSec', 'customWarmupRestSec', 'pairedWeights', 'weightUnit', 'plateLoaded', 'barKg'] as const satisfies readonly (keyof Exercise)[]
 
 /** Idempotent: (re)writes seeded rows only when the bundled seed is newer than what's stored. */
 export async function ensureSeed(db: GymDB): Promise<void> {

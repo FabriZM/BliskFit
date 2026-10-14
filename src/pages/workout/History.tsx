@@ -9,6 +9,7 @@ import { dateKey, trainingDayKeys } from '../../lib/goals'
 import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
 import { elapsedMs, sessionStats } from '../../lib/workout'
+import { volumeFactor } from '../../lib/plates'
 import { useSettings } from '../../stores/settings'
 import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
@@ -38,8 +39,9 @@ export default function History() {
   const derived = useMemo(() => {
     if (!data) return undefined
     const trackingOf = (id: string) => data.exercises.get(id)?.trackingType ?? 'weight_reps'
+    const factorOf = (id: string) => volumeFactor(data.exercises.get(id))
     const prs = computeAllPRs(data.sets, trackingOf)
-    return { trackingOf, prs, trained: trainingDayKeys(data.sessions) }
+    return { trackingOf, factorOf, prs, trained: trainingDayKeys(data.sessions) }
   }, [data])
 
   if (!data || !derived) return <p className="muted">…</p>
@@ -65,7 +67,7 @@ export default function History() {
       <ul className="list">
         {shown.map((s) => {
           const sets = data.sets.filter((x) => x.sessionId === s.id)
-          const stats = sessionStats(sets, derived.trackingOf)
+          const stats = sessionStats(sets, derived.trackingOf, derived.factorOf)
           const prCount = sets.filter((x) => (derived.prs.get(x.id)?.length ?? 0) > 0).length
           return (
             <li key={s.id}>

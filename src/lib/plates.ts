@@ -27,6 +27,24 @@ export const retypeKg = (kg: number | undefined, from: Units, to: Units): number
 /** Tracking types that log a weight, so a weight unit applies. */
 export const usesWeight = (t: TrackingType): boolean => t === 'weight_reps' || t === 'bodyweight_added' || t === 'assisted_bodyweight'
 
+// Dumbbell exercises done one-handed, alternating, or with a single dumbbell held in both hands.
+const SINGLE_WEIGHT = /\b(one|single)[- ]?(arm|leg)\b|\bsingle\b|alternat|see-saw|concentration|pullover|side bend|on a dumbbell|seated triceps press|standing dumbbell triceps extension|vertical swing|plie/i
+
+/**
+ * Two weights lifted at once, logged per dumbbell: volume counts both. The exercise's own setting, else on for
+ * dumbbell exercises whose name doesn't say one arm, alternating or a single dumbbell.
+ */
+type PairInfo = Pick<Exercise, 'trackingType'> & Partial<Pick<Exercise, 'pairedWeights' | 'equipment' | 'name'>>
+
+export function pairedWeights(ex: PairInfo): boolean {
+  if (ex.trackingType !== 'weight_reps') return false
+  return ex.pairedWeights ?? (ex.equipment === 'dumbbell' && !SINGLE_WEIGHT.test(ex.name ?? ''))
+}
+
+/** What a set's logged weight is multiplied by for volume (2 for paired dumbbells). */
+export const volumeFactor = (ex: PairInfo | undefined): number =>
+  ex && pairedWeights(ex) ? 2 : 1
+
 /** Standard plates, heaviest first. */
 export const PLATES: Record<Units, number[]> = {
   kg: [25, 20, 15, 10, 5, 2.5, 1.25],

@@ -1,6 +1,7 @@
 import type { Exercise, ExerciseMetric, ID, MuscleGroup, SetLog, StatsRange, TrackingType, WorkoutSession } from '../db/types'
 import { dateKey } from './goals'
 import { epley } from './prs'
+import { volumeFactor } from './plates'
 import { weekStart } from './programs'
 
 /**
@@ -9,7 +10,8 @@ import { weekStart } from './programs'
  */
 
 export type SessionLite = Pick<WorkoutSession, 'id' | 'startedAt' | 'status' | 'gymId'>
-export type ExerciseLite = Pick<Exercise, 'id' | 'trackingType' | 'primaryMuscleIds' | 'secondaryMuscleIds'>
+/** What stats need of an exercise; name and equipment decide whether dumbbell weights count double for volume. */
+export type ExerciseLite = Pick<Exercise, 'id' | 'trackingType' | 'primaryMuscleIds' | 'secondaryMuscleIds'> & Partial<Pick<Exercise, 'name' | 'equipment' | 'pairedWeights'>>
 export interface Point { at: number; value: number }
 
 export const RANGES: StatsRange[] = ['4w', '3m', '6m', '1y', 'all']
@@ -55,7 +57,7 @@ export const lowerIsBetter = (m: ExerciseMetric): boolean => m === 'minAssist' |
 /** True when `a` is an improvement over `b` for the metric. */
 export const isBetter = (m: ExerciseMetric, a: number, b: number): boolean => (lowerIsBetter(m) ? a < b - 1e-6 : a > b + 1e-6)
 
-function sessionValues(sets: SetLog[], t: TrackingType): MetricValues | undefined {
+function sessionValues(sets: SetLog[], t: TrackingType, volumeFactor = 1): MetricValues | undefined {
   const sum = (f: (s: SetLog) => number) => sets.reduce((a, s) => a + f(s), 0)
   const reps = (s: SetLog) => s.reps ?? 0
   switch (t) {
@@ -67,7 +69,7 @@ function sessionValues(sets: SetLog[], t: TrackingType): MetricValues | undefine
       return {
         maxWeight: Math.max(...valid.map((s) => load(s)!)),
         e1rm: Math.max(...valid.map((s) => epley(load(s)!, reps(s)))),
-        volume: valid.reduce((a, s) => a + load(s)! * reps(s), 0),
+        volume: valid.reduce((a, s) => a + load(s)! * reps(s), 0) * (t === 'weight_reps' ? volumeFactor : 1),
         reps: valid.reduce((a, s) => a + reps(s), 0),
       }
     }
@@ -97,7 +99,8 @@ function sessionValues(sets: SetLog[], t: TrackingType): MetricValues | undefine
 }
 
 /** One point per finished session in which the exercise was done, oldest first. `sets` may hold other exercises. */
-export function exerciseSeries(sets: SetLog[], sessions: SessionLite[], exerciseId: ID, tracking: TrackingType): ExercisePoint[] {
+/** `volumeFactor`: 2 for paired dumbbells (see lib/plates volumeFactor). */
+export function exerciseSeries(sets: SetLog[], sessions: SessionLite[], exerciseId: ID, tracking: TrackingType, volumeFactor = 1): ExercisePoint[] {
   const starts = finishedStart(sessions)
   const bySession = new Map<ID, SetLog[]>()
   for (const s of sets) {
@@ -106,7 +109,7 @@ export function exerciseSeries(sets: SetLog[], sessions: SessionLite[], exercise
   }
   const out: ExercisePoint[] = []
   for (const [sessionId, list] of bySession) {
-    const values = sessionValues(list, tracking)
+    const values = sessionValues(list, tracking, volumeFactor)
     if (values) out.push({ sessionId, at: starts.get(sessionId)!, values })
   }
   return out.sort((a, b) => a.at - b.at)
@@ -147,9 +150,9 @@ export function muscleCredit(ex: Pick<Exercise, 'primaryMuscleIds' | 'secondaryM
   return out
 }
 
-/** Load x reps for weighted lifts; bodyweight-only, timed and cardio sets carry no volume. */
-export function setVolume(s: SetLog, t: TrackingType): number {
-  if (t === 'weight_reps') return (s.weight ?? 0) * (s.reps ?? 0)
+/** Load x reps (x `factor`, 2 for paired dumbbells) for weighted lifts; bodyweight-only, timed and cardio sets carry no volume. */
+export function setVolume(s: SetLog, t: TrackingType, factor = 1): number {
+  if (t === 'weight_reps') return (s.weight ?? 0) * (s.reps ?? 0) * factor
   if (t === 'bodyweight_added') return (s.extraWeight ?? 0) * (s.reps ?? 0)
   return 0
 }
@@ -196,7 +199,7 @@ export function weekBuckets(
     const b = sessionWeek.get(s.sessionId)
     const ex = exById.get(s.exerciseId)
     if (!b || !ex || !isWorkingSet(s)) continue
-    const vol = setVolume(s, ex.trackingType)
+    const vol = setVolume(s, ex.trackingType, volumeFactor(ex))
     b.sets++
     b.volume += vol
     if (prSetIds.has(s.id)) b.prs++
@@ -302,7 +305,7 @@ export const gymsUsed = (sessions: SessionLite[]): ID[] =>
   [...new Set(sessions.filter((s) => s.status === 'finished' && s.gymId).map((s) => s.gymId!))]
 
 /** How one exercise has gone at each gym (sessions without a gym are left out). Best set = highest estimated 1RM. */
-export function gymComparison(sets: SetLog[], sessions: SessionLite[], exerciseId: ID, tracking: TrackingType): GymExerciseStats[] {
+export function gymComparison(sets: SetLog[], sessions: SessionLite[], exerciseId: ID, tracking: TrackingType, volumeFactor = 1): GymExerciseStats[] {
   const gymOf = new Map(sessions.filter((s) => s.status === 'finished' && s.gymId).map((s) => [s.id, s.gymId!]))
   const byGym = new Map<ID, { sessions: Map<ID, SetLog[]> }>()
   for (const s of sets) {
@@ -323,7 +326,7 @@ export function gymComparison(sets: SetLog[], sessions: SessionLite[], exerciseI
   return [...byGym].map(([gymId, g]) => {
     const all = [...g.sessions.values()].flat()
     const best = all.reduce<SetLog | undefined>((b, s) => (!b || score(s) > score(b) ? s : b), undefined)
-    const volumes = [...g.sessions.values()].map((l) => l.reduce((a, s) => a + setVolume(s, tracking), 0))
+    const volumes = [...g.sessions.values()].map((l) => l.reduce((a, s) => a + setVolume(s, tracking, volumeFactor), 0))
     return {
       gymId, sessions: g.sessions.size, bestSet: best,
       bestE1rm: tracking === 'weight_reps' || tracking === 'bodyweight_added' ? best && score(best) : undefined,

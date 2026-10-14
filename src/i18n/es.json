@@ -754,6 +754,7 @@
     "short": "Equipo",
     "unit": "Pesos de este equipo",
     "unitDefault": "Ajuste de la app ({{units}})",
+    "paired": "Peso por mancuerna, se levantan dos (×2 para el volumen)",
     "plateLoaded": "Se carga con discos (calculadora de discos)",
     "bar": "Barra o carro ({{unit}})",
     "hint": "Las series nuevas se ingresan en esta unidad. Cada serie guarda la unidad en que se ingresó, así que los entrenamientos anteriores no cambian; los números ya ingresados en el entrenamiento en curso mantienen su valor. Una serie se puede cambiar en sus detalles.",
