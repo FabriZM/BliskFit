@@ -75,7 +75,7 @@ export function SetFields({ set, tracking, units: fallback, hint, captions = tru
         return (
           <label key={f.key} className="field">
             <DecimalInput label={unitLabel(f)} integer={f.kind === 'reps' || f.kind === 'sec'}
-              className={set.copied?.includes(f.key) ? 'copied' : undefined}
+              className={set.copied?.includes(f.key) ? 'copied' : undefined} selectOnFocus
               value={toDisplay(f, set[f.key], units)} placeholder={h === undefined ? '' : formatNum(h)}
               onCommit={(v) => onChange({ [f.key]: fromDisplay(f, v, units), ...(f.kind === 'weight' && { unit: units }) })} />
             {captions && <span>{unitLabel(f)}</span>}
