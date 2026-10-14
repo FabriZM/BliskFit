@@ -9,6 +9,7 @@ import { useSettings } from '../stores/settings'
 import { useAppUpdate } from '../db/appUpdate'
 import { useInstall } from '../components/UpdateBanner'
 import { RELEASES_PAGE } from '../lib/updates'
+import AndroidAppOffer from '../components/AndroidAppOffer'
 import { BackLink } from '../components/PageHeader'
 
 export default function Settings() {
@@ -123,6 +124,7 @@ export default function Settings() {
         <span className="muted">{__APP_VERSION__}</span>
       </p>
       {platform.isNative ? <AppUpdates /> : <p className="muted small help">{t('updates.webHelp')}</p>}
+      <AndroidAppOffer variant="row" />
     </section>
   )
 }

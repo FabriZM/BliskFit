@@ -457,3 +457,4 @@ a.rx-name { color: var(--fg); text-decoration: none; } a.rx-name:active { color:
 main:has(.wk-top) { scroll-padding-top: 150px; }
 .restbar-fill { right: auto; }
 .change-list { margin: 0 0 var(--space-3); padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+.apk-offer { flex-wrap: wrap; } .apk-offer > span:first-child { flex: 1 1 100%; } .apk-offer .apk-offer-actions { display: flex; gap: 8px; margin-left: auto; } .apk-offer .btn { background: var(--on-accent); color: var(--fg); white-space: nowrap; } a.primary-link { white-space: nowrap; }

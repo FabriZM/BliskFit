@@ -773,5 +773,14 @@
     "open": "Plates",
     "barOnly": "Just the bar",
     "line": "{{plates}} each side"
+  },
+  "apk": {
+    "title": "Android app",
+    "banner": "Get the Android app: rest alerts on time with the screen locked, and automatic updates.",
+    "download": "Download APK",
+    "downloadVersion": "Download APK ({{version}})",
+    "notNow": "Not now",
+    "help": "After downloading, open the file and allow installing from your browser when Android asks. The app keeps its own data:",
+    "moveData": "move yours over with a backup."
   }
 }

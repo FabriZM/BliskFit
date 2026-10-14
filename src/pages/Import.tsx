@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { ShareError, androidAppIntent, decodeLinkData, linkDataFrom, validatePackage, type SharePackage } from '../lib/share'
 import { importPackage, previewImport, type ImportPreview } from '../db/share'
 import { useSettings } from '../stores/settings'
-import { platform } from '../lib/platform'
+import { isAndroidWeb } from '../components/AndroidAppOffer'
 import { BackLink } from '../components/PageHeader'
 
-const isAndroidBrowser = () => !platform.isNative && /Android/i.test(navigator.userAgent)
 
 /** Adds a routine or program someone shared, from a link (#/import?d=…), a pasted link or a file. */
 export default function Import() {
@@ -68,7 +67,7 @@ export default function Import() {
           )}
           {preview.missing > 0 && <p className="small">{t('share.missing', { count: preview.missing })}</p>}
           <p className="muted small help">{t(pkg.kind === 'program' ? 'share.addProgramHelp' : 'share.addRoutineHelp')}</p>
-          {d && isAndroidBrowser() && (
+          {d && isAndroidWeb() && (
             // The web app and the Android app keep separate data, so app users want it added there.
             <p className="muted small help">{t('share.inAppHelp')} <a href={androidAppIntent(d)}>{t('share.openInApp')}</a></p>
           )}
