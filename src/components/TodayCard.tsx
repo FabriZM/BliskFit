@@ -8,10 +8,12 @@ import { useWorkoutView } from '../stores/workoutView'
 import { suggestToday } from '../lib/programs'
 import { useSettings } from '../stores/settings'
 import { ArrowRightIcon } from './Icons'
+import { useExerciseName } from '../lib/exerciseName'
 
 /** "Today's workout" suggestion from the active program. Start / resume buttons live here too. */
 export default function TodayCard() {
   const { t, i18n } = useTranslation()
+  const exName = useExerciseName()
   const nav = useNavigate()
   const weekStartDay = useSettings((s) => s.settings.weekStartDay)
   const setCollapsed = useWorkoutView((s) => s.setCollapsed)
@@ -40,7 +42,7 @@ export default function TodayCard() {
     body = <p>{t('today.rest')}</p>
   } else {
     const r = routines.find((x) => x.id === s.routineId)!
-    const names = new Map(exercises.map((e) => [e.id, e.name]))
+    const names = new Map(exercises.map((e) => [e.id, exName(e)]))
     body = (
       <>
         <p className="muted">{s.mode === 'rotation' ? t('today.nextInRotation') : t('today.scheduled')}{s.trainedToday ? ` · ${t('today.trainedToday')}` : ''}</p>

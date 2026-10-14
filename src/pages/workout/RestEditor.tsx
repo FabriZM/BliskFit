@@ -4,6 +4,7 @@ import NumInput from '../../components/NumInput'
 import type { Exercise, SessionExercise, WorkoutSession } from '../../db/types'
 import { clearExerciseRest, setExerciseRest, setSessionRest } from '../../db/workout'
 import { restFor, type RestKind, type RestTimes } from '../../lib/workout'
+import { useExerciseName } from '../../lib/exerciseName'
 
 const KINDS: RestKind[] = ['working', 'drop', 'warmup']
 
@@ -15,6 +16,7 @@ export default function RestEditor({ session, item, exercise, rests, onClose }: 
   session: WorkoutSession; item: SessionExercise; exercise?: Exercise; rests: RestTimes; onClose: () => void
 }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const [sec, setSec] = useState<RestTimes>(() => ({
     working: restFor(item, exercise, rests, 'working').sec,
     drop: restFor(item, exercise, rests, 'drop').sec,
@@ -28,7 +30,7 @@ export default function RestEditor({ session, item, exercise, rests, onClose }: 
     <div className="modal" role="dialog" aria-modal="true" aria-label={t('workout.restTimer')} onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <h2>{t('workout.restTimer')}</h2>
-        <p className="muted small">{exercise?.name}</p>
+        <p className="muted small">{exName(exercise, '')}</p>
 
         <div className="rest-kinds">
           {KINDS.map((k) => (

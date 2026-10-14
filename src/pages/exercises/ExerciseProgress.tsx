@@ -10,10 +10,12 @@ import { weightUnitFor } from '../../lib/plates'
 import { changeOver, exerciseSeries, lowerIsBetter, metricPoints, metricsFor, RANGES, rangeStart } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import ExerciseRecords from './ExerciseRecords'
+import { useExerciseName } from '../../lib/exerciseName'
 
 /** The exercise's chart (one metric at a time, same series as Stats → Exercises) and its records. */
 export default function ExerciseProgress({ exercise }: { exercise: Exercise }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const appUnits = useSettings((s) => s.settings.units)
   const units = weightUnitFor(exercise, appUnits)
   const metrics = metricsFor(exercise.trackingType)
@@ -47,7 +49,7 @@ export default function ExerciseProgress({ exercise }: { exercise: Exercise }) {
           )}
           <div className="row head">
             <h3>{title}</h3>
-            <PinButton pin={{ kind: 'exercise', exerciseId: exercise.id, metric, range }} label={`${exercise.name}: ${title}`} />
+            <PinButton pin={{ kind: 'exercise', exerciseId: exercise.id, metric, range }} label={`${exName(exercise)}: ${title}`} />
           </div>
           <LineChart label={title} points={points} format={fmt} lowerBetter={lowerIsBetter(metric)} />
           {change && <p className="small muted">{t('stats.change')}: <strong>{formatDelta(change.delta, unit, units)}</strong> ({fmt(change.first)} → {fmt(change.last)})</p>}

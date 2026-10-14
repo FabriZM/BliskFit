@@ -10,6 +10,7 @@ import { rollUp, sumMuscles, underTrained, weekSeries } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
 import type { StatsCtx } from './ctx'
 import { TrendDownIcon, TrendUpIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 const UNDER_WEEKS = 4
 
@@ -23,6 +24,7 @@ function Delta({ cur, prev, good = true }: { cur: number; prev: number; good?: b
 /** Weekly summary against last week, under-trained muscles, recent PRs. */
 export default function OverviewSection({ ctx }: { ctx: StatsCtx }) {
   const { t, i18n } = useTranslation()
+  const exName = useExerciseName()
   const { setsTarget } = useSettings((s) => s.settings)
   const { derived, data, today, weekStartDay, units } = ctx
 
@@ -88,7 +90,7 @@ export default function OverviewSection({ ctx }: { ctx: StatsCtx }) {
             const ex = ctx.exById.get(s.exerciseId)
             return (
               <li key={s.id} className="row">
-                <span>{ex?.name ?? '?'} <PRBadge kinds={derived.prs.get(s.id)!} inline /></span>
+                <span>{exName(ex, '?')} <PRBadge kinds={derived.prs.get(s.id)!} inline /></span>
                 <span className="muted">{ex ? formatSet(s, ex.trackingType, units) : ''} · {fmtDate.format(s.doneAt!)}</span>
               </li>
             )

@@ -19,6 +19,7 @@ import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { ExercisesIcon } from '../../components/TabIcons'
 import { CloseIcon, GripIcon, LinkIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 interface RowProps {
   routineId: string
@@ -35,6 +36,7 @@ interface RowProps {
 
 function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const hasReps = exercise ? !['duration', 'cardio'].includes(exercise.trackingType) : true
   const grouped = pos.pos !== 'single'
@@ -46,7 +48,7 @@ function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, o
       <div className="rx-head">
         <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         {/* The exercise page's back button returns here (see ExerciseDetail). */}
-        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: `/routines/${routineId}` }}>{exercise?.name ?? '…'}</Link>
+        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: `/routines/${routineId}` }}>{exName(exercise)}</Link>
         <button className="icon" aria-label={t('common.delete')} onClick={onRemove}><CloseIcon /></button>
       </div>
       <div className="rx-fields">

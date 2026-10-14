@@ -17,6 +17,7 @@ import ExerciseHistory from './ExerciseHistory'
 import ExerciseProgress from './ExerciseProgress'
 import { BackLink } from '../../components/PageHeader'
 import { PlayIcon, StarIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 const TABS = ['about', 'progress', 'history', 'setup'] as const
 type Tab = (typeof TABS)[number]
@@ -28,6 +29,7 @@ function NotePhoto({ blob }: { blob: Blob }) {
 
 export default function ExerciseDetail() {
   const { t, i18n } = useTranslation()
+  const exName = useExerciseName()
   const nav = useNavigate()
   const id = decodeURIComponent(useParams().id ?? '')
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
@@ -80,7 +82,7 @@ export default function ExerciseDetail() {
     <section>
       <BackLink to={backTo} label={backTo === '/workout' ? t('tabs.workout') : backTo === '/exercises' ? t('tabs.exercises') : t('routines.routine')} />
       <div className="row head">
-        <h1>{ex.name}</h1>
+        <h1>{exName(ex)}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}
           aria-label={favorites.has(id) ? t('exercises.unfavorite') : t('exercises.favorite')} onClick={() => void toggleFavorite(id)}>
           <StarIcon filled={favorites.has(id)} />
@@ -90,7 +92,7 @@ export default function ExerciseDetail() {
         {t(`tracking.${ex.trackingType}`)} · {t(`equipment.${ex.equipment ?? 'none'}`, { defaultValue: ex.equipment ?? '' })}
         {ex.level && <> · {t(`exercises.level.${ex.level}`)}</>}
       </p>
-      <div className="segmented ex-tabs" role="tablist" aria-label={ex.name}>
+      <div className="segmented ex-tabs" role="tablist" aria-label={exName(ex)}>
         {TABS.map((x) => (
           <button key={x} role="tab" id={`tab-${x}`} aria-selected={tab === x} aria-controls="ex-panel"
             className={tab === x ? 'on' : ''} onClick={() => setTab(x)}>{t(`exercises.tab_${x}`)}</button>
@@ -101,8 +103,8 @@ export default function ExerciseDetail() {
         {tab === 'about' && (
           <>
             {about && <p className="about">{about}</p>}
-            <ImageCarousel label={ex.name} images={[
-              ...(photoUrl ? [{ src: photoUrl, alt: ex.name }] : []),
+            <ImageCarousel label={exName(ex)} images={[
+              ...(photoUrl ? [{ src: photoUrl, alt: exName(ex) }] : []),
               ...demo.map((src, i) => ({ src, alt: t(i === 0 ? 'carousel.start' : 'carousel.end') })),
             ]} />
             <p><strong>{t('exercises.primary')}:</strong> {ex.primaryMuscleIds.map(name).join(', ') || '—'}</p>

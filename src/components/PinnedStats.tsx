@@ -20,6 +20,7 @@ import Sparkline from './stats/Sparkline'
 import { measurementLabel } from './stats/measurementLabel'
 import { pinTargets } from '../db/stats'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronRightIcon, CloseIcon, PencilIcon } from './Icons'
+import { useExerciseName } from '../lib/exerciseName'
 
 function AddWeight() {
   const { t } = useTranslation()
@@ -39,6 +40,7 @@ function AddWeight() {
 /** The stats you pinned in the Stats panel, as compact cards: value, change over the range, sparkline. */
 export default function PinnedStats() {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const { units: appUnits, weekStartDay, pinsDismissed } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   const stored = useSettings((s) => s.settings.pinnedStats)
@@ -68,7 +70,7 @@ export default function PinnedStats() {
     switch (p.kind) {
       case 'weekly': return t('stats.sessionsPerWeek')
       case 'muscles': return p.muscleId && muscleById.get(p.muscleId) ? `${muscleLabel(muscleById.get(p.muscleId)!, t)} · ${t('stats.setsShort')}` : t('stats.allSets')
-      case 'exercise': return `${derived.exById.get(p.exerciseId!)?.name ?? '?'} · ${t(`stats.metric_${p.metric}`)}`
+      case 'exercise': return `${exName(derived.exById.get(p.exerciseId!), '?')} · ${t(`stats.metric_${p.metric}`)}`
       case 'bodyweight': return t('body.weight')
       case 'measurement': return measurementLabel(p.measurement!, t)
       case 'photo': return `${t('stats.photos')} · ${p.tag ?? t('body.untagged')}`

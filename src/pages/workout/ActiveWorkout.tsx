@@ -26,9 +26,11 @@ import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
 import { ChevronDownIcon, MoreIcon, PauseIcon } from '../../components/Icons'
 import { useWorkoutView } from '../../stores/workoutView'
+import { useExerciseName } from '../../lib/exerciseName'
 
 export default function ActiveWorkout({ session }: { session: WorkoutSession }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const nav = useNavigate()
   const settings = useSettings((s) => s.settings)
   const { units, restPopup } = settings
@@ -80,7 +82,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
     if (over && active.id !== over.id) void moveItem(session.id, String(active.id), String(over.id))
   }
   const removedNames = useLiveQuery(async () => new Map((await db.exercises.bulkGet(routineChanges?.removed ?? [])).filter((e): e is Exercise => !!e).map((e) => [e.id, e.name])), [routineChanges])
-  const nameOf = (exId: string) => exMap.get(exId)?.name ?? removedNames?.get(exId) ?? '…'
+  const nameOf = (exId: string) => (exMap.get(exId) ? exName(exMap.get(exId)) : removedNames?.get(exId) ?? '…')
   const doSwap = async (scope: SwapScope) => {
     if (swapping && swapTo) await swapExercise(session.id, swapping, swapTo, scope)
     setSwapping(null); setSwapTo(null)
@@ -146,7 +148,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       {swapping && swapTo && (
         <div className="modal" role="dialog" aria-modal="true">
           <div className="modal-card">
-            <h2>{t('workout.swapScope', { name: swapTo.name })}</h2>
+            <h2>{t('workout.swapScope', { name: exName(swapTo) })}</h2>
             <button onClick={() => void doSwap('session')}>{t('workout.scopeSession')}</button>
             <button onClick={() => void doSwap('routine')}>{t('workout.scopeRoutine')}</button>
             <button onClick={() => void doSwap('all')}>{t('workout.scopeAll')}</button>

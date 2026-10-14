@@ -10,6 +10,7 @@ import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { SearchIcon } from '../../components/TabIcons'
 import { StarIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 const PAGE = 60
 
@@ -18,6 +19,7 @@ const saved = { query: '', muscle: '', equipment: '', favoritesOnly: false, show
 
 export default function ExerciseList() {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const [query, setQuery] = useState(saved.query)
   const [muscle, setMuscle] = useState(saved.muscle)
   const [equipment, setEquipment] = useState(saved.equipment)
@@ -54,8 +56,8 @@ export default function ExerciseList() {
     if (!exercises || !muscles) return []
     const ids = muscle ? withDescendants(muscles, muscle) : new Set<string>()
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
-    return filterExercises(exercises, { query, equipmentLabel, muscleIds: ids, equipment, favorites, favoritesOnly })
-  }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly, t])
+    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleIds: ids, equipment, favorites, favoritesOnly })
+  }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly, t, exName])
 
   const reset = (fn: () => void) => { fn(); setShown(PAGE) }
 
@@ -94,7 +96,7 @@ export default function ExerciseList() {
             {results.slice(0, shown).map((e) => (
               <li key={e.id} className="ex-row">
                 <Link to={`/exercises/${encodeURIComponent(e.id)}`}>
-                  <strong>{e.name}</strong>
+                  <strong>{exName(e)}</strong>
                   <span className="muted">
                     {e.primaryMuscleIds.map((id) => muscleName.get(id)).join(', ')}
                     {e.source === 'custom' ? ` · ${t('exercises.custom')}` : ''}

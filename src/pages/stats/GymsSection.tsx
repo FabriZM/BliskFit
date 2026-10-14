@@ -5,13 +5,15 @@ import { exercisesAtSeveralGyms, gymComparison } from '../../lib/stats'
 import { weightUnitFor } from '../../lib/plates'
 import { formatNum, kgToDisplay } from '../../lib/units'
 import type { StatsCtx } from './ctx'
+import { useExerciseName } from '../../lib/exerciseName'
 
 /** Same exercise at each gym: best set, estimated 1RM and volume per session. Only built when two or more gyms have sessions. */
 export default function GymsSection({ ctx }: { ctx: StatsCtx }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const { data } = ctx
   const ids = exercisesAtSeveralGyms(data.sets, data.sessions)
-  const options = [...ids].map((id) => ctx.exById.get(id)).filter((e): e is NonNullable<typeof e> => !!e).sort((a, b) => a.name.localeCompare(b.name))
+  const options = [...ids].map((id) => ctx.exById.get(id)).filter((e): e is NonNullable<typeof e> => !!e).sort((a, b) => exName(a).localeCompare(exName(b)))
   const [sel, setSel] = useState<string>()
   const ex = ctx.exById.get(sel ?? '') && ids.has(sel!) ? ctx.exById.get(sel!)! : options[0]
   if (!ex) return <div className="card muted">{t('stats.gymsNone')}</div>

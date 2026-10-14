@@ -23,6 +23,7 @@ import PlateSheet from './PlateSheet'
 import RestEditor from './RestEditor'
 import SetRow, { SetsHeader } from './SetRow'
 import { BulbIcon, FlameIcon, GripIcon, MoreIcon, NoteIcon, SkipIcon, SlidersIcon, SwapIcon, TimerIcon, TrashIcon, UndoIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 // Rest-over notifications are on by default: the first completed set (a tap, which browsers require for the prompt)
 // asks for permission if it was never answered. Blocked stays blocked; the workout menu says so.
@@ -43,6 +44,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   onSwap: () => void
 }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   // Dragged by its handle to reorder the workout (ActiveWorkout owns the drag context).
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [menu, setMenu] = useState(false)
@@ -146,7 +148,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       <div className="rx-head">
         <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         {/* The exercise page's back button returns here (see ExerciseDetail). */}
-        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: '/workout' }}>{exercise?.name ?? '…'}</Link>
+        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: '/workout' }}>{exName(exercise)}</Link>
         <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
       </div>
       <p className="muted small meta">
@@ -184,7 +186,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
             <div className="last-hint suggest">
               <span className="muted small">
                 <BulbIcon /> {t('workout.suggested')}: {formatSet(suggestedSet, tracking, appUnits)}
-                {' · '}{t('workout.basedOn', { names: suggestion.basedOn.slice(0, 2).map((b) => b.name).join(', ') })}
+                {' · '}{t('workout.basedOn', { names: suggestion.basedOn.slice(0, 2).map((b) => exName(b)).join(', ') })}
                 {suggestion.confidence === 'rough' ? ` (${t('workout.rough')})` : ''}
               </span>
               <button onClick={useSuggestion}>{t('workout.useSuggestion')}</button>
@@ -226,7 +228,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         <div className="modal" role="dialog" aria-modal="true" aria-label={t('equipmentSettings.title')} onClick={() => setEditingEquipment(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2>{t('equipmentSettings.title')}</h2>
-            <p className="muted small">{exercise.name}</p>
+            <p className="muted small">{exName(exercise)}</p>
             <EquipmentSettings exercise={exercise} />
             <button className="primary" onClick={() => setEditingEquipment(false)}>{t('common.done')}</button>
           </div>
@@ -236,7 +238,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
       {confirmRemove && (
         <div className="modal" role="alertdialog" aria-modal="true">
           <div className="modal-card">
-            <h2>{t('workout.removeTitle', { name: exercise?.name ?? '' })}</h2>
+            <h2>{t('workout.removeTitle', { name: exName(exercise, '') })}</h2>
             {doneCount > 0 && <p className="muted">{t('workout.removeBody', { count: doneCount })}</p>}
             <button className="danger" onClick={() => { void removeItem(session.id, item.id) }}>{t('workout.removeExercise')}</button>
             <button onClick={() => setConfirmRemove(false)}>{t('common.cancel')}</button>

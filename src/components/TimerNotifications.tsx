@@ -11,6 +11,7 @@ import { weightUnitFor } from '../lib/plates'
 import { NOTIFICATION_IDS, platform } from '../lib/platform'
 import { forgottenDueAt, lastDoneAt, type SetValues } from '../lib/workout'
 import { useSettings } from '../stores/settings'
+import { exerciseName } from '../lib/exerciseName'
 
 /** What the rest notification says comes next, and what Done would log (if anything). */
 interface Next { exercise: string; name: SetName; shown?: string; payload?: string }
@@ -18,7 +19,7 @@ interface Next { exercise: string; name: SetName; shown?: string; payload?: stri
 /** Done's payload: the set and the values the notification showed. */
 interface DonePayload { sessionId: string; setId: string; values: SetValues }
 
-async function loadNext(session: WorkoutSession, sets: SetLog[], appUnits: Units): Promise<Next | null> {
+async function loadNext(session: WorkoutSession, sets: SetLog[], appUnits: Units, lang: string): Promise<Next | null> {
   const set = nextSet(session.exercises, sets)
   const item = set && session.exercises.find((x) => x.id === set.itemId)
   if (!set || !item) return null
@@ -28,7 +29,7 @@ async function loadNext(session: WorkoutSession, sets: SetLog[], appUnits: Units
   const values = valuesToLog(set, itemSets, tracking, last, appUnits)
   const payload: DonePayload | undefined = values && { sessionId: session.id, setId: set.id, values }
   return {
-    exercise: exercise?.name ?? '…', name: setName(set, itemSets),
+    exercise: exercise ? exerciseName(exercise, lang) : '…', name: setName(set, itemSets),
     shown: values && formatSet({ ...set, ...values }, tracking, weightUnitFor(exercise, appUnits)),
     payload: payload && JSON.stringify(payload),
   }
@@ -41,14 +42,14 @@ async function loadNext(session: WorkoutSession, sets: SetLog[], appUnits: Units
  * names the next set and can log it (Done), add 15s or skip the rest without opening the app.
  */
 export default function TimerNotifications() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const appUnits = useSettings((s) => s.settings.units)
   const data = useLiveQuery(async () => {
     const session = await getActiveSession()
     const sets = session ? await db.setLogs.where('sessionId').equals(session.id).toArray() : []
-    return { session, sets, next: session?.rest ? await loadNext(session, sets, appUnits) : null }
-  }, [appUnits])
+    return { session, sets, next: session?.rest ? await loadNext(session, sets, appUnits, i18n.language) : null }
+  }, [appUnits, i18n.language])
   const session = data?.session
   const loaded = data !== undefined
 

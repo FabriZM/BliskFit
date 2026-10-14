@@ -6,6 +6,7 @@ import type { Exercise, Units } from '../../db/types'
 import { barWeight, formatPlate, loadFor, PLATES, totalWeight } from '../../lib/plates'
 import { displayToKg } from '../../lib/units'
 import { CloseIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 /**
  * Plates for one set: tap plates to load the bar and see the total, or type a total to see the plates. Works in
@@ -20,6 +21,7 @@ export default function PlateSheet({ exercise, unit, weight, onUse, onClose }: {
   onClose: () => void
 }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const plates = PLATES[unit]
   const [bar, setBar] = useState(() => barWeight(exercise, unit))
   const [perSide, setPerSide] = useState(() => (weight ? loadFor(weight, barWeight(exercise, unit), plates).perSide : []))
@@ -45,7 +47,7 @@ export default function PlateSheet({ exercise, unit, weight, onUse, onClose }: {
     <div className="modal" role="dialog" aria-modal="true" aria-label={t('plates.title')} onClick={onClose}>
       <div className="modal-card plate-sheet" onClick={(e) => e.stopPropagation()}>
         <h2>{t('plates.title')}</h2>
-        <p className="muted small">{exercise.name}</p>
+        <p className="muted small">{exName(exercise)}</p>
 
         <div className="plate-visual" aria-hidden>
           <span className="plate-bar" />

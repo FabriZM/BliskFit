@@ -9,12 +9,14 @@ import { useSettings } from '../../stores/settings'
 import ExerciseRecords from '../exercises/ExerciseRecords'
 import type { StatsCtx } from './ctx'
 import { AlertIcon, StarIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 const SHOWN = 8
 
 /** Pick an exercise you have done, then see a chart per metric that fits its tracking type. */
 export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
   const { t } = useTranslation()
+  const exName = useExerciseName()
   const [params, setParams] = useSearchParams()
   const plateauSessions = useSettings((s) => s.settings.plateauSessions)
   const [query, setQuery] = useState('')
@@ -30,9 +32,9 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
   const matches = useMemo(() => {
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
     return done
-      .filter((r) => matchesQuery(r.ex, query, equipmentLabel))
+      .filter((r) => matchesQuery(r.ex, query, equipmentLabel, exName))
       .sort((a, b) => Number(data.favorites.has(b.ex.id)) - Number(data.favorites.has(a.ex.id)) || b.at - a.at)
-  }, [done, query, data.favorites, t])
+  }, [done, query, data.favorites, t, exName])
 
   const selectedId = params.get('ex') ?? [...done].sort((a, b) => b.at - a.at)[0]?.ex.id
   const selected = selectedId ? ctx.exById.get(selectedId) : undefined
@@ -52,17 +54,17 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
       <div className="chips picker-chips">
         {matches.slice(0, SHOWN).map(({ ex }) => (
           <button key={ex.id} className={`chip${ex.id === selectedId ? ' on' : ''}`} aria-pressed={ex.id === selectedId} onClick={() => select(ex.id)}>
-            {data.favorites.has(ex.id) && <><StarIcon filled className="fav-mark" label={t('exercises.favorites')} /> </>}{ex.name}
+            {data.favorites.has(ex.id) && <><StarIcon filled className="fav-mark" label={t('exercises.favorites')} /> </>}{exName(ex)}
           </button>
         ))}
-        {selected && !matches.slice(0, SHOWN).some((r) => r.ex.id === selected.id) && <button className="chip on" aria-pressed>{selected.name}</button>}
+        {selected && !matches.slice(0, SHOWN).some((r) => r.ex.id === selected.id) && <button className="chip on" aria-pressed>{exName(selected)}</button>}
         {matches.length > SHOWN && <span className="muted small">{t('stats.moreMatches', { count: matches.length - SHOWN })}</span>}
         {matches.length === 0 && <span className="muted small">{t('stats.noMatches')}</span>}
       </div>
 
       {selected && (
         <>
-          <h2 className="stats-ex-name">{selected.name}</h2>
+          <h2 className="stats-ex-name">{exName(selected)}</h2>
           {plateau && <p className="plateau" role="status"><AlertIcon /> {t('stats.plateau', { count: Math.max(3, plateauSessions) })}</p>}
           {metrics.map((metric) => (
             <SeriesCard key={metric} ctx={exCtx} title={t(`stats.metric_${metric}`)}

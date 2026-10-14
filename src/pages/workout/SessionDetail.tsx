@@ -17,6 +17,7 @@ import SummaryImage from './SummaryImage'
 import { autoBackupToDrive } from '../../db/driveBackup'
 import { BackLink } from '../../components/PageHeader'
 import { PencilIcon, TrashIcon } from '../../components/Icons'
+import { useExerciseName } from '../../lib/exerciseName'
 
 /** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
 function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
@@ -60,6 +61,7 @@ const PREFIX = { warmup: 'W ', drop: 'D ', working: '' } as const
  */
 export default function SessionDetail({ justFinished = false }: { justFinished?: boolean }) {
   const { t, i18n } = useTranslation()
+  const exName = useExerciseName()
   const nav = useNavigate()
   const id = useParams().id!
   // Opened from an exercise's History tab: back returns there.
@@ -172,7 +174,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
           return (
             <li key={it.id}>
               <div>
-                <strong><Link to={`/exercises/${encodeURIComponent(it.exerciseId)}`}>{ex?.name ?? '…'}</Link></strong>
+                <strong><Link to={`/exercises/${encodeURIComponent(it.exerciseId)}`}>{exName(ex)}</Link></strong>
                 {editing ? (
                   <ul className="sets">
                     {list.map((s) => {
@@ -221,7 +223,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
             showPR ? { value: String(prCount), label: t('summary.prs') } : { value: String(stats.exercises), label: t('summary.exercises') },
           ],
           items, sets, units, trackingOf,
-          names: new Map([...exercises].map(([k, e]) => [k, e.name])),
+          names: new Map([...exercises].map(([k, e]) => [k, exName(e)])),
           prs: showPR ? prs : new Map(),
         }} />
       )}
