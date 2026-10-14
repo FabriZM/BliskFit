@@ -101,24 +101,28 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
           <button className="icon" aria-label={t('workout.minimize')} title={t('workout.minimize')} onClick={() => minimize(true)}><ChevronDownIcon /></button>
           <button onClick={() => void (paused ? resume(session.id) : pause(session.id))}>{paused ? t('workout.resumeBtn') : t('workout.pause')}</button>
           <button className="primary" onClick={() => (doneCount ? void finish() : setConfirmFinish(true))}>{t('workout.finish')}</button>
-          <button className="icon" aria-expanded={menu} aria-label={t('workout.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
+          <button className="icon" aria-haspopup="dialog" aria-label={t('workout.options')} onClick={() => setMenu(true)}><MoreIcon /></button>
         </div>
       </div>
       <RestBar session={session} />
       </div>
 
       {menu && (
-        <div className="menu">
-          {gyms.length > 0 && (
-            <label>{t('gyms.gym')}
-              <select value={session.gymId ?? ''} onChange={(e) => void setGym(session.id, e.target.value || undefined)}>
-                <option value="">{t('workout.noGym')}</option>
-                {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-            </label>
-          )}
-          {notif.permission === 'denied' && <span className="muted small">{t('workout.remindersDenied')}</span>}
-          <button className="danger" onClick={() => setConfirmFinish(true)}>{t('workout.discard')}</button>
+        <div className="modal" role="dialog" aria-modal="true" aria-label={t('workout.options')} onClick={() => setMenu(false)}>
+          <div className="modal-card form" onClick={(e) => e.stopPropagation()}>
+            <h2>{t('workout.options')}</h2>
+            {gyms.length > 0 && (
+              <label>{t('gyms.gym')}
+                <select value={session.gymId ?? ''} onChange={(e) => void setGym(session.id, e.target.value || undefined)}>
+                  <option value="">{t('workout.noGym')}</option>
+                  {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
+              </label>
+            )}
+            {notif.permission === 'denied' && <p className="muted small">{t('workout.remindersDenied')}</p>}
+            <button className="danger" onClick={() => { setMenu(false); setConfirmFinish(true) }}>{t('workout.discard')}</button>
+            <button onClick={() => setMenu(false)}>{t('common.done')}</button>
+          </div>
         </div>
       )}
 
@@ -179,7 +183,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
             <h2>{doneCount ? t('workout.discard') : t('workout.noSetsTitle')}</h2>
             <p className="muted">{doneCount ? t('workout.confirmDiscard') : t('workout.noSetsBody')}</p>
             <button className="danger" onClick={async () => { await discardSession(session.id); nav('/workout', { replace: true }) }}>{t('workout.discard')}</button>
-            <button onClick={() => { setConfirmFinish(false); setMenu(false) }}>{t('workout.keepGoing')}</button>
+            <button onClick={() => setConfirmFinish(false)}>{t('workout.keepGoing')}</button>
           </div>
         </div>
       )}
