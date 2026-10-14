@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
 import { toggleFavorite, useFavorites } from '../../db/favorites'
 import { filterExercises } from '../../lib/exerciseFilter'
-import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
+import { muscleLabel, muscleSearchText, orderMuscles, withDescendants } from '../../lib/muscles'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { SearchIcon } from '../../components/TabIcons'
@@ -56,7 +56,7 @@ export default function ExerciseList() {
     if (!exercises || !muscles) return []
     const ids = muscle ? withDescendants(muscles, muscle) : new Set<string>()
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
-    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleIds: ids, equipment, favorites, favoritesOnly })
+    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(muscles, t), muscleIds: ids, equipment, favorites, favoritesOnly })
   }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly, t, exName])
 
   const reset = (fn: () => void) => { fn(); setShown(PAGE) }

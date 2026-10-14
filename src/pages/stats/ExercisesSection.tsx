@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import SeriesCard from '../../components/stats/SeriesCard'
 import { matchesQuery } from '../../lib/exerciseFilter'
+import { muscleSearchText } from '../../lib/muscles'
 import { weightUnitFor } from '../../lib/plates'
 import { exerciseSeries, isPlateau, metricsFor } from '../../lib/stats'
 import { useSettings } from '../../stores/settings'
@@ -31,10 +32,11 @@ export default function ExercisesSection({ ctx }: { ctx: StatsCtx }) {
 
   const matches = useMemo(() => {
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
+    const muscleText = muscleSearchText(data.muscles, t)
     return done
-      .filter((r) => matchesQuery(r.ex, query, equipmentLabel, exName))
+      .filter((r) => matchesQuery(r.ex, query, equipmentLabel, exName, (e) => muscleText(e, 'all')))
       .sort((a, b) => Number(data.favorites.has(b.ex.id)) - Number(data.favorites.has(a.ex.id)) || b.at - a.at)
-  }, [done, query, data.favorites, t, exName])
+  }, [done, query, data.favorites, data.muscles, t, exName])
 
   const selectedId = params.get('ex') ?? [...done].sort((a, b) => b.at - a.at)[0]?.ex.id
   const selected = selectedId ? ctx.exById.get(selectedId) : undefined

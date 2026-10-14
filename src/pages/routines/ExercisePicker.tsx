@@ -5,7 +5,7 @@ import { db } from '../../db/db'
 import { useFavorites } from '../../db/favorites'
 import type { Exercise } from '../../db/types'
 import { filterExercises } from '../../lib/exerciseFilter'
-import { muscleLabel, orderMuscles, withDescendants } from '../../lib/muscles'
+import { muscleLabel, muscleSearchText, orderMuscles, withDescendants } from '../../lib/muscles'
 import { StarIcon } from '../../components/Icons'
 import { useExerciseName } from '../../lib/exerciseName'
 
@@ -37,7 +37,7 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
     if (!exercises) return []
     const ids = shownMuscle ? withDescendants(muscles, shownMuscle) : new Set<string>()
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
-    const list = filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleIds: ids, equipment: '', favorites, favoritesOnly, primaryOnly: !!replacing })
+    const list = filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(muscles, t), muscleIds: ids, equipment: '', favorites, favoritesOnly, primaryOnly: !!replacing })
     if (!replacing) return list
     // Real alternatives first: the same kind of exercise (lifting vs timed/stretching vs cardio), then the same exact
     // main muscle (lats before the rest of the back). The sort is stable, so favorites and names keep their order.
