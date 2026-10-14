@@ -785,7 +785,7 @@
   },
   "ios": {
     "title": "Install on this iPhone",
-    "banner": "Install BliskFit on your Home Screen: it opens full screen and works offline, like an app.",
+    "banner": "Install BliskFit on your Home Screen, like an app.",
     "how": "Show me how",
     "notNow": "Not now",
     "step1Safari": "Tap the Share button in Safari's toolbar (at the bottom on iPhone, top right on iPad)",
