@@ -782,5 +782,20 @@
     "notNow": "Not now",
     "help": "After downloading, open the file and allow installing from your browser when Android asks. The app keeps its own data:",
     "moveData": "move yours over with a backup."
+  },
+  "ios": {
+    "title": "Install on this iPhone",
+    "banner": "Install BliskFit on your Home Screen: it opens full screen and works offline, like an app.",
+    "how": "Show me how",
+    "notNow": "Not now",
+    "step1Safari": "Tap the Share button in Safari's toolbar (at the bottom on iPhone, top right on iPad)",
+    "step1Other": "Tap the Share button (next to the address bar, or in the ⋯ menu)",
+    "step2": "Scroll down and tap “Add to Home Screen”",
+    "step3": "Tap “Add”, then open BliskFit from your Home Screen.",
+    "dataNote": "The Home Screen app keeps its own data, separate from the browser: install it before you log workouts, or",
+    "moveData": "move them over with a backup.",
+    "inApp": "This in-app browser can't add apps to your Home Screen. Open this page in Safari (copy the link, then paste it in Safari) and follow the steps there.",
+    "copyLink": "Copy link",
+    "copied": "Link copied"
   }
 }

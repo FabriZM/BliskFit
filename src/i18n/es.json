@@ -782,5 +782,20 @@
     "notNow": "Ahora no",
     "help": "Después de descargarlo, abre el archivo y permite instalar desde tu navegador cuando Android lo pida. La app tiene sus propios datos:",
     "moveData": "pasa los tuyos con una copia de seguridad."
+  },
+  "ios": {
+    "title": "Instalar en este iPhone",
+    "banner": "Instala BliskFit en tu pantalla de inicio: se abre a pantalla completa y funciona sin conexión, como una app.",
+    "how": "Ver cómo",
+    "notNow": "Ahora no",
+    "step1Safari": "Toca el botón Compartir en la barra de Safari (abajo en iPhone, arriba a la derecha en iPad)",
+    "step1Other": "Toca el botón Compartir (junto a la barra de direcciones o en el menú ⋯)",
+    "step2": "Desliza hacia abajo y toca “Agregar a inicio”",
+    "step3": "Toca “Agregar” y abre BliskFit desde tu pantalla de inicio.",
+    "dataNote": "La app de la pantalla de inicio tiene sus propios datos, separados del navegador: instálala antes de registrar entrenamientos, o",
+    "moveData": "pásalos con una copia de seguridad.",
+    "inApp": "Este navegador dentro de otra app no puede agregar apps a la pantalla de inicio. Abre esta página en Safari (copia el enlace y pégalo en Safari) y sigue los pasos ahí.",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado"
   }
 }

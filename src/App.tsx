@@ -12,6 +12,7 @@ import TimerNotifications from './components/TimerNotifications'
 import TrainingReminders from './components/TrainingReminders'
 import UpdateBanner from './components/UpdateBanner'
 import AndroidAppOffer from './components/AndroidAppOffer'
+import IosInstall from './components/IosInstall'
 import IncomingLinks from './components/IncomingLinks'
 import { platform } from './lib/platform'
 import RoutineEditor from './pages/routines/RoutineEditor'
@@ -75,6 +76,7 @@ export default function App() {
       )}
       {platform.isNative && <><UpdateBanner /><IncomingLinks /></>}
       {!platform.isNative && <AndroidAppOffer variant="banner" />}
+      {!platform.isNative && <IosInstall variant="banner" />}
       <main>
         {/* Keyed by path so each screen change replays the short fade-in. */}
         <div className="page" key={pathname}>
