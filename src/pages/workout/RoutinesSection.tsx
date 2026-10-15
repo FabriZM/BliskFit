@@ -36,7 +36,7 @@ export default function RoutinesSection({ running = false }: { running?: boolean
       </div>
       {routines && visible.length === 0 && (showArchived
         ? <p className="muted">{t('routines.noArchived')}</p>
-        : <EmptyState icon={<WorkoutIcon />} action={<><button className="primary" onClick={() => nav('/routines/templates')}>{t('templates.browse')}</button><button onClick={() => void create()}>+ {t('routines.new')}</button></>}>{t('routines.none')}</EmptyState>)}
+        : <EmptyState icon={<WorkoutIcon />} action={<><button className="primary" onClick={() => nav('/routines/templates?show=routines')}>{t('templates.browseRoutines')}</button><button onClick={() => void create()}>+ {t('routines.new')}</button></>}>{t('templates.routinesHint')}</EmptyState>)}
       {visible.length > 0 && <ul className="list grouped">
         {visible.map((r) => <RoutineItem key={r.id} routine={r} canStart={!running} />)}
       </ul>}
@@ -50,8 +50,10 @@ export default function RoutinesSection({ running = false }: { running?: boolean
         <span>{program ? `${t('programs.active')}: ${program.name}` : t('today.noProgram')}</span>
         <ChevronRightIcon />
       </Link>
+      {!program && <p className="muted small"><Link to="/routines/templates?show=programs">{t('templates.programsHint')}</Link></p>}
+      <h2>{t('templates.sectionTitle')}</h2>
       <Link className="card link-card" to="/routines/templates">
-        <span>{t('templates.title')}</span>
+        <span>{t('templates.sectionLink')}</span>
         <ChevronRightIcon />
       </Link>
     </>

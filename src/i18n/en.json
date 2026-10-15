@@ -810,8 +810,6 @@
     "copied": "Link copied"
   },
   "templates": {
-    "button": "Templates",
-    "browse": "Browse templates",
     "title": "Starter templates",
     "intro": "Ready-made programs and routines to get going. Anything you add can be changed or deleted at any time.",
     "add": "Add",
@@ -857,6 +855,12 @@
     },
     "programs": "Programs",
     "routines": "Routines",
-    "partOf": "From {{program}}"
+    "partOf": "From {{program}}",
+    "sectionTitle": "Templates",
+    "sectionLink": "Routine and program templates",
+    "browseRoutines": "Browse routine templates",
+    "browsePrograms": "Browse program templates",
+    "routinesHint": "No routines yet. Pick one from the templates or create your own.",
+    "programsHint": "No active program? Take a look at the templates."
   }
 }

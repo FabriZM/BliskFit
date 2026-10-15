@@ -32,7 +32,7 @@ export default function ProgramList() {
         <h1>{t('programs.title')}</h1>
         <button className="primary" onClick={() => void create()}>+ {t('programs.new')}</button>
       </div>
-      {data && data.programs.length === 0 && <EmptyState icon={<CalendarIcon />} action={<button className="primary" onClick={() => nav('/routines/templates')}>{t('templates.browse')}</button>}>{t('programs.none')}</EmptyState>}
+      {data && data.programs.length === 0 && <EmptyState icon={<CalendarIcon />} action={<button className="primary" onClick={() => nav('/routines/templates?show=programs')}>{t('templates.browsePrograms')}</button>}>{t('programs.none')}</EmptyState>}
       <ul className="list">
         {data?.programs.map((p) => (
           <li key={p.id}>

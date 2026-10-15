@@ -810,8 +810,6 @@
     "copied": "Enlace copiado"
   },
   "templates": {
-    "button": "Plantillas",
-    "browse": "Ver plantillas",
     "title": "Plantillas para empezar",
     "intro": "Programas y rutinas listos para empezar. Lo que agregues lo puedes cambiar o eliminar cuando quieras.",
     "add": "Agregar",
@@ -857,6 +855,12 @@
     },
     "programs": "Programas",
     "routines": "Rutinas",
-    "partOf": "De {{program}}"
+    "partOf": "De {{program}}",
+    "sectionTitle": "Plantillas",
+    "sectionLink": "Plantillas de rutinas y programas",
+    "browseRoutines": "Ver plantillas de rutinas",
+    "browsePrograms": "Ver plantillas de programas",
+    "routinesHint": "Aún no tienes rutinas. Elige una de las plantillas o crea la tuya.",
+    "programsHint": "¿Sin programa activo? Mira las plantillas."
   }
 }
