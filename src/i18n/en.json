@@ -813,11 +813,11 @@
     "button": "Templates",
     "browse": "Browse templates",
     "title": "Starter templates",
-    "intro": "Ready-made programs to get going. Adding one creates its routines and a program that you can change or delete at any time.",
+    "intro": "Ready-made programs and routines to get going. Anything you add can be changed or deleted at any time.",
     "add": "Add",
     "perWeek_one": "{{count}} day a week",
     "perWeek_other": "{{count}} days a week",
-    "help": "Nothing is activated automatically. Open the program afterwards and tap Set active to follow it.",
+    "help": "Nothing is activated automatically. Open a program afterwards and tap Set active to follow it.",
     "level": {
       "beginner": "Beginner",
       "intermediate": "Intermediate"
@@ -854,6 +854,9 @@
         "a": "Bodyweight A",
         "b": "Bodyweight B"
       }
-    }
+    },
+    "programs": "Programs",
+    "routines": "Routines",
+    "partOf": "From {{program}}"
   }
 }

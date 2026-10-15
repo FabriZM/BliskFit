@@ -813,11 +813,11 @@
     "button": "Plantillas",
     "browse": "Ver plantillas",
     "title": "Plantillas para empezar",
-    "intro": "Programas listos para comenzar. Al agregar uno se crean sus rutinas y un programa que puedes cambiar o eliminar cuando quieras.",
+    "intro": "Programas y rutinas listos para empezar. Lo que agregues lo puedes cambiar o eliminar cuando quieras.",
     "add": "Agregar",
     "perWeek_one": "{{count}} día por semana",
     "perWeek_other": "{{count}} días por semana",
-    "help": "Nada se activa automáticamente. Abre el programa después y toca Activar para seguirlo.",
+    "help": "Nada se activa automáticamente. Abre un programa después y toca Activar para seguirlo.",
     "level": {
       "beginner": "Principiante",
       "intermediate": "Intermedio"
@@ -854,6 +854,9 @@
         "a": "Peso corporal A",
         "b": "Peso corporal B"
       }
-    }
+    },
+    "programs": "Programas",
+    "routines": "Rutinas",
+    "partOf": "De {{program}}"
   }
 }

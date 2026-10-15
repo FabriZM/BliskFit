@@ -24,3 +24,12 @@ export async function addTemplate(id: string, t: (key: string) => string, weekSt
   if (!tpl) throw new Error(`Unknown template ${id}`)
   return (await importPackage(templatePackage(tpl, t), weekStartDay, now)).id
 }
+
+/** Adds a single routine of a template, on its own and without a program. */
+export async function addTemplateRoutine(id: string, key: string, t: (key: string) => string, weekStartDay: number): Promise<ID> {
+  const tpl = TEMPLATES.find((x) => x.id === id)
+  const index = tpl?.routines.findIndex((r) => r.key === key) ?? -1
+  if (!tpl || index < 0) throw new Error(`Unknown template routine ${id}/${key}`)
+  const { routines } = templatePackage(tpl, t)
+  return (await importPackage({ app: SHARE_APP, format: SHARE_FORMAT, kind: 'routine', exercises: [], routines: [routines[index]] }, weekStartDay)).id
+}

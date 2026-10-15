@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from './db'
 import { deleteRoutine } from './routines'
-import { addTemplate, templatePackage } from './templates'
+import { addTemplate, addTemplateRoutine, templatePackage } from './templates'
 import { TEMPLATES } from '../data/templates'
 import { validatePackage } from '../lib/share'
 import seed from '../data/seed-exercises.json'
@@ -45,5 +45,13 @@ describe('starter templates', () => {
     const [rid] = (await db.programs.get(id))!.rotation!
     await deleteRoutine(rid)
     expect((await db.programs.get(id))?.rotation).toHaveLength(2)
+  })
+
+  it('add a single routine without a program', async () => {
+    const id = await addTemplateRoutine('ppl', 'pull', t, 1)
+    const r = await db.routines.get(id)
+    expect(r?.name).toBe('templates.ppl.r.pull')
+    expect(r?.exercises).toHaveLength(5)
+    expect(await db.programs.count()).toBe(0)
   })
 })
