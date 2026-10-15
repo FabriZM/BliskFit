@@ -802,5 +802,52 @@
     "inApp": "Este navegador dentro de otra app no puede agregar apps a la pantalla de inicio. Abre esta página en Safari (copia el enlace y pégalo en Safari) y sigue los pasos ahí.",
     "copyLink": "Copiar enlace",
     "copied": "Enlace copiado"
+  },
+  "templates": {
+    "button": "Plantillas",
+    "browse": "Ver plantillas",
+    "title": "Plantillas para empezar",
+    "intro": "Programas listos para comenzar. Al agregar uno se crean sus rutinas y un programa que puedes cambiar o eliminar cuando quieras.",
+    "add": "Agregar",
+    "perWeek_one": "{{count}} día por semana",
+    "perWeek_other": "{{count}} días por semana",
+    "help": "Nada se activa automáticamente. Abre el programa después y toca Activar para seguirlo.",
+    "level": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio"
+    },
+    "fullBody3": {
+      "name": "Cuerpo completo, 3 días",
+      "desc": "Dos sesiones de cuerpo completo que se alternan en tres días por semana. Simple y efectivo con los levantamientos básicos.",
+      "r": {
+        "a": "Cuerpo completo A",
+        "b": "Cuerpo completo B"
+      }
+    },
+    "upperLower4": {
+      "name": "Torso / Piernas, 4 días",
+      "desc": "Torso y piernas dos veces por semana cada uno, con más volumen por músculo.",
+      "r": {
+        "upper": "Torso",
+        "lower": "Piernas"
+      }
+    },
+    "ppl": {
+      "name": "Empuje / Tirón / Piernas",
+      "desc": "Rota empuje, tirón y piernas. Entrena cuando quieras, continúa donde lo dejaste.",
+      "r": {
+        "push": "Empuje",
+        "pull": "Tirón",
+        "legs": "Piernas"
+      }
+    },
+    "bodyweight3": {
+      "name": "Peso corporal, 3 días",
+      "desc": "Sin equipamiento. Dos sesiones cortas que se alternan en tres días por semana.",
+      "r": {
+        "a": "Peso corporal A",
+        "b": "Peso corporal B"
+      }
+    }
   }
 }

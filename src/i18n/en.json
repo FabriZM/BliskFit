@@ -802,5 +802,52 @@
     "inApp": "This in-app browser can't add apps to your Home Screen. Open this page in Safari (copy the link, then paste it in Safari) and follow the steps there.",
     "copyLink": "Copy link",
     "copied": "Link copied"
+  },
+  "templates": {
+    "button": "Templates",
+    "browse": "Browse templates",
+    "title": "Starter templates",
+    "intro": "Ready-made programs to get going. Adding one creates its routines and a program that you can change or delete at any time.",
+    "add": "Add",
+    "perWeek_one": "{{count}} day a week",
+    "perWeek_other": "{{count}} days a week",
+    "help": "Nothing is activated automatically. Open the program afterwards and tap Set active to follow it.",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate"
+    },
+    "fullBody3": {
+      "name": "Full body, 3 days",
+      "desc": "Two full-body sessions alternating across three days a week. Simple and effective with the basic lifts.",
+      "r": {
+        "a": "Full body A",
+        "b": "Full body B"
+      }
+    },
+    "upperLower4": {
+      "name": "Upper / Lower, 4 days",
+      "desc": "Upper and lower body twice a week each, with more volume per muscle.",
+      "r": {
+        "upper": "Upper body",
+        "lower": "Lower body"
+      }
+    },
+    "ppl": {
+      "name": "Push / Pull / Legs",
+      "desc": "Rotate pushing, pulling and legs. Train as often as you like, it picks up where you left off.",
+      "r": {
+        "push": "Push",
+        "pull": "Pull",
+        "legs": "Legs"
+      }
+    },
+    "bodyweight3": {
+      "name": "Bodyweight, 3 days",
+      "desc": "No equipment needed. Two short sessions alternating three days a week.",
+      "r": {
+        "a": "Bodyweight A",
+        "b": "Bodyweight B"
+      }
+    }
   }
 }
