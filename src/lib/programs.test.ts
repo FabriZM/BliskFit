@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Program } from '../db/types'
-import { copyWeekToAll, dayDiff, programWeek, pruneProgram, resizeSchedule, suggestToday, weekStart } from './programs'
+import { copyWeekToAll, dayDiff, daysPerWeek, duplicateProgram, filterPrograms, programRoutineIds, programWeek, pruneProgram, resizeSchedule, sortPrograms, suggestToday, weekStart } from './programs'
 
 const d = (s: string) => new Date(s + 'T12:00:00')
 const MON = 1
@@ -67,5 +67,39 @@ describe('schedule helpers', () => {
     const out = pruneProgram(p, new Set(['a']))
     expect(out.schedule).toEqual({ 0: { 1: 'a' } })
     expect(out.rotation).toEqual(['a'])
+  })
+})
+
+describe('program lists', () => {
+  const weekly: Program = { id: 'w', name: 'Weekly', mode: 'weekday', weeks: 2, startDate: 0, schedule: { 0: { 1: 'a', 3: 'b' }, 1: { 1: 'b', 2: 'c', 5: 'a' } } }
+  const rotation: Program = { id: 'r', name: 'Rotation', mode: 'rotation', weeks: 1, rotation: ['c', 'a', 'c'] }
+  const names = new Map([['a', 'Push'], ['b', 'Pull'], ['c', 'Legs']])
+
+  it('lists each routine once, in order', () => {
+    expect(programRoutineIds(weekly)).toEqual(['a', 'b', 'c'])
+    expect(programRoutineIds(rotation)).toEqual(['c', 'a'])
+  })
+  it('counts days in the busiest week', () => expect(daysPerWeek(weekly)).toBe(3))
+  it('duplicates with a new id and its own copy of the schedule', () => {
+    const copy = duplicateProgram(weekly, 'Weekly (copy)')
+    expect(copy.id).not.toBe('w')
+    expect(copy.name).toBe('Weekly (copy)')
+    expect(copy.schedule).toEqual(weekly.schedule)
+    copy.schedule![0][1] = 'z'
+    expect(weekly.schedule![0][1]).toBe('a')
+  })
+  it('filters by name or routine name, type and status', () => {
+    const f = (query: string, mode: 'all' | 'weekday' | 'rotation' = 'all', status: 'all' | 'active' | 'inactive' = 'all') =>
+      filterPrograms([weekly, rotation], { query, mode, status }, 'r', names).map((p) => p.id)
+    expect(f('')).toEqual(['w', 'r'])
+    expect(f('rotat')).toEqual(['r'])
+    expect(f('pull')).toEqual(['w'])
+    expect(f('', 'weekday')).toEqual(['w'])
+    expect(f('', 'all', 'active')).toEqual(['r'])
+    expect(f('', 'all', 'inactive')).toEqual(['w'])
+  })
+  it('sorts the active program first, then A to Z', () => {
+    expect(sortPrograms([weekly, rotation], 'w').map((p) => p.id)).toEqual(['w', 'r'])
+    expect(sortPrograms([weekly, rotation], undefined).map((p) => p.id)).toEqual(['r', 'w'])
   })
 })

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
-import { getActiveProgramId, setActiveProgramId } from '../../db/programs'
+import { deleteProgram, getActiveProgramId, setActiveProgramId } from '../../db/programs'
 import type { Program } from '../../db/types'
 import { fromDateInput, orderedWeekdays, toDateInput, weekdayNames } from '../../lib/dates'
 import { copyWeekToAll, resizeSchedule } from '../../lib/programs'
@@ -130,8 +130,7 @@ export default function ProgramEditor() {
       <div className="actions">
         <button className="danger" onClick={async () => {
           if (!confirm(t('programs.confirmDelete'))) return
-          if (active === id) await setActiveProgramId(undefined)
-          await db.programs.delete(id)
+          await deleteProgram(id)
           nav('/routines/programs', { replace: true })
         }}>{t('common.delete')}</button>
       </div>

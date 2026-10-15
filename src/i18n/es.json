@@ -245,7 +245,20 @@
     "rotationSummary_one": "Rotación · {{count}} rutina",
     "rotationSummary_other": "Rotación · {{count}} rutinas",
     "defaultGym": "Gimnasio por defecto",
-    "noDefaultGym": "Ninguno (el último usado)"
+    "noDefaultGym": "Ninguno (el último usado)",
+    "menu": "Opciones del programa",
+    "showAll": "Ver todos los programas ({{count}})",
+    "search": "Buscar programas",
+    "count_one": "{{count}} programa",
+    "count_other": "{{count}} programas",
+    "noResults": "Ningún programa coincide con tu búsqueda.",
+    "typeAll": "Todos los tipos",
+    "status": "Estado",
+    "statusAll": "Todos los programas",
+    "statusActive": "Activo",
+    "statusInactive": "No activo",
+    "daysPerWeek_one": "{{count}} día por semana",
+    "daysPerWeek_other": "{{count}} días por semana"
   },
   "today": {
     "title": "Entrenamiento de hoy",

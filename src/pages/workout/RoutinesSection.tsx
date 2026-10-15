@@ -7,11 +7,12 @@ import { getActiveProgramId } from '../../db/programs'
 import { routineLastUsed } from '../../db/routines'
 import { sortByLastUsed } from '../../lib/routines'
 import RoutineItem from './RoutineItem'
+import ProgramItem from '../programs/ProgramItem'
 import EmptyState from '../../components/EmptyState'
 import { WorkoutIcon } from '../../components/TabIcons'
 import { ChevronRightIcon } from '../../components/Icons'
 
-const SHOWN = 4
+const SHOWN = 3
 
 /** Routines (start / open / create) and the entry to programs: the heart of the Workout tab. `running`: a workout is on, so no starting another. */
 export default function RoutinesSection({ running = false }: { running?: boolean }) {
@@ -22,6 +23,8 @@ export default function RoutinesSection({ running = false }: { running?: boolean
   const program = useLiveQuery(async () => { const id = await getActiveProgramId(); return id ? db.programs.get(id) : undefined }, [])
 
   const lastUsed = useLiveQuery(routineLastUsed, [])
+  const programCount = useLiveQuery(() => db.programs.count(), [])
+  const routineNames = new Map((routines ?? []).map((r) => [r.id, r.name]))
 
   const create = async () => {
     const id = newId()
@@ -56,10 +59,17 @@ export default function RoutinesSection({ running = false }: { running?: boolean
         </button>
       )}
       <h2>{t('programs.title')}</h2>
-      <Link className="card link-card" to="/routines/programs">
-        <span>{program ? `${t('programs.active')}: ${program.name}` : t('today.noProgram')}</span>
-        <ChevronRightIcon />
-      </Link>
+      {program
+        ? <ul className="list rt-list"><ProgramItem program={program} active routineNames={routineNames} /></ul>
+        : (
+          <Link className="card link-card" to="/routines/programs">
+            <span>{t('today.noProgram')}</span>
+            <ChevronRightIcon />
+          </Link>
+        )}
+      {(programCount ?? 0) > (program ? 1 : 0) && (
+        <button className="archived-toggle" onClick={() => nav('/routines/programs')}>{t('programs.showAll', { count: programCount })}</button>
+      )}
       <h2>{t('templates.sectionTitle')}</h2>
       <Link className="card link-card" to="/routines/templates">
         <span>{t('templates.sectionLink')}</span>

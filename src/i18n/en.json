@@ -245,7 +245,20 @@
     "rotationSummary_one": "Rotation · {{count}} routine",
     "rotationSummary_other": "Rotation · {{count}} routines",
     "defaultGym": "Default gym",
-    "noDefaultGym": "None (last used)"
+    "noDefaultGym": "None (last used)",
+    "menu": "Program options",
+    "showAll": "Show all programs ({{count}})",
+    "search": "Search programs",
+    "count_one": "{{count}} program",
+    "count_other": "{{count}} programs",
+    "noResults": "No programs match your search.",
+    "typeAll": "All types",
+    "status": "Status",
+    "statusAll": "All programs",
+    "statusActive": "Active",
+    "statusInactive": "Not active",
+    "daysPerWeek_one": "{{count}} day a week",
+    "daysPerWeek_other": "{{count}} days a week"
   },
   "today": {
     "title": "Today's workout",

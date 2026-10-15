@@ -1,4 +1,5 @@
 import type { ID, Program } from '../db/types'
+import { newId } from './id'
 
 const DAY_MS = 86_400_000
 const utcDay = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
@@ -77,3 +78,44 @@ export function pruneProgram(p: Program, valid: Set<ID>): Program {
       [w, Object.fromEntries(Object.entries(days).filter(([, id]) => valid.has(id)))])),
   }
 }
+
+/** Routines a program uses, each once, in order: the rotation list, or the schedule week by week and day by day. */
+export function programRoutineIds(p: Program): ID[] {
+  if (p.mode === 'rotation') return [...new Set(p.rotation ?? [])]
+  const ids: ID[] = []
+  for (const w of Object.keys(p.schedule ?? {}).map(Number).sort((a, b) => a - b)) {
+    const days = p.schedule![w]
+    for (const d of Object.keys(days).map(Number).sort((a, b) => a - b)) ids.push(days[d])
+  }
+  return [...new Set(ids)]
+}
+
+/** Training days in the busiest week of a weekly program. */
+export const daysPerWeek = (p: Program): number =>
+  Math.max(0, ...Object.values(p.schedule ?? {}).map((days) => Object.keys(days).length))
+
+/** A new program using the same routines (the routines themselves are shared, not copied). */
+export function duplicateProgram(p: Program, name: string): Program {
+  return { ...JSON.parse(JSON.stringify(p)) as Program, id: newId(), name }
+}
+
+export type ProgramMode = Program['mode'] | 'all'
+export type ProgramStatus = 'all' | 'active' | 'inactive'
+
+/** Search by program or routine name, narrowed by schedule type and by whether it is the active program. */
+export function filterPrograms(
+  programs: Program[],
+  f: { query: string; mode: ProgramMode; status: ProgramStatus },
+  activeId: ID | undefined,
+  routineNames: Map<ID, string>,
+): Program[] {
+  const q = f.query.trim().toLowerCase()
+  return programs.filter((p) =>
+    (f.mode === 'all' || p.mode === f.mode)
+    && (f.status === 'all' || (f.status === 'active') === (p.id === activeId))
+    && (!q || p.name.toLowerCase().includes(q) || programRoutineIds(p).some((id) => routineNames.get(id)?.toLowerCase().includes(q))))
+}
+
+/** The active program first, then A to Z. */
+export const sortPrograms = (programs: Program[], activeId: ID | undefined): Program[] =>
+  [...programs].sort((a, b) => Number(b.id === activeId) - Number(a.id === activeId) || a.name.localeCompare(b.name))
