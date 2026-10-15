@@ -3,18 +3,16 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchLatestRelease } from '../db/appUpdate'
 import { platform } from '../lib/platform'
+import { dismissOffer, installOptions, offerDismissed } from '../lib/installOptions'
 import { usePwaInstall } from '../lib/pwaInstall'
 import { RELEASES_PAGE, type AppRelease } from '../lib/updates'
 
 /** The web version opened in a browser on an Android phone (where the APK can be installed instead). */
 export const isAndroidWeb = () => !platform.isNative && typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
 
-const DISMISSED = 'bliskfit.apkOfferDismissed'
-const PWA_DISMISSED = 'bliskfit.pwaOfferDismissed'
-const read = (key: string) => { try { return localStorage.getItem(key) === '1' } catch { return false } }
-const remember = (key: string) => { try { localStorage.setItem(key, '1') } catch { /* ignore */ } }
-const wasDismissed = () => read(DISMISSED)
-const pwaWasDismissed = () => read(PWA_DISMISSED)
+
+/** Running as the installed web app (PWA): they already chose, so the bar stays away (Settings still has the row). */
+const isStandalone = () => window.matchMedia?.('(display-mode: standalone)').matches === true
 
 /** Latest release's APK link; the releases page until it's known (or if GitHub can't be reached). */
 function useApkLink(enabled: boolean): { href: string; release?: AppRelease } {
@@ -23,56 +21,76 @@ function useApkLink(enabled: boolean): { href: string; release?: AppRelease } {
   return { href: release?.apkUrl ?? RELEASES_PAGE, release }
 }
 
+/** The choice: Android app (APK) or web app (PWA), each with what it's good for. */
+function ChoiceSheet({ href, onInstallPwa, onClose }: { href: string; onInstallPwa: () => void; onClose: () => void }) {
+  const { t } = useTranslation()
+  return (
+    <div className="modal" role="dialog" aria-modal="true" aria-label={t('apk.sheetTitle')} onClick={onClose}>
+      <div className="modal-card install-sheet" onClick={(e) => e.stopPropagation()}>
+        <h2>{t('apk.sheetTitle')}</h2>
+        <div className="install-choice">
+          <strong>{t('apk.apkTitle')}</strong>
+          <p className="muted small">{t('apk.apkDesc')}</p>
+          <a className="btn" href={href} rel="noopener" onClick={onClose}>{t('apk.download')}</a>
+        </div>
+        <div className="install-choice">
+          <strong>{t('apk.pwaTitle')}</strong>
+          <p className="muted small">{t('apk.pwaDesc')}</p>
+          <button className="primary" onClick={onInstallPwa}>{t('apk.install')}</button>
+        </div>
+        <p className="muted small help">{t('apk.dataNote')} <Link to="/profile/backup" onClick={onClose}>{t('apk.moveData')}</Link></p>
+        <button onClick={onClose}>{t('common.close')}</button>
+      </div>
+    </div>
+  )
+}
+
 /**
- * Android users of the web version: first a short bar offering the APK; once that's dismissed, the bar offering to
- * install the web app (PWA) instead, if the browser can. In Settings (`row`) the APK offer is always there.
- * The app gives on-time rest alerts with the screen locked and updates itself; its data is separate, so it
- * points to a backup for moving over.
+ * Android users of the web version get one short bar and one dismissal. With both options available, "Install" opens
+ * a sheet to choose between the Android app (APK) and the web app (PWA); with only the APK, the bar links straight
+ * to it. Settings (`row`) always offers the same choice. The Android app gives on-time rest alerts with the screen
+ * locked and updates itself; each app keeps its own data, so the sheet points to a backup for moving over.
  */
 export default function AndroidAppOffer({ variant }: { variant: 'banner' | 'row' }) {
   const { t } = useTranslation()
-  const [dismissed, setDismissed] = useState(() => variant === 'banner' && wasDismissed())
   const pwa = usePwaInstall()
-  const [pwaHidden, setPwaHidden] = useState(() => variant === 'banner' && pwaWasDismissed())
-  const showApk = isAndroidWeb() && !dismissed
-  const { href, release } = useApkLink(isAndroidWeb() && (variant === 'row' || showApk))
-  if (!isAndroidWeb()) return null
+  const options = installOptions({ androidWeb: isAndroidWeb(), canInstallPwa: pwa.canInstall })
+  const [dismissed, setDismissed] = useState(() => variant === 'banner' && (offerDismissed(localStorage) || isStandalone()))
+  const [open, setOpen] = useState(false)
+  const { href, release } = useApkLink(options.length > 0 && (variant === 'row' || !dismissed))
+  if (options.length === 0) return null
+  const both = options.length === 2
 
-  const download = (
-    <a className={variant === 'banner' ? 'btn' : 'btn primary-link'} href={href} rel="noopener">
-      {variant === 'row' ? (release ? t('apk.downloadVersion', { version: release.version }) : t('apk.download')) : t('apk.get')}
-    </a>
-  )
+  const installPwa = () => { setOpen(false); void pwa.install() }
+  const sheet = open && <ChoiceSheet href={href} onInstallPwa={installPwa} onClose={() => setOpen(false)} />
 
   if (variant === 'row') {
     return (
       <>
-        <div className="row">{t('apk.title')}{download}</div>
+        <div className="row">
+          {t('apk.title')}
+          {both
+            ? <button className="primary" onClick={() => setOpen(true)}>{t('apk.install')}</button>
+            : <a className="btn primary-link" href={href} rel="noopener">{release ? t('apk.downloadVersion', { version: release.version }) : t('apk.download')}</a>}
+        </div>
         <p className="muted small help">{t('apk.help')} <Link to="/profile/backup">{t('apk.moveData')}</Link></p>
+        {sheet}
       </>
     )
   }
-  if (showApk) {
-    return (
+  if (dismissed) return null
+  return (
+    <>
       <div className="update-banner apk-offer">
-        <span>{t('apk.banner')}</span>
+        <span>{both ? t('apk.banner') : t('apk.bannerApk')}</span>
         <span className="apk-offer-actions">
-          <button onClick={() => { remember(DISMISSED); setDismissed(true) }}>{t('apk.notNow')}</button>
-          {download}
+          <button onClick={() => { dismissOffer(localStorage); setDismissed(true) }}>{t('apk.notNow')}</button>
+          {both
+            ? <button className="primary" onClick={() => setOpen(true)}>{t('apk.install')}</button>
+            : <a className="btn" href={href} rel="noopener">{t('apk.get')}</a>}
         </span>
       </div>
-    )
-  }
-  if (pwa.canInstall && !pwaHidden) {
-    return (
-      <div className="update-banner apk-offer">
-        <span>{t('apk.pwaBanner')}</span>
-        <span className="apk-offer-actions">
-          <button onClick={() => { remember(PWA_DISMISSED); setPwaHidden(true) }}>{t('apk.notNow')}</button>
-          <button className="primary" onClick={() => void pwa.install()}>{t('apk.pwaInstall')}</button>
-        </span>
-      </div>
-    )
-  }
-  return null
+      {sheet}
+    </>
+  )
 }

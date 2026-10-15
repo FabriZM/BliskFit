@@ -778,15 +778,21 @@
   },
   "apk": {
     "title": "App para Android",
-    "banner": "Descargar APK para Android",
+    "banner": "Instala BliskFit",
     "download": "Descargar APK",
     "downloadVersion": "Descargar APK ({{version}})",
     "notNow": "Ahora no",
     "help": "Después de descargarlo, abre el archivo y permite instalar desde tu navegador cuando Android lo pida. La app tiene sus propios datos:",
     "moveData": "pasa los tuyos con una copia de seguridad.",
-    "pwaBanner": "Instala BliskFit como app",
-    "pwaInstall": "Instalar",
-    "get": "Descargar"
+    "get": "Descargar",
+    "bannerApk": "Descargar APK para Android",
+    "install": "Instalar",
+    "sheetTitle": "Instala BliskFit",
+    "apkTitle": "App de Android (APK)",
+    "apkDesc": "Avisos de descanso a tiempo con la pantalla bloqueada. Se actualiza sola.",
+    "pwaTitle": "App web",
+    "pwaDesc": "Sin descargar, en un toque. Los avisos solo funcionan con la app abierta.",
+    "dataNote": "Cada una guarda sus propios datos:"
   },
   "ios": {
     "title": "Instalar en este iPhone",
