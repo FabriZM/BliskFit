@@ -325,3 +325,4 @@ Two layers, so most updates need no new APK:
 - App name/branding (icons).
 - Hosting: GitHub Pages (web) and GitHub Releases (APK), decided at M7. Live web-bundle updates in the APK deferred; cloud backup mechanism still open (needs a Google Cloud OAuth client).
 - APK release signing key storage/backup at M3b.
+- Potential feature: a green draining bar in the Android rest notification. The bar is tinted by the notification's accent colour (`#45d0a0`), which Android 12+ may override with the system theme. Forcing green everywhere needs a custom `RemoteViews` layout (loses system styling and dark mode); a stronger accent green is the cheap try first. Check on a device before doing either.
