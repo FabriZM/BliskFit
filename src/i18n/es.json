@@ -205,7 +205,17 @@
     "superset": "Superserie",
     "circuit": "Circuito",
     "sharedRest": "descanso compartido",
-    "notFound": "Rutina no encontrada"
+    "notFound": "Rutina no encontrada",
+    "showAll": "Ver todas ({{count}})",
+    "allTitle": "Todas las rutinas",
+    "search": "Buscar rutinas",
+    "status": "Mostrar",
+    "statusActive": "Activas",
+    "statusArchived": "Archivadas",
+    "statusAll": "Activas y archivadas",
+    "count_one": "{{count}} rutina",
+    "count_other": "{{count}} rutinas",
+    "noResults": "Ninguna rutina coincide con tu búsqueda."
   },
   "programs": {
     "title": "Programas",
@@ -861,6 +871,6 @@
     "browseRoutines": "Ver plantillas de rutinas",
     "browsePrograms": "Ver plantillas de programas",
     "routinesHint": "Aún no tienes rutinas. Elige una de las plantillas o crea la tuya.",
-    "programsHint": "¿Sin programa activo? Mira las plantillas."
+    "added": "Agregada"
   }
 }

@@ -205,7 +205,17 @@
     "superset": "Superset",
     "circuit": "Circuit",
     "sharedRest": "shared rest",
-    "notFound": "Routine not found"
+    "notFound": "Routine not found",
+    "showAll": "Show all ({{count}})",
+    "allTitle": "All routines",
+    "search": "Search routines",
+    "status": "Show",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "statusAll": "Active and archived",
+    "count_one": "{{count}} routine",
+    "count_other": "{{count}} routines",
+    "noResults": "No routines match your search."
   },
   "programs": {
     "title": "Programs",
@@ -861,6 +871,6 @@
     "browseRoutines": "Browse routine templates",
     "browsePrograms": "Browse program templates",
     "routinesHint": "No routines yet. Pick one from the templates or create your own.",
-    "programsHint": "No active program? Take a look at the templates."
+    "added": "Added"
   }
 }

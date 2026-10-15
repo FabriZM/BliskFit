@@ -21,3 +21,10 @@ export async function deleteRoutine(id: ID): Promise<boolean> {
     return true
   })
 }
+
+/** When each routine was last started, for ordering the lists. Walks sessions newest first and keeps the first hit. */
+export async function routineLastUsed(): Promise<Map<ID, number>> {
+  const used = new Map<ID, number>()
+  await db.sessions.orderBy('startedAt').reverse().each((s) => { if (s.routineId && !used.has(s.routineId)) used.set(s.routineId, s.startedAt) })
+  return used
+}

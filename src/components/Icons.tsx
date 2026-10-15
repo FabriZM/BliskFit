@@ -26,6 +26,8 @@ export const StarIcon = ({ filled, ...p }: IconProps & { filled?: boolean }) => 
   <Icon {...p} filled={filled}><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" /></Icon>
 )
 export const ArchiveIcon = (p: IconProps) => <Icon {...p}><path d="M3 4h18v4H3zM5 8v12h14V8M10 12h4" /></Icon>
+export const ShareIcon = (p: IconProps) => <Icon {...p}><path d="M12 15V3M8 7l4-4 4 4M5 12v8h14v-8" /></Icon>
+export const CopyIcon = (p: IconProps) => <Icon {...p}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></Icon>
 export const MoreIcon = (p: IconProps) => <Icon {...p}>{dots([[5, 12], [12, 12], [19, 12]])}</Icon>
 export const GripIcon = (p: IconProps) => <Icon {...p}>{dots([[9, 6], [15, 6], [9, 12], [15, 12], [9, 18], [15, 18]])}</Icon>
 export const RepeatIcon = (p: IconProps) => <Icon {...p}><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></Icon>

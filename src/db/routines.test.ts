@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from './db'
-import { deleteRoutine } from './routines'
+import { deleteRoutine, routineLastUsed } from './routines'
 import type { WorkoutSession } from './types'
 
 const session = (over: Partial<WorkoutSession>): WorkoutSession => ({
@@ -43,5 +43,17 @@ describe('deleting a routine', () => {
     await deleteRoutine('old')
     expect((await db.programs.get('p'))?.schedule).toEqual({ 0: { 3: 'keep' } })
     expect((await db.programs.get('r'))?.rotation).toEqual(['keep'])
+  })
+})
+
+describe('routine last used', () => {
+  beforeEach(async () => { await db.sessions.clear() })
+
+  it('keeps the newest start per routine and ignores sessions without one', async () => {
+    await db.sessions.bulkAdd([
+      session({ id: 'a', routineId: 'r1', startedAt: 10 }), session({ id: 'b', routineId: 'r1', startedAt: 30 }),
+      session({ id: 'c', routineId: 'r2', startedAt: 20 }), session({ id: 'd', startedAt: 99 }),
+    ])
+    expect([...(await routineLastUsed())]).toEqual([['r1', 30], ['r2', 20]])
   })
 })

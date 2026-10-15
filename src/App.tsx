@@ -17,6 +17,7 @@ import IncomingLinks from './components/IncomingLinks'
 import { platform } from './lib/platform'
 import RoutineEditor from './pages/routines/RoutineEditor'
 import ProgramList from './pages/programs/ProgramList'
+import RoutineList from './pages/routines/RoutineList'
 import TemplatePicker from './pages/templates/TemplatePicker'
 import ProgramEditor from './pages/programs/ProgramEditor'
 import Profile from './pages/Profile'
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="/workout/history/:id" element={<SessionDetail />} />
           <Route path="/routines" element={<Navigate to="/workout" replace />} />
           <Route path="/import" element={<Import />} />
+          <Route path="/routines/all" element={<RoutineList />} />
           <Route path="/routines/templates" element={<TemplatePicker />} />
           <Route path="/routines/programs" element={<ProgramList />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />

@@ -1,14 +1,17 @@
 import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { db } from '../../db/db'
 import { deleteRoutine } from '../../db/routines'
 import { packRoutineById } from '../../db/share'
 import { startSession } from '../../db/workout'
 import { duplicateRoutine } from '../../lib/routines'
+import { muscleLabel, routineMuscles } from '../../lib/muscles'
 import type { Routine } from '../../db/types'
-import ShareButtons from '../../components/ShareButtons'
-import { ArchiveIcon, MoreIcon, TrashIcon } from '../../components/Icons'
+import { shareLinkFor } from '../../components/ShareButtons'
+import { platform } from '../../lib/platform'
+import { ArchiveIcon, CopyIcon, MoreIcon, ShareIcon, TrashIcon } from '../../components/Icons'
 
 const SWIPE_AT = 100
 
@@ -18,9 +21,13 @@ const SWIPE_AT = 100
  */
 export default function RoutineItem({ routine: r, canStart = true }: { routine: Routine; canStart?: boolean }) {
   const { t } = useTranslation()
-  const nav = useNavigate()
   const [menu, setMenu] = useState(false)
   const [dx, setDx] = useState(0)
+  const [note, setNote] = useState<string>()
+  const targets = useLiveQuery(async () => {
+    const [exercises, muscles] = await Promise.all([db.exercises.bulkGet(r.exercises.map((e) => e.exerciseId)), db.muscleGroups.toArray()])
+    return routineMuscles(r.exercises, exercises, muscles).map((m) => muscleLabel(m, t)).join(', ')
+  }, [r.exercises, t])
   const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
 
   const toggleArchive = () => { setMenu(false); void db.routines.update(r.id, { archived: !r.archived }) }
@@ -30,8 +37,17 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
   }
   const duplicate = async () => {
     const copy = duplicateRoutine(r, `${r.name} ${t('routines.copySuffix')}`)
+    setMenu(false)
     await db.routines.add(copy)
-    nav(`/routines/${copy.id}`)
+  }
+
+  const share = async () => {
+    try {
+      const p = await packRoutineById(r.id)
+      if (!p) return
+      const res = await platform.shareLink(t('share.linkTitle', { name: r.name }), await shareLinkFor(p))
+      setNote(res === 'copied' ? t('share.copied') : undefined)
+    } catch { setNote(t('share.failed')) }
   }
 
   // Only starts on non-interactive areas, and vertical scrolling wins. A cancelled gesture never archives or deletes.
@@ -69,22 +85,23 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
       </div>
       <div className="rt-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={end} onPointerCancel={cancel}>
-        <div className="routine-row">
+        <div className="rt-head">
           <Link to={`/routines/${r.id}`}>
             <strong>{r.name}</strong>
-            <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}</span>
+            <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}{targets ? ` · ${targets}` : ''}</span>
           </Link>
-          {!r.archived && canStart && <button className="primary" onClick={() => void startSession(r.id)}>{t('workout.start')}</button>}
           <button className="icon" aria-expanded={menu} aria-label={t('routines.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
         </div>
         {menu && (
-          <div className="menu rt-menu" role="menu">
-            <button role="menuitem" onClick={() => void duplicate()}>{t('routines.duplicate')}</button>
-            <button role="menuitem" onClick={toggleArchive}>{r.archived ? t('routines.restore') : t('routines.archive')}</button>
-            {r.exercises.length > 0 && <div className="actions"><ShareButtons name={r.name} pack={() => packRoutineById(r.id)} /></div>}
-            <button role="menuitem" className="danger" onClick={() => void remove()}>{t('routines.delete')}</button>
+          <div className="menu rt-menu rt-actions" role="menu">
+            <button role="menuitem" aria-label={t('routines.duplicate')} title={t('routines.duplicate')} onClick={() => void duplicate()}><CopyIcon size={22} /></button>
+            <button role="menuitem" aria-label={t('share.link')} title={t('share.link')} disabled={r.exercises.length === 0} onClick={() => void share()}><ShareIcon size={22} /></button>
+            <button role="menuitem" className="archive" aria-label={r.archived ? t('routines.restore') : t('routines.archive')} title={r.archived ? t('routines.restore') : t('routines.archive')} onClick={toggleArchive}><ArchiveIcon size={22} /></button>
+            <button role="menuitem" className="danger" aria-label={t('routines.delete')} title={t('routines.delete')} onClick={() => void remove()}><TrashIcon size={22} /></button>
           </div>
         )}
+        {!r.archived && canStart && <button className="primary rt-start" onClick={() => void startSession(r.id)}>{t('workout.start')}</button>}
+        {menu && note && <p className="muted small" role="status">{note}</p>}
       </div>
     </li>
   )

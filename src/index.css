@@ -460,3 +460,16 @@ main:has(.wk-top) { scroll-padding-top: 150px; }
 .apk-offer { flex-wrap: nowrap; } .apk-offer > span:first-child { flex: 1 1 0; min-width: 0; font-weight: 600; line-height: 1.25; } .apk-offer .apk-offer-actions { display: flex; gap: 8px; flex: none; margin-left: auto; } .apk-offer .apk-offer-actions > * { padding: 6px 12px; font-size: .95rem; white-space: nowrap; } .apk-offer .btn { background: var(--on-accent); color: var(--fg); } a.primary-link { white-space: nowrap; }
 .ios-install { flex-wrap: wrap; } .ios-install > span:first-child { flex: 1 1 100%; } .ios-install-actions { display: flex; gap: 8px; margin-left: auto; } .ios-install .ios-steps { flex: 1 1 100%; background: var(--bg); color: var(--fg); border-radius: 10px; padding: 12px 12px 12px 32px; margin: 4px 0 4px; } .ios-steps { margin: 4px 0 12px; padding-left: 20px; } .ios-steps li { margin: 6px 0; } .ios-steps li.muted { list-style: none; margin-left: -20px; } .ios-install .ios-steps li.muted { margin-left: -20px; } .ios-icon { width: 20px; height: 20px; vertical-align: -4px; margin-left: 4px; color: var(--accent); } div.ios-steps { padding-left: 12px; } div.ios-steps p { margin: 0 0 8px; }
 .install-sheet { max-width: 360px; color: var(--fg); } .install-choice { background: var(--bg); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; } .install-choice p { margin: 0; } .install-choice .btn, .install-choice button { align-self: flex-start; margin-top: 4px; }
+.template-card { display: flex; gap: var(--space-3); align-items: center; } .template-card > div { flex: 1; min-width: 0; } .template-card button { flex: none; font-size: var(--text-sm); padding: 8px 16px; border-radius: var(--radius-pill); }
+.template-card.stacked { flex-direction: column; align-items: stretch; } .template-card.stacked button { align-self: flex-end; }
+.menu.rt-actions { flex-direction: row; gap: var(--space-2); } .rt-actions button { flex: 1; display: flex; justify-content: center; padding: 10px; } .rt-actions button.archive { background: var(--warn-soft); color: var(--warn); } .rt-actions button:disabled { opacity: .4; }
+.archived-toggle { margin: var(--space-3) 0 var(--space-5); }
+/* Routine cards: title and options on one line, details under it, Start below */
+.rt-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.rt-list > li.rt-item { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-1); touch-action: pan-y; }
+.rt-list .rt-body { padding: var(--space-4); }
+.rt-head { display: flex; align-items: flex-start; gap: var(--space-2); }
+.rt-head > a { flex: 1; min-width: 0; padding: 0; gap: 2px; } .rt-head > a strong { font-size: 1.05rem; }
+.rt-head > button { flex: none; margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0; }
+.rt-start { width: 100%; margin-top: var(--space-3); }
+.rt-list .rt-menu { margin: var(--space-3) 0 0; }

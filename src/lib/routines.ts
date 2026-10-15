@@ -195,3 +195,26 @@ export function routineUpdate(routine: Routine, items: SessionExercise[], sets: 
   if (!added.length && !removed.length && !reordered && !setChanges.length) return null
   return { exercises, added, removed, reordered, sets: setChanges }
 }
+
+/** Most recently used first (by when a workout of it last started); routines never used follow, A to Z. */
+export function sortByLastUsed<T extends Pick<Routine, 'id' | 'name'>>(routines: T[], lastUsed: Map<ID, number>): T[] {
+  return [...routines].sort((a, b) => (lastUsed.get(b.id) ?? 0) - (lastUsed.get(a.id) ?? 0) || a.name.localeCompare(b.name))
+}
+
+export type RoutineStatus = 'active' | 'archived' | 'all'
+
+/**
+ * Search by name, narrowed by status and by muscle. `muscles` gives the primary muscles each routine trains;
+ * `muscleIds` (a muscle and its sub-muscles) keeps routines that train any of them. An empty set means no muscle filter.
+ */
+export function filterRoutines<T extends Pick<Routine, 'id' | 'name' | 'archived'>>(
+  routines: T[],
+  f: { query: string; status: RoutineStatus; muscleIds: Set<ID> },
+  muscles: Map<ID, Set<ID>>,
+): T[] {
+  const q = f.query.trim().toLowerCase()
+  return routines.filter((r) =>
+    (f.status === 'all' || (f.status === 'archived') === r.archived)
+    && (!q || r.name.toLowerCase().includes(q))
+    && (f.muscleIds.size === 0 || [...(muscles.get(r.id) ?? [])].some((id) => f.muscleIds.has(id))))
+}

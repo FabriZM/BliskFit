@@ -1,4 +1,4 @@
-import type { Exercise, ID, MuscleGroup } from '../db/types'
+import type { Exercise, ID, MuscleGroup, RoutineExercise } from '../db/types'
 import type { MuscleText } from './exerciseFilter'
 
 /** The muscle plus every descendant, so filtering by "Calves" also finds gastrocnemius-tagged exercises. */
@@ -52,4 +52,24 @@ export function orderMuscles(muscles: MuscleGroup[]): MuscleGroup[] {
   }
   walk()
   return out
+}
+
+/**
+ * The main muscle groups a routine trains, most sets first: each exercise's primary muscles count its target sets
+ * and roll up to their top-level group (triceps -> Arms), so a routine reads "Chest, Shoulders, Arms".
+ */
+export function routineMuscles(items: Pick<RoutineExercise, 'exerciseId' | 'targetSets'>[], exercises: (Pick<Exercise, 'id' | 'primaryMuscleIds'> | undefined)[], muscles: MuscleGroup[], limit = 3): MuscleGroup[] {
+  const byId = new Map(muscles.map((m) => [m.id, m]))
+  const root = (id: ID): MuscleGroup | undefined => {
+    let m = byId.get(id)
+    for (let hops = 0; m?.parentId && byId.has(m.parentId) && hops < 10; hops++) m = byId.get(m.parentId)
+    return m
+  }
+  const sets = new Map<ID, number>()
+  items.forEach((item, i) => {
+    for (const g of new Set((exercises[i]?.primaryMuscleIds ?? []).map((id) => root(id)?.id).filter((id): id is ID => !!id))) {
+      sets.set(g, (sets.get(g) ?? 0) + item.targetSets)
+    }
+  })
+  return [...sets].sort((a, b) => b[1] - a[1]).slice(0, limit).flatMap(([id]) => byId.get(id) ?? [])
 }
