@@ -215,7 +215,8 @@
     "statusAll": "Active and archived",
     "count_one": "{{count}} routine",
     "count_other": "{{count}} routines",
-    "noResults": "No routines match your search."
+    "noResults": "No routines match your search.",
+    "discardNew": "Discard this new routine?"
   },
   "programs": {
     "title": "Programs",
@@ -258,7 +259,8 @@
     "statusActive": "Active",
     "statusInactive": "Not active",
     "daysPerWeek_one": "{{count}} day a week",
-    "daysPerWeek_other": "{{count}} days a week"
+    "daysPerWeek_other": "{{count}} days a week",
+    "discardNew": "Discard this new program?"
   },
   "today": {
     "title": "Today's workout",

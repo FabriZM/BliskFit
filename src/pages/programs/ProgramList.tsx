@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, newId } from '../../db/db'
+import { db } from '../../db/db'
 import { getActiveProgramId } from '../../db/programs'
-import { filterPrograms, sortPrograms, weekStart, type ProgramMode, type ProgramStatus } from '../../lib/programs'
-import { useSettings } from '../../stores/settings'
+import { filterPrograms, sortPrograms, type ProgramMode, type ProgramStatus } from '../../lib/programs'
 import ProgramItem from './ProgramItem'
 import { BackLink } from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
@@ -15,7 +14,6 @@ import { CalendarIcon, SearchIcon } from '../../components/TabIcons'
 export default function ProgramList() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const weekStartDay = useSettings((s) => s.settings.weekStartDay)
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<ProgramMode>('all')
   const [status, setStatus] = useState<ProgramStatus>('all')
@@ -29,14 +27,7 @@ export default function ProgramList() {
     [data, query, mode, status, routineNames],
   )
 
-  const create = async () => {
-    const id = newId()
-    await db.programs.add({
-      id, name: t('programs.untitled'), mode: 'weekday', weeks: 1,
-      startDate: weekStart(new Date(), weekStartDay).getTime(), schedule: { 0: {} },
-    })
-    nav(`/routines/programs/${id}`)
-  }
+  const create = () => nav('/routines/programs/new')
   const filtered = !!query || mode !== 'all' || status !== 'all'
   const clear = () => { setQuery(''); setMode('all'); setStatus('all') }
 
@@ -45,7 +36,7 @@ export default function ProgramList() {
       <BackLink to="/workout" label={t('tabs.workout')} />
       <div className="row head">
         <h1>{t('programs.title')}</h1>
-        <button className="primary" onClick={() => void create()}>+ {t('programs.new')}</button>
+        <button className="primary" onClick={() => create()}>+ {t('programs.new')}</button>
       </div>
       {data && data.programs.length === 0 ? (
         <EmptyState icon={<CalendarIcon />} action={<button className="primary" onClick={() => nav('/routines/templates?show=programs')}>{t('templates.browsePrograms')}</button>}>{t('programs.none')}</EmptyState>

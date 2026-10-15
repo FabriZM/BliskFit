@@ -93,7 +93,9 @@ export default function App() {
           <Route path="/routines/all" element={<RoutineList />} />
           <Route path="/routines/templates" element={<TemplatePicker />} />
           <Route path="/routines/programs" element={<ProgramList />} />
+          <Route path="/routines/programs/new" element={<ProgramEditor isNew />} />
           <Route path="/routines/programs/:id" element={<ProgramEditor />} />
+          <Route path="/routines/new" element={<RoutineEditor isNew />} />
           <Route path="/routines/:id" element={<RoutineEditor />} />
           <Route path="/exercises" element={<ExerciseList />} />
           <Route path="/exercises/new" element={<ExerciseForm />} />

@@ -215,7 +215,8 @@
     "statusAll": "Activas y archivadas",
     "count_one": "{{count}} rutina",
     "count_other": "{{count}} rutinas",
-    "noResults": "Ninguna rutina coincide con tu búsqueda."
+    "noResults": "Ninguna rutina coincide con tu búsqueda.",
+    "discardNew": "¿Descartar esta nueva rutina?"
   },
   "programs": {
     "title": "Programas",
@@ -258,7 +259,8 @@
     "statusActive": "Activo",
     "statusInactive": "No activo",
     "daysPerWeek_one": "{{count}} día por semana",
-    "daysPerWeek_other": "{{count}} días por semana"
+    "daysPerWeek_other": "{{count}} días por semana",
+    "discardNew": "¿Descartar este nuevo programa?"
   },
   "today": {
     "title": "Entrenamiento de hoy",

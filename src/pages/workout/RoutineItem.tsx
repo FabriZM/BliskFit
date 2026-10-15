@@ -9,8 +9,7 @@ import { startSession } from '../../db/workout'
 import { duplicateRoutine } from '../../lib/routines'
 import { muscleLabel, routineMuscles } from '../../lib/muscles'
 import type { Routine } from '../../db/types'
-import { shareLinkFor } from '../../components/ShareButtons'
-import { platform } from '../../lib/platform'
+import { shareAsLink } from '../../components/ShareButtons'
 import { ArchiveIcon, CopyIcon, MoreIcon, ShareIcon, TrashIcon } from '../../components/Icons'
 
 const SWIPE_AT = 100
@@ -41,14 +40,7 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
     await db.routines.add(copy)
   }
 
-  const share = async () => {
-    try {
-      const p = await packRoutineById(r.id)
-      if (!p) return
-      const res = await platform.shareLink(t('share.linkTitle', { name: r.name }), await shareLinkFor(p))
-      setNote(res === 'copied' ? t('share.copied') : undefined)
-    } catch { setNote(t('share.failed')) }
-  }
+  const share = async () => setNote(await shareAsLink(t, r.name, () => packRoutineById(r.id)))
 
   // Only starts on non-interactive areas, and vertical scrolling wins. A cancelled gesture never archives or deletes.
   const onPointerDown = (e: React.PointerEvent) => {

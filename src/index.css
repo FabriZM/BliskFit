@@ -473,3 +473,4 @@ main:has(.wk-top) { scroll-padding-top: 150px; }
 .rt-head > button { flex: none; margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0; }
 .rt-start { width: 100%; margin-top: var(--space-3); }
 .rt-list .rt-menu { margin: var(--space-3) 0 0; }
+.edit-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); } .edit-bar-actions { display: flex; align-items: center; gap: var(--space-1); } .edit-bar .icon.danger-ico { color: var(--danger); }

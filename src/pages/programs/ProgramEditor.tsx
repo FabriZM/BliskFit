@@ -2,33 +2,52 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../../db/db'
+import { db, newId } from '../../db/db'
 import { deleteProgram, getActiveProgramId, setActiveProgramId } from '../../db/programs'
 import type { Program } from '../../db/types'
 import { fromDateInput, orderedWeekdays, toDateInput, weekdayNames } from '../../lib/dates'
-import { copyWeekToAll, resizeSchedule } from '../../lib/programs'
+import { copyWeekToAll, resizeSchedule, weekStart } from '../../lib/programs'
+import { useDraftGuard } from '../../lib/useDraftGuard'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
-import ShareButtons from '../../components/ShareButtons'
+import { shareAsLink } from '../../components/ShareButtons'
 import { packProgramById } from '../../db/share'
 import { BackLink } from '../../components/PageHeader'
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon } from '../../components/Icons'
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, ShareIcon, TrashIcon } from '../../components/Icons'
 
-export default function ProgramEditor() {
+/** `isNew`: a draft that is only stored when you press Save; going back asks before discarding it. */
+export default function ProgramEditor({ isNew = false }: { isNew?: boolean }) {
   const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const id = useParams().id!
   const weekStartDay = useSettings((s) => s.settings.weekStartDay)
-  const [program, setProgram] = useState<Program | null | undefined>()
+  const blank = (): Program => ({
+    id: newId(), name: '', mode: 'weekday', weeks: 1, startDate: weekStart(new Date(), weekStartDay).getTime(), schedule: { 0: {} },
+  })
+  const [program, setProgram] = useState<Program | null | undefined>(() => (isNew ? blank() : undefined))
+  const [initial] = useState(() => (isNew && program ? JSON.stringify(program) : ''))
+  const [note, setNote] = useState<string>()
   const routines = (useLiveQuery(() => db.routines.toArray(), []) ?? []).filter((r) => !r.archived).sort((a, b) => a.name.localeCompare(b.name))
   const active = useLiveQuery(() => getActiveProgramId(), [])
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
 
-  useEffect(() => { void db.programs.get(id).then((p) => setProgram(p ?? null)) }, [id])
+  useEffect(() => { if (!isNew) void db.programs.get(id).then((p) => setProgram(p ?? null)) }, [id, isNew])
+  const dirty = isNew && !!program && JSON.stringify(program) !== initial
+  const guard = useDraftGuard(dirty, t('programs.discardNew'))
   if (program === undefined) return <p className="muted">…</p>
   if (program === null) return <section><p>{t('programs.notFound')}</p><Link to="/routines/programs">{t('programs.title')}</Link></section>
 
-  const save = (next: Program) => { setProgram(next); void db.programs.put(next) }
+  const save = (next: Program) => { setProgram(next); if (!isNew) void db.programs.put(next) }
+  const commit = async () => {
+    guard.release()
+    await db.programs.add({ ...program, name: program.name.trim() || t('programs.untitled') })
+    nav('/routines/programs', { replace: true })
+  }
+  const remove = async () => {
+    if (!confirm(t('programs.confirmDelete'))) return
+    await deleteProgram(id)
+    nav('/routines/programs', { replace: true })
+  }
   const days = weekdayNames(i18n.language)
   const rotation = program.rotation ?? []
   const rName = (rid: string) => routines.find((r) => r.id === rid)?.name ?? '?'
@@ -41,15 +60,26 @@ export default function ProgramEditor() {
 
   return (
     <section>
-      <BackLink to="/routines/programs" label={t('programs.title')} />
-      <input className="title-input" aria-label={t('programs.name')} value={program.name} onChange={(e) => save({ ...program, name: e.target.value })}
-        onBlur={() => !program.name.trim() && save({ ...program, name: t('programs.untitled') })} />
-      <div className="row">
+      <div className="edit-bar">
+        <BackLink to="/routines/programs" label={t('programs.title')} />
+        {isNew
+          ? <button className="primary" onClick={() => void commit()}>{t('common.save')}</button>
+          : (
+            <span className="edit-bar-actions">
+              <button className="icon" aria-label={t('share.link')} title={t('share.link')} onClick={async () => setNote(await shareAsLink(t, program.name, () => packProgramById(id)))}><ShareIcon size={22} /></button>
+              <button className="icon danger-ico" aria-label={t('common.delete')} title={t('common.delete')} onClick={() => void remove()}><TrashIcon size={22} /></button>
+            </span>
+          )}
+      </div>
+      {note && <p className="muted small" role="status">{note}</p>}
+      <input className="title-input" aria-label={t('programs.name')} value={program.name} placeholder={t('programs.name')} onChange={(e) => save({ ...program, name: e.target.value })}
+        onBlur={() => !isNew && !program.name.trim() && save({ ...program, name: t('programs.untitled') })} />
+      {!isNew && <div className="row">
         <span>{active === id ? <><CheckIcon /> {t('programs.active')}</> : t('programs.notActive')}</span>
         {active === id
           ? <button onClick={() => void setActiveProgramId(undefined)}>{t('programs.deactivate')}</button>
           : <button className="primary" onClick={() => void setActiveProgramId(id)}>{t('programs.setActive')}</button>}
-      </div>
+      </div>}
 
       {gyms.length > 0 && (
         <label className="row">
@@ -123,17 +153,6 @@ export default function ProgramEditor() {
           </select>
         </>
       )}
-
-      <div className="actions">
-        <ShareButtons name={program.name} pack={() => packProgramById(id)} />
-      </div>
-      <div className="actions">
-        <button className="danger" onClick={async () => {
-          if (!confirm(t('programs.confirmDelete'))) return
-          await deleteProgram(id)
-          nav('/routines/programs', { replace: true })
-        }}>{t('common.delete')}</button>
-      </div>
     </section>
   )
 }

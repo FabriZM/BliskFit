@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { encodeLinkData, shareFileName, type SharePackage } from '../lib/share'
 import { platform } from '../lib/platform'
 
@@ -9,6 +10,16 @@ const appUrl = () => (platform.isNative ? PUBLIC_URL : location.origin + locatio
 
 export async function shareLinkFor(p: SharePackage): Promise<string> {
   return `${appUrl()}#/import?d=${await encodeLinkData(p)}`
+}
+
+/** Shares a package as a link (system share sheet, or copied to the clipboard); returns a short note to show, if any. */
+export async function shareAsLink(t: TFunction, name: string, pack: () => Promise<SharePackage | undefined>): Promise<string | undefined> {
+  try {
+    const p = await pack()
+    if (!p) return undefined
+    const res = await platform.shareLink(t('share.linkTitle', { name }), await shareLinkFor(p))
+    return res === 'copied' ? t('share.copied') : undefined
+  } catch { return t('share.failed') }
 }
 
 /** "Share link" and "Share file" for a routine or program; `pack` builds the package when tapped. */

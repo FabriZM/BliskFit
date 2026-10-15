@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { db } from '../../db/db'
+import { db, newId } from '../../db/db'
 import type { Exercise, Routine, RoutineExercise } from '../../db/types'
 import {
   addExercises, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
@@ -20,13 +20,16 @@ import EmptyState from '../../components/EmptyState'
 import { ExercisesIcon } from '../../components/TabIcons'
 import { CloseIcon, GripIcon, LinkIcon } from '../../components/Icons'
 import { useExerciseName } from '../../lib/exerciseName'
+import { useDraftGuard } from '../../lib/useDraftGuard'
+import { useRoutineDraft } from '../../stores/routineDraft'
 
 interface RowProps {
-  routineId: string
   item: RoutineExercise
   exercise?: Exercise
   pos: ReturnType<typeof groupPositions>[number]
   canLink: boolean
+  /** Where the exercise page's back button returns to (a new routine's draft is kept for it). */
+  backTo: string
   defaultRest: number
   onChange: (next: RoutineExercise) => void
   onRest: (v: number | undefined) => void
@@ -34,7 +37,7 @@ interface RowProps {
   onToggleLink: () => void
 }
 
-function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
+function Row({ backTo, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
   const { t } = useTranslation()
   const exName = useExerciseName()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
@@ -48,7 +51,7 @@ function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, o
       <div className="rx-head">
         <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         {/* The exercise page's back button returns here (see ExerciseDetail). */}
-        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: `/routines/${routineId}` }}>{exName(exercise)}</Link>
+        <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: backTo }}>{exName(exercise)}</Link>
         <button className="icon" aria-label={t('common.delete')} onClick={onRemove}><CloseIcon /></button>
       </div>
       <div className="rx-fields">
@@ -78,14 +81,21 @@ function Row({ routineId, item, exercise, pos, canLink, defaultRest, onChange, o
   )
 }
 
-export default function RoutineEditor() {
+/** `isNew`: a draft that is only stored when you press Save; going back asks before discarding it. */
+export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
   const { t } = useTranslation()
+  const nav = useNavigate()
+  const resume = new URLSearchParams(useLocation().search).get('draft') === '1'
   const id = useParams().id!
   const defaultRest = useSettings((s) => s.settings.defaultRestSec)
-  const [routine, setRoutine] = useState<Routine | null | undefined>()
+  const [routine, setRoutine] = useState<Routine | null | undefined>(() => (isNew ? (resume ? useRoutineDraft.getState().draft : undefined) ?? { id: newId(), name: '', exercises: [], archived: false } : undefined))
   const [picking, setPicking] = useState(false)
 
-  useEffect(() => { void db.routines.get(id).then((r) => setRoutine(r ?? null)) }, [id])
+  useEffect(() => { if (!isNew) void db.routines.get(id).then((r) => setRoutine(r ?? null)) }, [id, isNew])
+  const dirty = isNew && !!routine && (routine.name.trim() !== '' || routine.exercises.length > 0)
+  // Opening an exercise keeps the draft (it comes back with ?draft=1); any other way out asks first.
+  const guard = useDraftGuard(dirty, t('routines.discardNew'), { allow: (p) => p.startsWith('/exercises/'), onDiscard: () => useRoutineDraft.getState().clear() })
+  useEffect(() => { if (isNew && !resume) useRoutineDraft.getState().clear() }, [isNew, resume])
 
   const exIds = routine?.exercises.map((e) => e.exerciseId) ?? []
   const exercises = useLiveQuery(async () => {
@@ -107,7 +117,13 @@ export default function RoutineEditor() {
   if (routine === undefined) return <p className="muted">…</p>
   if (routine === null) return <section><p>{t('routines.notFound')}</p><Link to="/workout">{t('tabs.workout')}</Link></section>
 
-  const save = (next: Routine) => { setRoutine(next); void db.routines.put(next) }
+  const save = (next: Routine) => { setRoutine(next); if (isNew) useRoutineDraft.getState().set(next); else void db.routines.put(next) }
+  const commit = async () => {
+    guard.release()
+    useRoutineDraft.getState().clear()
+    await db.routines.add({ ...routine, name: routine.name.trim() || t('routines.untitled') })
+    nav('/workout', { replace: true })
+  }
   const setExercises = (exs: RoutineExercise[]) => save({ ...routine, exercises: exs })
   const list = routine.exercises
 
@@ -118,16 +134,19 @@ export default function RoutineEditor() {
 
   return (
     <section>
-      <BackLink to="/workout" label={t('tabs.workout')} />
+      <div className="edit-bar">
+        <BackLink to="/workout" label={t('tabs.workout')} />
+        {isNew && <button className="primary" onClick={() => void commit()}>{t('common.save')}</button>}
+      </div>
       <input className="title-input" aria-label={t('routines.name')} value={routine.name} placeholder={t('routines.name')}
         onChange={(e) => save({ ...routine, name: e.target.value })}
-        onBlur={() => !routine.name.trim() && save({ ...routine, name: t('routines.untitled') })} />
+        onBlur={() => !isNew && !routine.name.trim() && save({ ...routine, name: t('routines.untitled') })} />
       {list.length === 0 && <EmptyState icon={<ExercisesIcon />}>{t('routines.emptyRoutine')}</EmptyState>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={list.map((e) => e.id)} strategy={verticalListSortingStrategy}>
           <ul className="rx-list">
             {list.map((item, i) => (
-              <Row routineId={routine.id} key={item.id} item={item} exercise={names.get(item.exerciseId)} pos={positions[i]}
+              <Row backTo={isNew ? '/routines/new?draft=1' : `/routines/${routine.id}`} key={item.id} item={item} exercise={names.get(item.exerciseId)} pos={positions[i]}
                 canLink={i < list.length - 1} defaultRest={defaultRest}
                 onChange={(next) => setExercises(list.map((e, k) => (k === i ? next : e)))}
                 onRest={(v) => setExercises(setRest(list, i, v))}

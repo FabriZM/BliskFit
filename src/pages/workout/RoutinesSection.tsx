@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, newId } from '../../db/db'
+import { db } from '../../db/db'
 import { getActiveProgramId } from '../../db/programs'
 import { routineLastUsed } from '../../db/routines'
 import { sortByLastUsed } from '../../lib/routines'
@@ -26,11 +26,7 @@ export default function RoutinesSection({ running = false }: { running?: boolean
   const programCount = useLiveQuery(() => db.programs.count(), [])
   const routineNames = new Map((routines ?? []).map((r) => [r.id, r.name]))
 
-  const create = async () => {
-    const id = newId()
-    await db.routines.add({ id, name: t('routines.untitled'), exercises: [], archived: false })
-    nav(`/routines/${id}`)
-  }
+  const create = () => nav('/routines/new')
   const matching = sortByLastUsed((routines ?? []).filter((r) => r.archived === showArchived), lastUsed ?? new Map())
   const visible = showArchived ? matching : matching.slice(0, SHOWN)
   const archivedCount = (routines ?? []).filter((r) => r.archived).length
@@ -41,12 +37,12 @@ export default function RoutinesSection({ running = false }: { running?: boolean
         <h2>{t('workout.routines')}</h2>
         <span className="head-actions">
           <button onClick={() => nav('/import')}>{t('share.import')}</button>
-          <button onClick={() => void create()}>+ {t('routines.new')}</button>
+          <button onClick={() => create()}>+ {t('routines.new')}</button>
         </span>
       </div>
       {routines && visible.length === 0 && (showArchived
         ? <p className="muted">{t('routines.noArchived')}</p>
-        : <EmptyState icon={<WorkoutIcon />} action={<><button className="primary" onClick={() => nav('/routines/templates?show=routines')}>{t('templates.browseRoutines')}</button><button onClick={() => void create()}>+ {t('routines.new')}</button></>}>{t('templates.routinesHint')}</EmptyState>)}
+        : <EmptyState icon={<WorkoutIcon />} action={<><button className="primary" onClick={() => nav('/routines/templates?show=routines')}>{t('templates.browseRoutines')}</button><button onClick={() => create()}>+ {t('routines.new')}</button></>}>{t('templates.routinesHint')}</EmptyState>)}
       {visible.length > 0 && <ul className="list rt-list">
         {visible.map((r) => <RoutineItem key={r.id} routine={r} canStart={!running} />)}
       </ul>}

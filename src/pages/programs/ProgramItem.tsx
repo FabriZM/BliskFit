@@ -5,8 +5,7 @@ import { db } from '../../db/db'
 import { deleteProgram, setActiveProgramId } from '../../db/programs'
 import { packProgramById } from '../../db/share'
 import { daysPerWeek, duplicateProgram, programRoutineIds } from '../../lib/programs'
-import { platform } from '../../lib/platform'
-import { shareLinkFor } from '../../components/ShareButtons'
+import { shareAsLink } from '../../components/ShareButtons'
 import { CheckIcon, CopyIcon, MoreIcon, ShareIcon, TrashIcon } from '../../components/Icons'
 import type { ID, Program } from '../../db/types'
 
@@ -25,14 +24,7 @@ export default function ProgramItem({ program: p, active, routineNames }: { prog
     setMenu(false)
     await db.programs.add(duplicateProgram(p, `${p.name} ${t('routines.copySuffix')}`))
   }
-  const share = async () => {
-    try {
-      const pkg = await packProgramById(p.id)
-      if (!pkg) return
-      const res = await platform.shareLink(t('share.linkTitle', { name: p.name }), await shareLinkFor(pkg))
-      setNote(res === 'copied' ? t('share.copied') : undefined)
-    } catch { setNote(t('share.failed')) }
-  }
+  const share = async () => setNote(await shareAsLink(t, p.name, () => packProgramById(p.id)))
   const remove = async () => {
     setMenu(false)
     if (confirm(t('programs.confirmDelete'))) await deleteProgram(p.id)
