@@ -30,7 +30,6 @@ export default function RoutinesSection({ running = false }: { running?: boolean
       <div className="row head">
         <h2>{t('workout.routines')}</h2>
         <span className="head-actions">
-          <button onClick={() => nav('/routines/templates')}>{t('templates.button')}</button>
           <button onClick={() => nav('/import')}>{t('share.import')}</button>
           <button onClick={() => void create()}>+ {t('routines.new')}</button>
         </span>
@@ -49,6 +48,10 @@ export default function RoutinesSection({ running = false }: { running?: boolean
       <h2>{t('programs.title')}</h2>
       <Link className="card link-card" to="/routines/programs">
         <span>{program ? `${t('programs.active')}: ${program.name}` : t('today.noProgram')}</span>
+        <ChevronRightIcon />
+      </Link>
+      <Link className="card link-card" to="/routines/templates">
+        <span>{t('templates.title')}</span>
         <ChevronRightIcon />
       </Link>
     </>
