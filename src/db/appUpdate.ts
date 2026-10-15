@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { db } from './db'
 import { exportBackup } from './backup'
 import { platform } from '../lib/platform'
-import { RELEASES_API, offer, parseRelease, shouldCheck, type AppRelease } from '../lib/updates'
+import { RELEASES_API, newestRelease, offer, pickDownload, shouldCheck, type AppRelease } from '../lib/updates'
 
 /** Automatic backups saved before installing an update; the newest few are kept. */
 export const KEEP_AUTO_BACKUPS = 3
@@ -30,11 +30,11 @@ interface UpdateState { checkedAt?: number; release?: AppRelease }
 const readState = (): UpdateState => { try { return JSON.parse(localStorage.getItem(STATE_KEY) ?? '{}') as UpdateState } catch { return {} } }
 const writeState = (s: UpdateState) => { try { localStorage.setItem(STATE_KEY, JSON.stringify(s)) } catch { /* private mode etc. */ } }
 
+/** The newest published release (highest build), fetched fresh. */
 export async function fetchLatestRelease(): Promise<AppRelease | undefined> {
-  const res = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } })
-  if (res.status === 404) return undefined // no release published yet
+  const res = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' })
   if (!res.ok) throw new Error(`GitHub ${res.status}`)
-  return parseRelease(await res.json())
+  return newestRelease(await res.json())
 }
 
 /** Outside the app's origin, so Capacitor hands it to the system browser, which downloads the APK. */
@@ -44,8 +44,9 @@ export type CheckStatus = 'idle' | 'checking' | 'upToDate' | 'available' | 'fail
 
 /**
  * Update check for the Android app (the web version updates itself through its service worker). Runs on launch
- * at most once a day; `check()` forces one. `install()` saves an automatic backup, then opens the APK download
- * in the browser, from where Android's installer takes over (data is kept: same app, same signing key).
+ * and when the app comes back to the foreground, at most once an hour; `check()` forces one. `install()` checks
+ * once more for anything newer, saves an automatic backup, then opens the newest APK's download in the browser,
+ * from where Android's installer takes over (data is kept: same app, same signing key).
  */
 export function useAppUpdate(auto = false) {
   const [state, setState] = useState<UpdateState>(readState)
@@ -67,7 +68,13 @@ export function useAppUpdate(auto = false) {
     }
   }, [])
 
-  useEffect(() => { if (auto) void check(false) }, [auto, check])
+  useEffect(() => {
+    if (!auto) return
+    void check(false)
+    const onShow = () => { if (document.visibilityState === 'visible') void check(false) }
+    document.addEventListener('visibilitychange', onShow)
+    return () => document.removeEventListener('visibilitychange', onShow)
+  }, [auto, check])
 
   return {
     status,
@@ -76,8 +83,11 @@ export function useAppUpdate(auto = false) {
     check: () => check(true),
     /** Saves the automatic backup, then opens the download. Rejects if the backup failed, so the UI can ask. */
     install: async (release: AppRelease) => {
+      // The offer may be from an earlier check: download whatever is newest right now.
+      const latest = await fetchLatestRelease().catch(() => undefined)
+      const target = pickDownload(release, latest)
       await saveAutoBackup()
-      openDownload(release)
+      openDownload(target)
     },
     openDownload,
   }

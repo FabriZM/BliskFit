@@ -3,7 +3,8 @@
  * the build number is the Android versionCode) and carries one APK. The app compares that build number with its
  * own and, if newer, offers the APK, which Android installs over the current app (same signing key, data kept).
  */
-export const RELEASES_API = 'https://api.github.com/repos/FabriZM/BliskFit/releases/latest'
+/** Recent releases, not GitHub's "latest" (which is by date): the newest build is picked from these. */
+export const RELEASES_API = 'https://api.github.com/repos/FabriZM/BliskFit/releases?per_page=20'
 export const RELEASES_PAGE = 'https://github.com/FabriZM/BliskFit/releases/latest'
 
 export interface AppRelease {
@@ -37,10 +38,23 @@ export function parseRelease(json: unknown): AppRelease | undefined {
   }
 }
 
-export const DAY_MS = 24 * 60 * 60 * 1000
+/**
+ * The release to serve: the highest build among the published ones, so an older build published later (or GitHub
+ * picking "latest" by date) never wins.
+ */
+export function newestRelease(list: unknown): AppRelease | undefined {
+  if (!Array.isArray(list)) return undefined
+  return list.map(parseRelease).filter((r): r is AppRelease => !!r).reduce<AppRelease | undefined>((best, r) => (!best || r.build > best.build ? r : best), undefined)
+}
 
-/** Checks at most once a day on launch (GitHub allows 60 unauthenticated requests an hour per address). */
-export const shouldCheck = (lastCheckedAt: number | undefined, now: number) => lastCheckedAt === undefined || now - lastCheckedAt >= DAY_MS
+/** What to download: a fresh lookup wins if it found something newer than the release the user was shown. */
+export const pickDownload = (offered: AppRelease, fresh: AppRelease | undefined): AppRelease =>
+  fresh && fresh.build > offered.build ? fresh : offered
+
+/** How often the app looks for a new release on launch (GitHub allows 60 unauthenticated requests an hour). */
+export const CHECK_INTERVAL_MS = 60 * 60 * 1000
+
+export const shouldCheck = (lastCheckedAt: number | undefined, now: number) => lastCheckedAt === undefined || now - lastCheckedAt >= CHECK_INTERVAL_MS
 
 /** The release to offer: only one newer than this build. */
 export const offer = (release: AppRelease | undefined, currentBuild: number): AppRelease | undefined =>

@@ -131,7 +131,7 @@ export default function Settings() {
   )
 }
 
-/** Android app: manual update check and install (the launch banner does the same once a day). */
+/** Android app: manual update check and install (the launch banner does the same, at most hourly). */
 function AppUpdates() {
   const { t } = useTranslation()
   const { status, available, check } = useAppUpdate()

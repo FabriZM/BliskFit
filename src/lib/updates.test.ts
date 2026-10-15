@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DAY_MS, apkName, offer, parseRelease, releaseTag, shouldCheck } from './updates'
+import { CHECK_INTERVAL_MS, apkName, newestRelease, offer, parseRelease, pickDownload, releaseTag, shouldCheck } from './updates'
 
 const gh = (over: object = {}) => ({
   tag_name: 'v0.4.0-72', html_url: 'https://github.com/FabriZM/BliskFit/releases/tag/v0.4.0-72', body: ' Faster backups \n', draft: false, prerelease: false,
@@ -36,9 +36,26 @@ describe('app updates', () => {
     expect(offer(undefined, 1)).toBeUndefined()
   })
 
-  it('checks at most once a day', () => {
+  it('downloads the newer release if one appeared since the offer was shown', () => {
+    const r = (build: number) => ({ version: '0.8.2', build, apkUrl: `https://github.com/x/${build}.apk`, pageUrl: 'https://github.com/x' })
+    expect(pickDownload(r(100), r(101)).build).toBe(101)
+    expect(pickDownload(r(100), r(100)).build).toBe(100)
+    expect(pickDownload(r(100), r(90)).build).toBe(100)
+    expect(pickDownload(r(100), undefined).build).toBe(100)
+  })
+
+  it('checks again after an hour', () => {
     expect(shouldCheck(undefined, 5)).toBe(true)
-    expect(shouldCheck(0, DAY_MS - 1)).toBe(false)
-    expect(shouldCheck(0, DAY_MS)).toBe(true)
+    expect(shouldCheck(0, CHECK_INTERVAL_MS - 1)).toBe(false)
+    expect(shouldCheck(0, CHECK_INTERVAL_MS)).toBe(true)
+  })
+
+  it('serves the highest build, whatever order GitHub lists them in, skipping unusable ones', () => {
+    const rel = (v: string, b: number, over: object = {}) => gh({
+      tag_name: `v${v}-${b}`, assets: [{ name: `bliskfit-${v}-${b}.apk`, browser_download_url: `https://github.com/FabriZM/BliskFit/releases/download/v${v}-${b}/bliskfit-${v}-${b}.apk` }], ...over,
+    })
+    expect(newestRelease([rel('0.8.1', 99), rel('0.8.2', 100), rel('0.9.0', 120, { prerelease: true }), rel('0.7.0', 80)])?.build).toBe(100)
+    expect(newestRelease([])).toBeUndefined()
+    expect(newestRelease({ message: 'rate limited' })).toBeUndefined()
   })
 })
