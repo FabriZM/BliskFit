@@ -17,7 +17,7 @@ export function useInstall() {
   return { install, busy }
 }
 
-/** Android app only: offers a newer release found by the hourly check. "Later" hides it until the next launch. */
+/** Android app only: offers a newer release found by the daily check. "Later" hides it until the next launch. */
 export default function UpdateBanner() {
   const { t } = useTranslation()
   const { available } = useAppUpdate(true)

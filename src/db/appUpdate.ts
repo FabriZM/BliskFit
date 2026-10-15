@@ -44,7 +44,7 @@ export type CheckStatus = 'idle' | 'checking' | 'upToDate' | 'available' | 'fail
 
 /**
  * Update check for the Android app (the web version updates itself through its service worker). Runs on launch
- * and when the app comes back to the foreground, at most once an hour; `check()` forces one. `install()` checks
+ * and when the app comes back to the foreground, at most once a day; `check()` forces one. `install()` checks
  * once more for anything newer, saves an automatic backup, then opens the newest APK's download in the browser,
  * from where Android's installer takes over (data is kept: same app, same signing key).
  */

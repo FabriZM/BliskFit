@@ -44,7 +44,7 @@ describe('app updates', () => {
     expect(pickDownload(r(100), undefined).build).toBe(100)
   })
 
-  it('checks again after an hour', () => {
+  it('checks again after a day', () => {
     expect(shouldCheck(undefined, 5)).toBe(true)
     expect(shouldCheck(0, CHECK_INTERVAL_MS - 1)).toBe(false)
     expect(shouldCheck(0, CHECK_INTERVAL_MS)).toBe(true)

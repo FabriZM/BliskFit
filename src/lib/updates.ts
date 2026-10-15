@@ -51,8 +51,8 @@ export function newestRelease(list: unknown): AppRelease | undefined {
 export const pickDownload = (offered: AppRelease, fresh: AppRelease | undefined): AppRelease =>
   fresh && fresh.build > offered.build ? fresh : offered
 
-/** How often the app looks for a new release on launch (GitHub allows 60 unauthenticated requests an hour). */
-export const CHECK_INTERVAL_MS = 60 * 60 * 1000
+/** How often the app looks for a new release (GitHub allows 60 unauthenticated requests an hour). */
+export const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000
 
 export const shouldCheck = (lastCheckedAt: number | undefined, now: number) => lastCheckedAt === undefined || now - lastCheckedAt >= CHECK_INTERVAL_MS
 
