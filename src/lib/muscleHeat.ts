@@ -1,4 +1,5 @@
 import type { ID, SetLog } from '../db/types'
+import { MUSCLES } from '../data/muscles'
 import { isWorkingSet, muscleCredit, type ExerciseLite } from './stats'
 
 /** Heat steps: 0 = not targeted, HEAT_LEVELS = the most worked muscle of the period. */
@@ -27,3 +28,15 @@ export interface HeatRegion { id: string; muscles: ID[] }
 /** The most worked of a region's muscles. */
 export const regionHeat = (heat: Map<ID, number>, region: HeatRegion): number =>
   Math.max(0, ...region.muscles.map((m) => heat.get(m) ?? 0))
+
+const PARENT = new Map<string, string>(MUSCLES.flatMap((m): [string, string][] => (m.parent ? [[`m:${m.slug}`, `m:${m.parent}`]] : [])))
+
+/** Sets for a muscle plus any credited to a group above it, so an exercise tagged just "Shoulders" still lights every delt. */
+export function effectiveHeat(heat: Map<ID, number>, id: ID): number {
+  let best = 0
+  for (let cur: ID | undefined = id, guard = 0; cur !== undefined && guard < 5; guard++) {
+    best = Math.max(best, heat.get(cur) ?? 0)
+    cur = PARENT.get(cur)
+  }
+  return best
+}

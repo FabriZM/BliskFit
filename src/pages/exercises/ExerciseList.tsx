@@ -9,19 +9,21 @@ import { muscleLabel, muscleSearchText, orderMuscles, withDescendants } from '..
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import { SearchIcon } from '../../components/TabIcons'
+import BodyPicker from './BodyPicker'
 import { StarIcon } from '../../components/Icons'
 import { useExerciseName } from '../../lib/exerciseName'
 
 const PAGE = 60
 
 // Kept in memory so coming back from an exercise page restores the search, filters and scroll position.
-const saved = { query: '', muscle: '', equipment: '', favoritesOnly: false, shown: PAGE, scroll: 0 }
+const saved = { query: '', muscles: [] as string[], equipment: '', favoritesOnly: false, shown: PAGE, scroll: 0 }
 
 export default function ExerciseList() {
   const { t } = useTranslation()
   const exName = useExerciseName()
   const [query, setQuery] = useState(saved.query)
-  const [muscle, setMuscle] = useState(saved.muscle)
+  const [muscles, setMuscles] = useState(saved.muscles)
+  const [picking, setPicking] = useState(false)
   const [equipment, setEquipment] = useState(saved.equipment)
   const [favoritesOnly, setFavoritesOnly] = useState(saved.favoritesOnly)
   const [shown, setShown] = useState(saved.shown)
@@ -30,7 +32,7 @@ export default function ExerciseList() {
 
   const exercises = useLiveQuery(() => db.exercises.toArray(), [])
 
-  useEffect(() => { Object.assign(saved, { query, muscle, equipment, favoritesOnly, shown }) }, [query, muscle, equipment, favoritesOnly, shown])
+  useEffect(() => { Object.assign(saved, { query, muscles, equipment, favoritesOnly, shown }) }, [query, muscles, equipment, favoritesOnly, shown])
   // Restore the scroll once the list has rendered; remember it when leaving.
   useLayoutEffect(() => {
     if (!exercises || restored.current) return
@@ -44,20 +46,22 @@ export default function ExerciseList() {
     main?.addEventListener('scroll', onScroll, { passive: true })
     return () => main?.removeEventListener('scroll', onScroll)
   }, [])
-  const muscles = useLiveQuery(() => db.muscleGroups.toArray(), [])
+  const allMuscles = useLiveQuery(() => db.muscleGroups.toArray(), [])
 
   const equipmentOptions = useMemo(
     () => [...new Set((exercises ?? []).map((e) => e.equipment ?? 'none'))].sort(),
     [exercises],
   )
-  const muscleName = useMemo(() => new Map((muscles ?? []).map((m) => [m.id, muscleLabel(m, t)])), [muscles, t])
+  const muscleName = useMemo(() => new Map((allMuscles ?? []).map((m) => [m.id, muscleLabel(m, t)])), [allMuscles, t])
 
-  const results = useMemo(() => {
-    if (!exercises || !muscles) return []
-    const ids = muscle ? withDescendants(muscles, muscle) : new Set<string>()
+  /** Exercises for the current search, equipment and favorites with the muscle filter set to `picked`. */
+  const find = (picked: string[]) => {
+    if (!exercises || !allMuscles) return []
+    const ids = new Set(picked.flatMap((m) => [...withDescendants(allMuscles, m)]))
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
-    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(muscles, t), muscleIds: ids, equipment, favorites, favoritesOnly })
-  }, [exercises, muscles, query, muscle, equipment, favorites, favoritesOnly, t, exName])
+    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(allMuscles, t), muscleIds: ids, equipment, favorites, favoritesOnly })
+  }
+  const results = useMemo(() => find(muscles), [exercises, allMuscles, query, muscles, equipment, favorites, favoritesOnly, t, exName]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const reset = (fn: () => void) => { fn(); setShown(PAGE) }
 
@@ -72,12 +76,14 @@ export default function ExerciseList() {
         </button>
       </div>
       <div className="filters">
-        <select value={muscle} onChange={(e) => reset(() => setMuscle(e.target.value))} aria-label={t('exercises.muscle')}>
+        <select value={muscles.length > 1 ? '*' : muscles[0] ?? ''} onChange={(e) => reset(() => setMuscles(e.target.value ? [e.target.value] : []))} aria-label={t('exercises.muscle')}>
           <option value="">{t('exercises.allMuscles')}</option>
-          {orderMuscles(muscles ?? []).map((m) => (
+          {muscles.length > 1 && <option value="*" disabled>{t('exercises.musclesCount', { count: muscles.length })}</option>}
+          {orderMuscles(allMuscles ?? []).map((m) => (
             <option key={m.id} value={m.id}>{(m.parentId ? '\u00a0\u00a0' : '') + muscleName.get(m.id)}</option>
           ))}
         </select>
+        <button className={`chip${muscles.length ? ' on' : ''}`} aria-haspopup="dialog" onClick={() => setPicking(true)}>{t('exercises.pickBody')}</button>
         <select value={equipment} onChange={(e) => reset(() => setEquipment(e.target.value))} aria-label={t('exercises.equipment')}>
           <option value="">{t('exercises.allEquipment')}</option>
           {equipmentOptions.map((eq) => <option key={eq} value={eq}>{t(`equipment.${eq}`, { defaultValue: eq })}</option>)}
@@ -88,7 +94,7 @@ export default function ExerciseList() {
           <p className="muted small list-count">{t('exercises.count', { count: results.length })}</p>
           {results.length === 0 && (
             <EmptyState icon={<SearchIcon />}
-              action={(query || muscle || equipment || favoritesOnly) && <button onClick={() => reset(() => { setQuery(''); setMuscle(''); setEquipment(''); setFavoritesOnly(false) })}>{t('exercises.clearFilters')}</button>}>
+              action={(query || muscles.length > 0 || equipment || favoritesOnly) && <button onClick={() => reset(() => { setQuery(''); setMuscles([]); setEquipment(''); setFavoritesOnly(false) })}>{t('exercises.clearFilters')}</button>}>
               {t('exercises.noResults')}
             </EmptyState>
           )}
@@ -111,6 +117,10 @@ export default function ExerciseList() {
           </ul>}
           {shown < results.length && <button onClick={() => setShown(shown + PAGE)}>{t('exercises.more')}</button>}
         </>
+      )}
+      {picking && allMuscles && (
+        <BodyPicker muscles={allMuscles} value={muscles} count={(ids) => find(ids).length}
+          onApply={(ids) => { reset(() => setMuscles(ids)); setPicking(false) }} onClose={() => setPicking(false)} />
       )}
     </section>
   )

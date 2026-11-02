@@ -15,8 +15,8 @@ export interface SeedRow {
   h?: string[]
 }
 
-/** v2: adds `mechanic` (compound/isolation). v3: adds `level` and how-to `instructions`. */
-export const SEED_VERSION = 3
+/** v2: adds `mechanic` (compound/isolation). v3: adds `level` and how-to `instructions`. v4: shoulders split into delts, obliques added. */
+export const SEED_VERSION = 4
 
 const LEVELS = ['beginner', 'intermediate', 'expert'] as const
 
@@ -46,6 +46,32 @@ export function demoImageUrls(seedId: string, count: number): string[] {
     `https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/${seedId}/${i}.jpg`)
 }
 
+const REAR_DELT = /\b(rear|reverse (machine )?fl(y|ye)s?|face pull|pull apart|bent.?over|back flyes|sled reverse)\b/i
+const SIDE_DELT = /\b(lateral|laterals|side raise|upright row|raise to the side)\b/i
+const FRONT_DELT = /\b(front|deltoid raise|shoulder raise|dumbbell raise|incline raise|scaption|straight raises)\b/i
+const PRESS = /\b(press|jerk|thruster|snatch|clean|push-?ups?|dips?)\b/i
+const PULL = /\b(row|pull|curl|chin)/i
+const OBLIQUE = /\b(oblique|twist|side bend|wood ?chop|side jackknife|side bridge|windshield|russian|pallof|suitcase)/i
+
+/**
+ * The dataset only knows "shoulders" and "abdominals". The finer muscles are guessed from the exercise name: raises
+ * and rows say which delt; presses hit front and side; anything unclear keeps all three (as before the split). A
+ * twist, side bend or side plank also works the obliques.
+ */
+export function refineMuscles(name: string, muscles: string[], role: 'primary' | 'secondary'): string[] {
+  const out = muscles.flatMap((m) => {
+    if (m !== 'shoulders') return [m]
+    if (REAR_DELT.test(name)) return ['rear-delts']
+    const found = [FRONT_DELT.test(name) && 'front-delts', SIDE_DELT.test(name) && 'side-delts'].filter((x): x is string => !!x)
+    if (found.length) return found
+    if (PRESS.test(name)) return role === 'primary' ? ['front-delts', 'side-delts'] : ['front-delts']
+    if (role === 'secondary') return [PULL.test(name) ? 'rear-delts' : 'front-delts']
+    return ['front-delts', 'side-delts', 'rear-delts']
+  })
+  if (OBLIQUE.test(name) && out.includes('abdominals') && !out.includes('obliques')) out.push('obliques')
+  return [...new Set(out)]
+}
+
 export function seedExercise(row: SeedRow): Exercise {
   return {
     id: `x:${row.id}`,
@@ -55,8 +81,8 @@ export function seedExercise(row: SeedRow): Exercise {
     mechanic: row.m === 'compound' || row.m === 'isolation' ? row.m : undefined,
     level: LEVELS.find((l) => l === row.l),
     instructions: row.h?.length ? row.h : undefined,
-    primaryMuscleIds: row.p.map((p) => muscleId(slug(p))),
-    secondaryMuscleIds: row.s.map((p) => muscleId(slug(p))),
+    primaryMuscleIds: refineMuscles(row.n, row.p.map(slug), 'primary').map(muscleId),
+    secondaryMuscleIds: refineMuscles(row.n, row.s.map(slug), 'secondary').map(muscleId),
     demoUrl: row.i > 0 ? demoImageUrls(row.id, row.i)[0] : undefined,
     source: 'seeded',
   }

@@ -17,6 +17,12 @@ export function withDescendants(muscles: MuscleGroup[], rootId: ID): Set<ID> {
   return result
 }
 
+/** The muscles a filter on `ids` covers, as leaves: a group such as Shoulders becomes its delts, so each can be toggled off. */
+export function leafMuscles(muscles: MuscleGroup[], ids: ID[]): ID[] {
+  const parents = new Set(muscles.flatMap((m) => (m.parentId ? [m.parentId] : [])))
+  return [...new Set(ids.flatMap((id) => [...withDescendants(muscles, id)].filter((m) => !parents.has(m))))]
+}
+
 /** Display name: translated for seeded muscles (id `m:<slug>`), raw name for any custom one. */
 export function muscleLabel(m: MuscleGroup, t: (k: string, o?: { defaultValue: string }) => string): string {
   return m.id.startsWith('m:') ? t(`muscles.${m.id.slice(2)}`, { defaultValue: m.name }) : m.name

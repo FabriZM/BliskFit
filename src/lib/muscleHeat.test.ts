@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SetLog } from '../db/types'
-import { heatFromSets, heatLevel, regionHeat } from './muscleHeat'
+import { effectiveHeat, heatFromSets, heatLevel, regionHeat } from './muscleHeat'
 
 const set = (exerciseId: string, over: Partial<SetLog> = {}): SetLog =>
   ({ id: Math.random().toString(), sessionId: 's', exerciseId, order: 0, setType: 'working', doneAt: 1, ...over }) as SetLog
@@ -40,5 +40,14 @@ describe('regionHeat', () => {
     const h = new Map([['m:lats', 2], ['m:middle-back', 5]])
     expect(regionHeat(h, { id: 'back', muscles: ['m:lats', 'm:middle-back'] })).toBe(5)
     expect(regionHeat(h, { id: 'neck', muscles: ['m:neck'] })).toBe(0)
+  })
+})
+
+describe('effectiveHeat', () => {
+  it('lets a group-level tag light its muscles, and keeps their own sets', () => {
+    const h = new Map([['m:shoulders', 3], ['m:rear-delts', 5]])
+    expect(effectiveHeat(h, 'm:front-delts')).toBe(3)
+    expect(effectiveHeat(h, 'm:rear-delts')).toBe(5)
+    expect(effectiveHeat(h, 'm:chest')).toBe(0)
   })
 })

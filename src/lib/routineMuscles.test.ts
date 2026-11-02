@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { routineMuscles } from './muscles'
+import { leafMuscles, routineMuscles } from './muscles'
 
 const muscles = [
   { id: 'm:chest', name: 'Chest' }, { id: 'm:arms', name: 'Arms' }, { id: 'm:triceps', name: 'Triceps', parentId: 'm:arms' },
@@ -17,5 +17,15 @@ describe('routineMuscles', () => {
     const items = [{ exerciseId: 'a', targetSets: 3 }, { exerciseId: 'b', targetSets: 2 }, { exerciseId: 'c', targetSets: 1 }]
     expect(routineMuscles(items, [ex('a', 'm:chest'), undefined, ex('c', 'x')], muscles).map((m) => m.id)).toEqual(['m:chest'])
     expect(routineMuscles(items, [ex('a', 'm:chest'), ex('b', 'm:legs'), ex('c', 'm:arms')], muscles, 2)).toHaveLength(2)
+  })
+})
+
+describe('leafMuscles', () => {
+  const ms = [{ id: 'm:shoulders', name: 'Shoulders' }, { id: 'm:front-delts', name: 'Front delts', parentId: 'm:shoulders' },
+    { id: 'm:rear-delts', name: 'Rear delts', parentId: 'm:shoulders' }, { id: 'm:chest', name: 'Chest' }]
+  it('turns a group into its leaves and keeps leaves as they are', () => {
+    expect(leafMuscles(ms, ['m:shoulders', 'm:chest']).sort()).toEqual(['m:chest', 'm:front-delts', 'm:rear-delts'])
+    expect(leafMuscles(ms, ['m:rear-delts'])).toEqual(['m:rear-delts'])
+    expect(leafMuscles(ms, [])).toEqual([])
   })
 })

@@ -12,6 +12,9 @@ export const MUSCLES: MuscleDef[] = [
   { slug: 'lower-back', parent: 'back' },
   { slug: 'traps', parent: 'back' },
   { slug: 'shoulders' },
+  { slug: 'front-delts', parent: 'shoulders' },
+  { slug: 'side-delts', parent: 'shoulders' },
+  { slug: 'rear-delts', parent: 'shoulders' },
   { slug: 'arms' },
   { slug: 'biceps', parent: 'arms' },
   { slug: 'triceps', parent: 'arms' },
@@ -27,6 +30,7 @@ export const MUSCLES: MuscleDef[] = [
   { slug: 'soleus', parent: 'calves' },
   { slug: 'core' },
   { slug: 'abdominals', parent: 'core' },
+  { slug: 'obliques', parent: 'core' },
   { slug: 'neck' },
 ]
 

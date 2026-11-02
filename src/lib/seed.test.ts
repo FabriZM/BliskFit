@@ -4,7 +4,7 @@ import { GymDB, newId } from '../db/db'
 import { ensureSeed } from '../db/seed'
 import { filterExercises } from './exerciseFilter'
 import { orderMuscles, withDescendants } from './muscles'
-import { inferTrackingType } from './seed'
+import { inferTrackingType, refineMuscles } from './seed'
 
 describe('inferTrackingType', () => {
   const t = (n: string, c = 'strength', e: string | null = 'barbell') => inferTrackingType({ n, c, e })
@@ -109,5 +109,29 @@ describe('seed + filter', () => {
   it('search ignores accents and case', () => {
     const e: Exercise = { id: '1', name: 'Sentadilla Búlgara', trackingType: 'weight_reps', primaryMuscleIds: [], secondaryMuscleIds: [], source: 'custom' as const }
     expect(filterExercises([e], { query: 'BULGARA', muscleIds: new Set(), equipment: '' })).toHaveLength(1)
+  })
+})
+
+describe('refineMuscles', () => {
+  const r = (n: string, m: string[], role: 'primary' | 'secondary' = 'primary') => refineMuscles(n, m, role)
+  it('picks the delt from the exercise name', () => {
+    expect(r('Side Lateral Raise', ['shoulders'])).toEqual(['side-delts'])
+    expect(r('Front Dumbbell Raise', ['shoulders'])).toEqual(['front-delts'])
+    expect(r('Cable Rear Delt Fly', ['shoulders'])).toEqual(['rear-delts'])
+    expect(r('Face Pull', ['shoulders'])).toEqual(['rear-delts'])
+    expect(r('Side Laterals to Front Raise', ['shoulders'])).toEqual(['front-delts', 'side-delts'])
+  })
+  it('presses hit front and side delts; as a secondary muscle only the front', () => {
+    expect(r('Barbell Shoulder Press', ['shoulders'])).toEqual(['front-delts', 'side-delts'])
+    expect(r('Barbell Bench Press', ['shoulders'], 'secondary')).toEqual(['front-delts'])
+    expect(r('Barbell Row', ['shoulders'], 'secondary')).toEqual(['rear-delts'])
+  })
+  it('keeps all three delts when the name says nothing, and leaves other muscles alone', () => {
+    expect(r('Arm Circles', ['shoulders'])).toEqual(['front-delts', 'side-delts', 'rear-delts'])
+    expect(r('Barbell Curl', ['biceps'])).toEqual(['biceps'])
+  })
+  it('adds obliques to twisting and side-bending core work only', () => {
+    expect(r('Russian Twist', ['abdominals'])).toEqual(['abdominals', 'obliques'])
+    expect(r('Crunches', ['abdominals'])).toEqual(['abdominals'])
   })
 })
