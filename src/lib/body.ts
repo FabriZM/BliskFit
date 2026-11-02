@@ -49,6 +49,20 @@ export function asymmetries(latest: Map<string, { value: number }>): Asymmetry[]
   return out.sort((a, b) => a.base.localeCompare(b.base))
 }
 
+// ---- age -------------------------------------------------------------------------------------------
+
+/** Full years between a birth date (YYYY-MM-DD) and `now`; undefined for a missing, invalid or future date. */
+export function ageOn(birthDate: string | undefined, now: Date): number | undefined {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate ?? '')
+  if (!m) return undefined
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  const born = new Date(y, mo - 1, d)
+  if (born.getFullYear() !== y || born.getMonth() !== mo - 1 || born.getDate() !== d) return undefined
+  let age = now.getFullYear() - y
+  if (now.getMonth() < mo - 1 || (now.getMonth() === mo - 1 && now.getDate() < d)) age--
+  return age >= 0 ? age : undefined
+}
+
 // ---- entry timestamps ------------------------------------------------------------------------------
 
 /** Timestamp for an entry dated `day` (YYYY-MM-DD): the current time for today, otherwise midday so it can't slip a day. */

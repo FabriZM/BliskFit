@@ -10,6 +10,11 @@
   "placeholder": "Disponible en un hito posterior.",
   "profile": {
     "language": "Idioma",
+    "aboutYou": "Sobre ti",
+    "birthDate": "Fecha de nacimiento",
+    "age_one": "{{count}} año",
+    "age_other": "{{count}} años",
+    "height": "Altura",
     "bodyModel": "Modelo corporal",
     "bodyMale": "Hombre",
     "bodyFemale": "Mujer",

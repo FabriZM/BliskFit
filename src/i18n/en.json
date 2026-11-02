@@ -10,6 +10,11 @@
   "placeholder": "Coming in a later milestone.",
   "profile": {
     "language": "Language",
+    "aboutYou": "About you",
+    "birthDate": "Date of birth",
+    "age_one": "{{count}} year old",
+    "age_other": "{{count}} years old",
+    "height": "Height",
     "bodyModel": "Body model",
     "bodyMale": "Male",
     "bodyFemale": "Female",

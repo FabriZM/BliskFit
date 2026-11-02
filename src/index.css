@@ -486,3 +486,4 @@ main:has(.wk-top) { scroll-padding-top: 150px; }
 
 
 .body-picker { max-width: 440px; max-height: 92dvh; overflow-y: auto; } .body-picker .head { display: flex; align-items: center; justify-content: space-between; } .body-picker .readout { min-height: 1.4em; text-align: center; margin: 0; font-size: var(--text-sm); } .body-picker .shape.sel { fill: var(--accent); } .body-picker .actions { display: flex; gap: var(--space-2); } .body-picker .actions .primary { flex: 1; }
+.row > input[type=date] { flex: none; width: auto; min-width: 0; }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  BODY_FAT, asymmetries, canAddPhoto, isCustomMeasurement, measurementUnit, compareDefaults, entryTimestamp, latestByType, measurementType, normalizeTag, parseMeasurementType,
+  BODY_FAT, ageOn, asymmetries, canAddPhoto, isCustomMeasurement, measurementUnit, compareDefaults, entryTimestamp, latestByType, measurementType, normalizeTag, parseMeasurementType,
   photoTags, photosOnDay, MAX_PHOTOS_PER_DAY,
 } from './body'
 import { MAX_PINS, cardKey, isPinned, movePin, pinKey, togglePin, validPins } from './pins'
@@ -122,5 +122,20 @@ describe('pins', () => {
     expect(validPins(pins, targets)).toEqual([
       bench, pins[2], pins[4], pins[5], pins[7], pins[10],
     ])
+  })
+})
+
+describe('ageOn', () => {
+  const now = new Date('2026-11-02T12:00:00')
+  it('counts full years, turning over on the birthday', () => {
+    expect(ageOn('1990-11-02', now)).toBe(36)
+    expect(ageOn('1990-11-03', now)).toBe(35)
+    expect(ageOn('1990-01-15', now)).toBe(36)
+  })
+  it('is undefined for missing, invalid or future dates', () => {
+    expect(ageOn(undefined, now)).toBeUndefined()
+    expect(ageOn('', now)).toBeUndefined()
+    expect(ageOn('1990-02-31', now)).toBeUndefined()
+    expect(ageOn('2030-01-01', now)).toBeUndefined()
   })
 })

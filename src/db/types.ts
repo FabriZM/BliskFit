@@ -281,6 +281,10 @@ export interface Settings {
   plateauSessions: number
   /** Which body the muscle figures show. */
   bodyModel: 'male' | 'female'
+  /** Date of birth, YYYY-MM-DD (the age is worked out from it, so it never goes stale). Optional. */
+  birthDate?: string
+  /** Height in cm. Optional. */
+  heightCm?: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {

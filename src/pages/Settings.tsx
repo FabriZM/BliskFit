@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { setWeeklyGoal } from '../db/goals'
+import { ageOn } from '../lib/body'
 import { orderedWeekdays, weekdayNames } from '../lib/dates'
+import { dateKey } from '../lib/goals'
 import { platform } from '../lib/platform'
 import { useNotificationState } from '../lib/platform/hooks'
+import DecimalInput from '../components/DecimalInput'
 import NumInput from '../components/NumInput'
 import { useSettings } from '../stores/settings'
 import { useAppUpdate } from '../db/appUpdate'
@@ -17,6 +20,7 @@ export default function Settings() {
   const { t, i18n } = useTranslation()
   const { settings, update } = useSettings()
   const rem = useNotificationState()
+  const age = ageOn(settings.birthDate, new Date())
   return (
     <section>
       <BackLink to="/profile" label={t('tabs.profile')} />
@@ -61,6 +65,20 @@ export default function Settings() {
           <option value="male">{t('profile.bodyMale')}</option>
           <option value="female">{t('profile.bodyFemale')}</option>
         </select>
+      </label>
+      <h2>{t('profile.aboutYou')}</h2>
+      <label className="row">
+        {t('profile.birthDate')}
+        <input type="date" value={settings.birthDate ?? ''} max={dateKey(new Date())}
+          onChange={(e) => void update({ birthDate: e.target.value || undefined })} />
+      </label>
+      {age !== undefined && <p className="muted small help">{t('profile.age', { count: age })}</p>}
+      <label className="row">
+        {t('profile.height')}
+        <span className="rest-setting">
+          <DecimalInput label={`${t('profile.height')} (cm)`} value={settings.heightCm} placeholder="cm"
+            onCommit={(v) => void update({ heightCm: v !== undefined && v > 0 && v < 300 ? v : undefined })} /> cm
+        </span>
       </label>
       <label className="row">
         {t('profile.prBadges')}
