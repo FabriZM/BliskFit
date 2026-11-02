@@ -279,6 +279,8 @@ export interface Settings {
   setsTarget: number
   /** Sessions without improvement in the best e1RM before an exercise is flagged as plateaued. */
   plateauSessions: number
+  /** Which body the muscle figures show. */
+  bodyModel: 'male' | 'female'
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -299,4 +301,5 @@ export const DEFAULT_SETTINGS: Settings = {
   pinsDismissed: false,
   setsTarget: 10,
   plateauSessions: 5,
+  bodyModel: 'male',
 }

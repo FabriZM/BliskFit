@@ -30,7 +30,7 @@ export default function BodyPicker({ muscles, value, count, onApply, onClose }: 
           <h2>{t('exercises.pickTitle')}</h2>
           <button className="icon" aria-label={t('common.close')} onClick={onClose}><CloseIcon /></button>
         </div>
-        <BodyFigure selected={selected} onSelect={toggle} />
+        <BodyFigure switchable selected={selected} onSelect={toggle} />
         <p className="readout muted" aria-live="polite">{names.length ? names.join(', ') : t('exercises.pickHint')}</p>
         <div className="actions">
           <button disabled={!draft.length} onClick={() => setDraft([])}>{t('exercises.clearMuscles')}</button>

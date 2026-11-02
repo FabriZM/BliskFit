@@ -10,6 +10,9 @@
   "placeholder": "Coming in a later milestone.",
   "profile": {
     "language": "Language",
+    "bodyModel": "Body model",
+    "bodyMale": "Male",
+    "bodyFemale": "Female",
     "units": "Units",
     "persist": "Persistent storage",
     "persistGranted": "Granted",
@@ -77,6 +80,7 @@
     "title": "Muscles worked",
     "week": "Week",
     "month": "Month",
+    "view": "Body view",
     "front": "Front",
     "back": "Back",
     "less": "Less",
@@ -85,9 +89,6 @@
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets",
     "aria": "Body map of muscles worked, darker red means more sets",
-    "model": "Body model",
-    "male": "Male",
-    "female": "Female",
     "list": "Show as list",
     "empty": "No sets yet"
   },

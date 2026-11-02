@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSettings } from '../stores/settings'
 
 /** Traced body diagrams from MuscleMap (MIT, see src/data/musclemap/LICENSE): an outline and one path per muscle surface. */
 interface Diagram { viewBox: string; outline: string; muscles: [part: string, d: string][] }
@@ -17,9 +18,6 @@ const PART_MUSCLE: Record<string, string> = {
 }
 const muscleOf = (part: string): string | undefined => PART_MUSCLE[part.replace(/_(LEFT|RIGHT)$/, '')]
 
-const SEX_KEY = 'heatmap-sex'
-const storedSex = (): Sex => { try { return localStorage.getItem(SEX_KEY) === 'female' ? 'female' : 'male' } catch { return 'male' } }
-
 function useDiagram(sex: Sex, view: View): Diagram | undefined {
   const [d, setD] = useState<Diagram>()
   useEffect(() => {
@@ -34,18 +32,20 @@ function useDiagram(sex: Sex, view: View): Diagram | undefined {
 /**
  * Front and back body with a tappable shape per muscle (a muscle's left and right side act as one). `level` is its
  * heat step 0..5 (0 = grey), `selected` marks muscles to highlight, and `onSelect` receives the tapped muscle slug.
- * Includes the male/female switch, remembered between visits.
+ * Shows the body chosen in settings.
  */
-export default function BodyFigure({ level, selected, onSelect }: {
+export default function BodyFigure({ level, selected, onSelect, switchable = false }: {
   level?: (slug: string) => number
   selected?: ReadonlySet<string>
   onSelect: (slug: string) => void
+  /** One view at a time with a Front/Back switch (bigger shapes to tap); otherwise both side by side. */
+  switchable?: boolean
 }) {
   const { t } = useTranslation()
-  const [sex, setSex] = useState<Sex>(storedSex)
+  const sex: Sex = useSettings((s) => s.settings.bodyModel) === 'female' ? 'female' : 'male'
+  const [view, setView] = useState<View>('front')
   const front = useDiagram(sex, 'front')
   const back = useDiagram(sex, 'back')
-  const pickSex = (s: Sex) => { setSex(s); try { localStorage.setItem(SEX_KEY, s) } catch { /* private mode */ } }
 
   const figure = (label: string, d: Diagram | undefined) => (
     <figure>
@@ -59,20 +59,23 @@ export default function BodyFigure({ level, selected, onSelect }: {
           })}
         </svg>
       ) : <div className="figure-loading" />}
-      <figcaption>{label}</figcaption>
+      {!switchable && <figcaption>{label}</figcaption>}
     </figure>
   )
 
   return (
-    <div className="body-fig">
+    <div className={`body-fig${switchable ? ' single' : ''}`}>
+      {switchable && (
+        <div className="segmented" role="group" aria-label={t('heatmap.view')}>
+          {(['front', 'back'] as const).map((v) => (
+            <button key={v} className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{t(`heatmap.${v}`)}</button>
+          ))}
+        </div>
+      )}
       <div className="figures">
-        {figure(t('heatmap.front'), front)}
-        {figure(t('heatmap.back'), back)}
-      </div>
-      <div className="sex-toggle" role="group" aria-label={t('heatmap.model')}>
-        {(['male', 'female'] as const).map((s) => (
-          <button key={s} className={sex === s ? 'on' : ''} aria-pressed={sex === s} onClick={() => pickSex(s)}>{t(`heatmap.${s}`)}</button>
-        ))}
+        {switchable
+          ? figure(t(`heatmap.${view}`), view === 'front' ? front : back)
+          : <>{figure(t('heatmap.front'), front)}{figure(t('heatmap.back'), back)}</>}
       </div>
     </div>
   )

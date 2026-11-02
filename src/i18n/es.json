@@ -10,6 +10,9 @@
   "placeholder": "Disponible en un hito posterior.",
   "profile": {
     "language": "Idioma",
+    "bodyModel": "Modelo corporal",
+    "bodyMale": "Hombre",
+    "bodyFemale": "Mujer",
     "units": "Unidades",
     "persist": "Almacenamiento persistente",
     "persistGranted": "Concedido",
@@ -77,6 +80,7 @@
     "title": "Músculos trabajados",
     "week": "Semana",
     "month": "Mes",
+    "view": "Vista del cuerpo",
     "front": "Frente",
     "back": "Espalda",
     "less": "Menos",
@@ -85,9 +89,6 @@
     "sets_one": "{{count}} serie",
     "sets_other": "{{count}} series",
     "aria": "Mapa corporal de músculos trabajados, más rojo oscuro significa más series",
-    "model": "Modelo corporal",
-    "male": "Hombre",
-    "female": "Mujer",
     "list": "Ver como lista",
     "empty": "Aún no hay series"
   },

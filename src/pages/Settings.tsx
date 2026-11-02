@@ -56,6 +56,13 @@ export default function Settings() {
         </select>
       </label>
       <label className="row">
+        {t('profile.bodyModel')}
+        <select value={settings.bodyModel ?? 'male'} onChange={(e) => void update({ bodyModel: e.target.value as 'male' | 'female' })}>
+          <option value="male">{t('profile.bodyMale')}</option>
+          <option value="female">{t('profile.bodyFemale')}</option>
+        </select>
+      </label>
+      <label className="row">
         {t('profile.prBadges')}
         <input type="checkbox" className="toggle" checked={settings.prBadges} onChange={(e) => void update({ prBadges: e.target.checked })} />
       </label>
