@@ -86,6 +86,19 @@ export function SetFields({ set, tracking, units: fallback, hint, captions = tru
   )
 }
 
+/** The greyed hint values for the set's empty fields: what checking the set makes its own. Undefined when there are none. */
+function ghostPatch(set: SetLog, tracking: TrackingType, hint: SetLog | undefined, units: Units): Partial<SetLog> | undefined {
+  if (!hint) return undefined
+  const patch: Partial<SetLog> = {}
+  for (const f of FIELDS[tracking]) {
+    if (set[f.key] === undefined && hint[f.key] !== undefined) {
+      patch[f.key] = hint[f.key]
+      if (f.kind === 'weight' && set.unit === undefined) patch.unit = units
+    }
+  }
+  return Object.keys(patch).length ? patch : undefined
+}
+
 export default function SetRow({ set, tracking, units: fallback, label, hint, pr, next, expanded, previous, barOf, onToggle, onChange, onEdit, onDone, onUndo, onUseLast, onDelete, onPlates }: {
   set: SetLog
   tracking: TrackingType
@@ -107,7 +120,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   onChange: (patch: Partial<SetLog>) => void
   /** A value typed into one of the set's fields (`onChange` when omitted). */
   onEdit?: (patch: Partial<SetLog>) => void
-  onDone: () => void
+  /** `ghost`: the greyed hint values filling the empty fields, to save as the set's own before completing it. */
+  onDone: (ghost?: Partial<SetLog>) => void
   onUndo: () => void
   onUseLast: () => void
   /** Omitted for an exercise's last set: every exercise keeps at least one. */
@@ -121,7 +135,8 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
   // Plates per side for the typed weight, else for the hinted one (greyed, like the field's placeholder).
   const plateKg = set.weight ?? hint?.weight
   const plateLoad = bar !== undefined && plateKg !== undefined ? loadFor(kgToDisplay(plateKg, units), bar, PLATES[units]) : undefined
-  const ready = isFilled(set, tracking)
+  const ghost = ghostPatch(set, tracking, hint, units)
+  const ready = isFilled({ ...set, ...ghost }, tracking)
 
   // Swipe either way, at least half the row's width, to delete the set (no confirmation). Works from anywhere on
   // the row, including fields; a mostly-vertical gesture is left to the page scroll. Stops propagation so the
@@ -175,7 +190,7 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
         </span>
         <SetFields set={set} tracking={tracking} units={fallback} hint={hint} captions={false} onChange={onEdit ?? onChange} />
         <button className={`check${done ? ' on' : ''}`} disabled={!done && !ready} aria-label={done ? t('workout.undo') : t('workout.done')}
-          onClick={done ? onUndo : onDone}><CheckIcon size={24} /></button>
+          onClick={done ? onUndo : () => onDone(ghost)}><CheckIcon size={24} /></button>
       </div>
       {expanded && (
         <div className="set-more">

@@ -16,18 +16,19 @@ const blankSets = (sessionId: ID, item: SessionExercise, count: number, startOrd
   }))
 
 /**
- * The gym a new session starts with (never required, always changeable from the session menu): the active
- * program's default gym when the routine belongs to that program, otherwise the gym used last time. Only gyms
+ * The gym a new session starts with (never required, always changeable from the session menu): the routine's
+ * own gym, else the active program's default gym when the routine belongs to that program, else none. Only gyms
  * that still exist are used.
  */
 export async function defaultGymFor(routineId?: ID): Promise<ID | undefined> {
   if (routineId) {
+    const routine = await db.routines.get(routineId)
+    if (routine?.gymId && (await db.gyms.get(routine.gymId))) return routine.gymId
     const programId = await getActiveProgramId()
     const program = programId ? await db.programs.get(programId) : undefined
     if (program?.gymId && programIncludesRoutine(program, routineId) && (await db.gyms.get(program.gymId))) return program.gymId
   }
-  const prev = await db.sessions.orderBy('startedAt').reverse().first()
-  return prev?.gymId && (await db.gyms.get(prev.gymId)) ? prev.gymId : undefined
+  return undefined
 }
 
 /** Starts a session from a routine (or empty). If one is already running, returns it instead. */

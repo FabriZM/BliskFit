@@ -14,24 +14,12 @@ import { elapsedMs, sessionStats } from '../../lib/workout'
 import { volumeFactor } from '../../lib/plates'
 import { useSettings } from '../../stores/settings'
 import { SetFields, setKind } from './SetRow'
+import NotesEditor from './NotesEditor'
 import SummaryImage from './SummaryImage'
 import { autoBackupToDrive } from '../../db/driveBackup'
 import { BackLink } from '../../components/PageHeader'
 import { PencilIcon, TrashIcon } from '../../components/Icons'
 import { useExerciseName } from '../../lib/exerciseName'
-
-/** Saves while typing (debounced) and on blur, so a note is never lost if the app is closed mid-edit. */
-function NotesEditor({ sessionId, initial, placeholder }: { sessionId: string; initial: string; placeholder: string }) {
-  const [text, setText] = useState(initial)
-  const save = (v: string) => void db.sessions.update(sessionId, { notes: v.trim() || undefined })
-  useEffect(() => {
-    if (text === initial) return
-    const timer = setTimeout(() => save(text), 400)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the text drives saving
-  }, [text])
-  return <textarea rows={3} value={text} placeholder={placeholder} onChange={(e) => setText(e.target.value)} onBlur={() => save(text)} />
-}
 
 // Values for <input type="date"> and <input type="time">, in local time.
 const p2 = (n: number) => String(n).padStart(2, '0')

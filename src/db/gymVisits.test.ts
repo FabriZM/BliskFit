@@ -60,23 +60,30 @@ describe('gym visits from the database', () => {
     expect(set.doneAt).toBe(at('2026-10-05') + 1000 + 86_400_000)
   })
 
-  it('default gym: the program\'s own for its routines, otherwise the last used (if it still exists)', async () => {
-    const gProgram = newId(), gLast = newId()
-    await db.gyms.bulkAdd([{ id: gProgram, name: 'Program gym' }, { id: gLast, name: 'Last gym' }])
-    const routineId = newId(), otherRoutine = newId()
+  it('default gym: the routine\'s own, else its active program\'s, else none (if the gym still exists)', async () => {
+    const gProgram = newId(), gRoutine = newId(), gLast = newId()
+    await db.gyms.bulkAdd([{ id: gProgram, name: 'Program gym' }, { id: gRoutine, name: 'Routine gym' }, { id: gLast, name: 'Last gym' }])
+    const routineId = newId(), otherRoutine = newId(), ownGymRoutine = newId()
+    await db.routines.bulkAdd([
+      { id: routineId, name: 'R', exercises: [], archived: false },
+      { id: otherRoutine, name: 'O', exercises: [], archived: false },
+      { id: ownGymRoutine, name: 'G', exercises: [], archived: false, gymId: gRoutine },
+    ])
     const programId = newId()
-    await db.programs.add({ id: programId, name: 'P', weeks: 1, mode: 'rotation', rotation: [routineId], gymId: gProgram })
+    await db.programs.add({ id: programId, name: 'P', weeks: 1, mode: 'rotation', rotation: [routineId, ownGymRoutine], gymId: gProgram })
     await addVisit(gLast, '2026-10-01')
 
-    expect(await defaultGymFor(routineId)).toBe(gLast) // program not active yet: last used
+    expect(await defaultGymFor(routineId)).toBeUndefined() // program not active yet; the last used gym is not carried over
     await setActiveProgramId(programId)
     expect(await defaultGymFor(routineId)).toBe(gProgram)  // active program's routine -> its gym
-    expect(await defaultGymFor(otherRoutine)).toBe(gLast)  // routine outside the program -> last used
-    expect(await defaultGymFor(undefined)).toBe(gLast)     // empty workout -> last used
+    expect(await defaultGymFor(ownGymRoutine)).toBe(gRoutine) // the routine's own gym wins over the program's
+    expect(await defaultGymFor(otherRoutine)).toBeUndefined() // routine outside the program -> none
+    expect(await defaultGymFor(undefined)).toBeUndefined()    // empty workout -> none
 
-    await db.gyms.delete(gProgram)                          // a deleted gym is never used
-    expect(await defaultGymFor(routineId)).toBe(gLast)
-    await db.gyms.delete(gLast)
+    await db.gyms.delete(gRoutine)                          // a deleted gym is never used
+    expect(await defaultGymFor(ownGymRoutine)).toBe(gProgram) // falls back to the program's gym
+    await db.gyms.delete(gProgram)
+    expect(await defaultGymFor(ownGymRoutine)).toBeUndefined()
     expect(await defaultGymFor(routineId)).toBeUndefined()
   })
 })

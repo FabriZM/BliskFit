@@ -202,10 +202,15 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
                 onToggle={() => setExpanded(expanded === s.id ? null : s.id)}
                 onChange={(patch) => void updateSet(s.id, patch)}
                 onEdit={(patch) => void editSet(s.id, patch)}
-                onDone={() => {
+                onDone={(ghost) => {
                   primeAudio()
                   askForNotifications()
-                  void completeSet(s.id, restAfterSet(sorted, i, item, exercise, rests, session.exercises))
+                  const rest = restAfterSet(sorted, i, item, exercise, rests, session.exercises)
+                  // Greyed hint values count as entered once the set is checked.
+                  void (async () => {
+                    if (ghost) await updateSet(s.id, ghost)
+                    await completeSet(s.id, rest)
+                  })()
                 }}
                 onUndo={() => void uncompleteSet(s.id)}
                 onUseLast={() => { const src = workingIdx[i] >= 0 ? lastSetFor(last, workingIdx[i]) : undefined; if (src) void updateSet(s.id, copyOf(src)) }}

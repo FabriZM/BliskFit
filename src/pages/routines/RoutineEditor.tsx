@@ -112,6 +112,7 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const positions = useMemo(() => groupPositions(routine?.exercises ?? []), [routine])
 
   if (routine === undefined) return <p className="muted">…</p>
@@ -141,6 +142,16 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
       <input className="title-input" aria-label={t('routines.name')} value={routine.name} placeholder={t('routines.name')}
         onChange={(e) => save({ ...routine, name: e.target.value })}
         onBlur={() => !isNew && !routine.name.trim() && save({ ...routine, name: t('routines.untitled') })} />
+      {gyms.length > 0 && (
+        <label className="row">
+          {t('routines.gym')}
+          <select value={routine.gymId && gyms.some((g) => g.id === routine.gymId) ? routine.gymId : ''}
+            onChange={(e) => save({ ...routine, gymId: e.target.value || undefined })}>
+            <option value="">{t('routines.noGym')}</option>
+            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+        </label>
+      )}
       {list.length === 0 && <EmptyState icon={<ExercisesIcon />}>{t('routines.emptyRoutine')}</EmptyState>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={list.map((e) => e.id)} strategy={verticalListSortingStrategy}>

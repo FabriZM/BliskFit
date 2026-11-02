@@ -104,6 +104,8 @@ export interface Routine {
   name: string
   exercises: RoutineExercise[]
   archived: boolean
+  /** Optional gym workouts from this routine start with; absent = none. */
+  gymId?: ID
 }
 
 export interface Program {

@@ -19,6 +19,7 @@ import { useSettings } from '../../stores/settings'
 import ExercisePicker from '../routines/ExercisePicker'
 import ExerciseCard from './ExerciseCard'
 import MuscleCounter from './MuscleCounter'
+import NotesEditor from './NotesEditor'
 import RestBar from './RestBar'
 import ReminderSetup from '../../components/ReminderSetup'
 import RestPopup from './RestPopup'
@@ -141,6 +142,11 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
         </SortableContext>
       </DndContext>
       <button className="primary wide" onClick={() => setAdding(true)}>+ {t('routines.addExercises')}</button>
+
+      <div className="notes-block">
+        <h2>{t('detail.notes')}</h2>
+        <NotesEditor sessionId={session.id} initial={session.notes ?? ''} placeholder={t('workout.sessionNotesPlaceholder')} />
+      </div>
 
       <ReminderSetup />
       {restPopup && <RestPopup session={session} />}
