@@ -81,6 +81,9 @@
     "sets_one": "{{count}} serie",
     "sets_other": "{{count}} series",
     "aria": "Mapa corporal de músculos trabajados, más rojo oscuro significa más series",
+    "model": "Modelo corporal",
+    "male": "Hombre",
+    "female": "Mujer",
     "list": "Ver como lista",
     "empty": "Aún no hay series"
   },

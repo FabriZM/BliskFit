@@ -81,6 +81,9 @@
     "sets_one": "{{count}} set",
     "sets_other": "{{count}} sets",
     "aria": "Body map of muscles worked, darker red means more sets",
+    "model": "Body model",
+    "male": "Male",
+    "female": "Female",
     "list": "Show as list",
     "empty": "No sets yet"
   },

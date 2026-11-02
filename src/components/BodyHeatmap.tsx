@@ -1,41 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ID } from '../db/types'
-import { HEAT_LEVELS, heatLevel, regionHeat, type HeatRegion } from '../lib/muscleHeat'
+import { HEAT_LEVELS, heatLevel } from '../lib/muscleHeat'
 
-interface Region extends HeatRegion { d: string[] }
+/** Traced body diagrams from MuscleMap (MIT, see src/data/musclemap/LICENSE): an outline and one path per muscle surface. */
+interface Diagram { viewBox: string; outline: string; muscles: [part: string, d: string][] }
+type Sex = 'male' | 'female'
+type View = 'front' | 'back'
 
-const ell = (cx: number, cy: number, rx: number, ry: number) =>
-  `M${cx - rx} ${cy}a${rx} ${ry} 0 1 0 ${2 * rx} 0a${rx} ${ry} 0 1 0 ${-2 * rx} 0z`
-/** The same shape on the left and right of the body (figure is 100 wide, centred on 50). */
-const pair = (cx: number, cy: number, rx: number, ry: number) => [ell(cx, cy, rx, ry), ell(100 - cx, cy, rx, ry)]
-const m = (slug: string): ID => `m:${slug}`
+const loaders = import.meta.glob<{ default: Diagram }>('../data/musclemap/*.json')
 
-/** Hand-drawn, stylised regions. Ids are muscle slugs; a region's muscles are what colours it. */
-const FRONT: Region[] = [
-  { id: 'neck', muscles: [m('neck')], d: ['M45 25h10v8H45z'] },
-  { id: 'shoulders', muscles: [m('shoulders')], d: pair(30, 41, 8.5, 8) },
-  { id: 'chest', muscles: [m('chest')], d: ['M49 37c-5-2-10-1-13 2l1 12c5 3 10 3 12 0z', 'M51 37c5-2 10-1 13 2l-1 12c-5 3-10 3-12 0z'] },
-  { id: 'biceps', muscles: [m('biceps')], d: pair(23.5, 58, 5, 11) },
-  { id: 'forearms', muscles: [m('forearms')], d: pair(19.5, 85, 4.5, 13) },
-  { id: 'abdominals', muscles: [m('abdominals')], d: ['M42.5 56h15v32a7.5 7.5 0 0 1-15 0z'] },
-  { id: 'quadriceps', muscles: [m('quadriceps')], d: pair(41, 124, 9, 25) },
-  { id: 'adductors', muscles: [m('adductors')], d: pair(48, 112, 2.2, 13) },
-  { id: 'calves', muscles: [m('calves')], d: pair(40, 176, 6, 17) },
-]
-const BACK: Region[] = [
-  { id: 'traps', muscles: [m('traps')], d: ['M50 25l12 8-5 14h-14l-5-14z'] },
-  { id: 'shoulders', muscles: [m('shoulders')], d: pair(30, 41, 8.5, 8) },
-  { id: 'lats', muscles: [m('lats')], d: ['M37 48l8 4-1 24-7-6z', 'M63 48l-8 4 1 24 7-6z'] },
-  { id: 'middle-back', muscles: [m('middle-back')], d: ['M45.5 52h9v14h-9z'] },
-  { id: 'lower-back', muscles: [m('lower-back')], d: ['M44.5 68h11v13h-11z'] },
-  { id: 'triceps', muscles: [m('triceps')], d: pair(23.5, 58, 5, 11) },
-  { id: 'forearms', muscles: [m('forearms')], d: pair(19.5, 85, 4.5, 13) },
-  { id: 'glutes', muscles: [m('glutes')], d: pair(42, 93, 8.5, 9) },
-  { id: 'abductors', muscles: [m('abductors')], d: pair(31, 93, 3.5, 6) },
-  { id: 'hamstrings', muscles: [m('hamstrings')], d: pair(41, 127, 8.5, 22) },
-  { id: 'calves', muscles: [m('calves')], d: pair(40, 176, 6, 17) },
-]
+/** Surface id (CHEST_LEFT -> CHEST) to the app's muscle slug. Obliques have no muscle of their own and count as abdominals. */
+const PART_MUSCLE: Record<string, string> = {
+  CHEST: 'chest', SHOULDER_FRONT: 'shoulders', SHOULDER_SIDE: 'shoulders', SHOULDER_REAR: 'shoulders',
+  BICEPS: 'biceps', TRICEPS: 'triceps', FOREARM: 'forearms', CORE: 'abdominals', OBLIQUE: 'abdominals',
+  QUADRICEPS: 'quadriceps', ADDUCTOR: 'adductors', ABDUCTOR: 'abductors', CALVES: 'calves', HAMSTRINGS: 'hamstrings',
+  GLUTEUS: 'glutes', LATISSIMUS: 'lats', RHOMBOID: 'middle-back', LOWER_BACK: 'lower-back', TRAPEZIUS: 'traps',
+}
+const muscleOf = (part: string): string | undefined => PART_MUSCLE[part.replace(/_(LEFT|RIGHT)$/, '')]
+
+const SEX_KEY = 'heatmap-sex'
+const storedSex = (): Sex => { try { return localStorage.getItem(SEX_KEY) === 'female' ? 'female' : 'male' } catch { return 'male' } }
+
+function useDiagram(sex: Sex, view: View): Diagram | undefined {
+  const [d, setD] = useState<Diagram>()
+  useEffect(() => {
+    let live = true
+    setD(undefined)
+    void loaders[`../data/musclemap/${sex}-${view}.json`]?.().then((m) => { if (live) setD(m.default) })
+    return () => { live = false }
+  }, [sex, view])
+  return d
+}
 
 /**
  * Front and back body map shaded by how much each muscle was worked: grey = not targeted, light to dark red =
@@ -45,30 +41,30 @@ const BACK: Region[] = [
 export default function BodyHeatmap({ heat }: { heat: Map<ID, number> }) {
   const { t } = useTranslation()
   const [sel, setSel] = useState<string>()
+  const [sex, setSex] = useState<Sex>(storedSex)
   const max = Math.max(0, ...heat.values())
   const sets = (n: number) => t('heatmap.sets', { count: Math.round(n * 10) / 10 })
-  const name = (id: string) => t(`muscles.${id}`)
-  const readout = sel ? `${name(sel)} · ${sets(heat.get(m(sel)) ?? 0)}` : max === 0 ? t('heatmap.empty') : ''
+  const name = (slug: string) => t(`muscles.${slug}`)
+  const toggle = (slug: string) => setSel((cur) => (cur === slug ? undefined : slug))
+  const readout = sel ? `${name(sel)} · ${sets(heat.get(`m:${sel}`) ?? 0)}` : max === 0 ? t('heatmap.empty') : ''
   const worked = [...heat].filter(([id, v]) => v > 0 && id.startsWith('m:')).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  const front = useDiagram(sex, 'front')
+  const back = useDiagram(sex, 'back')
 
-  const figure = (label: string, regions: Region[]) => (
+  const pickSex = (s: Sex) => { setSex(s); try { localStorage.setItem(SEX_KEY, s) } catch { /* private mode */ } }
+
+  const figure = (label: string, d: Diagram | undefined) => (
     <figure>
-      <svg viewBox="0 0 100 205">
-        <circle className="base" cx="50" cy="13" r="10" />
-        <rect className="base" x="34" y="30" width="32" height="68" rx="9" />
-        <path className="base" d="M33 100h34l-3 90H36z" />
-        {regions.map((r) => {
-          const v = regionHeat(heat, r)
-          const cls = `shape h${heatLevel(v, max)}${sel === r.id ? ' sel' : ''}`
-          return (
-            <g key={r.id} tabIndex={0} role="button" aria-label={`${name(r.id)}, ${sets(v)}`}
-              onClick={() => setSel(sel === r.id ? undefined : r.id)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSel(sel === r.id ? undefined : r.id) } }}>
-              {r.d.map((d, i) => <path key={i} className={cls} d={d} />)}
-            </g>
-          )
-        })}
-      </svg>
+      {d ? (
+        <svg viewBox={d.viewBox} aria-hidden>
+          <path className="base" d={d.outline} />
+          {d.muscles.map(([part, path], i) => {
+            const slug = muscleOf(part)
+            const level = slug ? heatLevel(heat.get(`m:${slug}`) ?? 0, max) : 0
+            return <path key={i} className={`shape h${level}${slug && slug === sel ? ' sel' : ''}`} d={path} onClick={slug ? () => toggle(slug) : undefined} />
+          })}
+        </svg>
+      ) : <div className="figure-loading" />}
       <figcaption>{label}</figcaption>
     </figure>
   )
@@ -76,8 +72,8 @@ export default function BodyHeatmap({ heat }: { heat: Map<ID, number> }) {
   return (
     <div className="body-heatmap" role="group" aria-label={t('heatmap.aria')}>
       <div className="figures">
-        {figure(t('heatmap.front'), FRONT)}
-        {figure(t('heatmap.back'), BACK)}
+        {figure(t('heatmap.front'), front)}
+        {figure(t('heatmap.back'), back)}
       </div>
       <p className="readout" aria-live="polite">{readout}</p>
       <div className="legend" aria-hidden>
@@ -85,10 +81,20 @@ export default function BodyHeatmap({ heat }: { heat: Map<ID, number> }) {
         {Array.from({ length: HEAT_LEVELS + 1 }, (_, i) => <i key={i} style={{ background: `var(--heat-${i})` }} />)}
         <span>{t('heatmap.more')}</span>
       </div>
+      <div className="sex-toggle" role="group" aria-label={t('heatmap.model')}>
+        {(['male', 'female'] as const).map((s) => (
+          <button key={s} className={sex === s ? 'on' : ''} aria-pressed={sex === s} onClick={() => pickSex(s)}>{t(`heatmap.${s}`)}</button>
+        ))}
+      </div>
       {worked.length > 0 && (
         <details>
           <summary>{t('heatmap.list')}</summary>
-          <ul>{worked.map(([id, v]) => <li key={id}><span>{name(id.replace(/^m:/, ''))}</span><span className="muted">{sets(v)}</span></li>)}</ul>
+          <ul>
+            {worked.map(([id, v]) => {
+              const slug = id.slice(2)
+              return <li key={id}><button className={slug === sel ? 'on' : ''} onClick={() => toggle(slug)}><span>{name(slug)}</span><span className="muted">{sets(v)}</span></button></li>
+            })}
+          </ul>
         </details>
       )}
     </div>
