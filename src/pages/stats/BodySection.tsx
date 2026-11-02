@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import BmiCard from '../../components/stats/BmiCard'
+import IndicatorsCard from '../../components/stats/IndicatorsCard'
 import AsymmetryList from '../../components/stats/AsymmetryList'
 import PhotosPanel from '../../components/stats/PhotosPanel'
 import SeriesCard from '../../components/stats/SeriesCard'
@@ -32,6 +34,8 @@ export default function BodySection({ ctx }: { ctx: StatsCtx }) {
       {data.bodyWeights.length > 0 && <SeriesCard ctx={ctx} pin={{ kind: 'bodyweight', range: ctx.range }} title={t('body.weight')}>
         <p className="muted small">{t('stats.trendHelp')}</p>
       </SeriesCard>}
+      <BmiCard ctx={ctx} />
+      <IndicatorsCard ctx={ctx} />
       {bases.map((base) => {
         const group = types.filter((x) => parseMeasurementType(x).base === base).sort()
         return (

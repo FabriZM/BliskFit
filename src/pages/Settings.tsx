@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { setWeeklyGoal } from '../db/goals'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../db/db'
+import { suggestGoal } from '../lib/bmi'
 import { ageOn } from '../lib/body'
 import { orderedWeekdays, weekdayNames } from '../lib/dates'
 import { dateKey } from '../lib/goals'
@@ -8,6 +11,7 @@ import { platform } from '../lib/platform'
 import { useNotificationState } from '../lib/platform/hooks'
 import DecimalInput from '../components/DecimalInput'
 import NumInput from '../components/NumInput'
+import { displayToKg, kgToDisplay } from '../lib/units'
 import { useSettings } from '../stores/settings'
 import { useAppUpdate } from '../db/appUpdate'
 import { useInstall } from '../components/UpdateBanner'
@@ -21,6 +25,8 @@ export default function Settings() {
   const { settings, update } = useSettings()
   const rem = useNotificationState()
   const age = ageOn(settings.birthDate, new Date())
+  const latestWeight = useLiveQuery(async () => (await db.bodyWeights.orderBy('date').last())?.weight, [])
+  const suggestion = suggestGoal(latestWeight, settings.heightCm)
   return (
     <section>
       <BackLink to="/profile" label={t('tabs.profile')} />
@@ -80,6 +86,17 @@ export default function Settings() {
             onCommit={(v) => void update({ heightCm: v !== undefined && v > 0 && v < 300 ? v : undefined })} /> cm
         </span>
       </label>
+      <label className="row">
+        {t('profile.goalWeight')}
+        <span className="rest-setting">
+          <DecimalInput label={`${t('profile.goalWeight')} (${settings.units})`} value={settings.goalWeightKg === undefined ? undefined : kgToDisplay(settings.goalWeightKg, settings.units)} placeholder={settings.units}
+            onCommit={(v) => void update({ goalWeightKg: v !== undefined && v > 0 && v < 700 ? displayToKg(v, settings.units) : undefined })} /> {settings.units}
+        </span>
+      </label>
+      {suggestion && settings.goalWeightKg === undefined && (
+        <p className="muted small help">{t('bmi.suggest', { bmi: suggestion.bmi, weight: `${kgToDisplay(suggestion.kg, settings.units)} ${settings.units}` })}{' '}
+          <button className="chip" onClick={() => void update({ goalWeightKg: suggestion.kg })}>{t('bmi.useSuggestion')}</button></p>
+      )}
       <label className="row">
         {t('profile.prBadges')}
         <input type="checkbox" className="toggle" checked={settings.prBadges} onChange={(e) => void update({ prBadges: e.target.checked })} />

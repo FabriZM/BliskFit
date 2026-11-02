@@ -15,6 +15,7 @@
     "age_one": "{{count}} year old",
     "age_other": "{{count}} years old",
     "height": "Height",
+    "goalWeight": "Goal weight",
     "bodyModel": "Body model",
     "bodyMale": "Male",
     "bodyFemale": "Female",
@@ -80,6 +81,44 @@
     "core": "Core",
     "abdominals": "Abdominals",
     "neck": "Neck"
+  },
+  "bmi": {
+    "title": "BMI",
+    "needHeight": "Add your height to see your BMI.",
+    "openSettings": "Open settings",
+    "adultsOnly": "BMI isn't meaningful under 18, so it isn't shown.",
+    "underweight": "Underweight",
+    "healthy": "Healthy range",
+    "overweight": "Overweight",
+    "obese": "Obese",
+    "goal": "Goal: {{weight}} (BMI {{bmi}})",
+    "suggest": "Suggested goal: BMI {{bmi}}, about {{weight}}.",
+    "setGoal": "Set a goal weight",
+    "useSuggestion": "Use it",
+    "note": "BMI is a rough guide: it doesn't tell muscle from fat."
+  },
+  "indicators": {
+    "title": "Body indicators",
+    "need": "Log: {{what}}",
+    "height": "Add your height",
+    "waist": "waist",
+    "shoulders": "shoulders",
+    "weight": "body weight",
+    "bodyFat": "body fat %",
+    "whtr": "Waist-to-height",
+    "whtrBand": {
+      "lean": "Lean",
+      "healthy": "Healthy",
+      "raised": "Raised risk",
+      "high": "High risk"
+    },
+    "whtrHelp": "Waist divided by height. Keep it under 0.5.",
+    "taper": "Shoulder-to-waist",
+    "taperTarget": "target {{target}}",
+    "taperHelp": "Shoulders over waist: the higher, the more V-shaped.",
+    "lean": "Lean mass",
+    "leanDetail": "fat {{fat}} · FFMI {{ffmi}}",
+    "leanHelp": "Body weight minus fat, from your last logged body fat %. FFMI is lean kg per height squared."
   },
   "heatmap": {
     "title": "Muscles worked",

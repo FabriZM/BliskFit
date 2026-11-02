@@ -15,6 +15,7 @@
     "age_one": "{{count}} año",
     "age_other": "{{count}} años",
     "height": "Altura",
+    "goalWeight": "Peso objetivo",
     "bodyModel": "Modelo corporal",
     "bodyMale": "Hombre",
     "bodyFemale": "Mujer",
@@ -80,6 +81,44 @@
     "core": "Core",
     "abdominals": "Abdominales",
     "neck": "Cuello"
+  },
+  "bmi": {
+    "title": "IMC",
+    "needHeight": "Añade tu altura para ver tu IMC.",
+    "openSettings": "Abrir ajustes",
+    "adultsOnly": "El IMC no es significativo antes de los 18 años, por eso no se muestra.",
+    "underweight": "Bajo peso",
+    "healthy": "Rango saludable",
+    "overweight": "Sobrepeso",
+    "obese": "Obesidad",
+    "goal": "Objetivo: {{weight}} (IMC {{bmi}})",
+    "suggest": "Objetivo sugerido: IMC {{bmi}}, unos {{weight}}.",
+    "setGoal": "Fijar un peso objetivo",
+    "useSuggestion": "Usar",
+    "note": "El IMC es solo una guía aproximada: no distingue músculo de grasa."
+  },
+  "indicators": {
+    "title": "Indicadores corporales",
+    "need": "Registra: {{what}}",
+    "height": "Añade tu altura",
+    "waist": "cintura",
+    "shoulders": "hombros",
+    "weight": "peso corporal",
+    "bodyFat": "% de grasa",
+    "whtr": "Cintura/altura",
+    "whtrBand": {
+      "lean": "Delgado",
+      "healthy": "Saludable",
+      "raised": "Riesgo elevado",
+      "high": "Riesgo alto"
+    },
+    "whtrHelp": "Cintura dividida por altura. Mantenla por debajo de 0,5.",
+    "taper": "Hombros/cintura",
+    "taperTarget": "objetivo {{target}}",
+    "taperHelp": "Hombros entre cintura: cuanto mayor, más forma de V.",
+    "lean": "Masa magra",
+    "leanDetail": "grasa {{fat}} · FFMI {{ffmi}}",
+    "leanHelp": "Peso corporal sin grasa, según tu último % de grasa registrado. El FFMI es kg magros por altura al cuadrado."
   },
   "heatmap": {
     "title": "Músculos trabajados",

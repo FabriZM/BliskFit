@@ -285,6 +285,8 @@ export interface Settings {
   birthDate?: string
   /** Height in cm. Optional. */
   heightCm?: number
+  /** Goal body weight in kg (shown in the user's units). Optional. */
+  goalWeightKg?: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
