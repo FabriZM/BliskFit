@@ -6,7 +6,9 @@ import { db } from '../../db/db'
 import type { Exercise, SetLog } from '../../db/types'
 import { discardSession } from '../../db/workout'
 import { deleteSet, setGym, setSessionTimes, shiftSession, updateSet } from '../../db/workout'
+import BodyHeatmap from '../../components/BodyHeatmap'
 import PRBadge from '../../components/PRBadge'
+import { heatFromSets } from '../../lib/muscleHeat'
 import { formatSet } from '../../lib/format'
 import { computeAllPRs } from '../../lib/prs'
 import { formatClock, formatNum, kgToDisplay } from '../../lib/units'
@@ -108,6 +110,8 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
           ? <div className={prCount ? 'pr-tile' : ''}><strong>{prCount}</strong><span>{t('summary.prs')}</span></div>
           : <div><strong>{stats.exercises}</strong><span>{t('summary.exercises')}</span></div>}
       </div>
+
+      <BodyHeatmap heat={heatFromSets(sets, exercises)} />
 
       {editing && (
         <div className="edit-meta form">

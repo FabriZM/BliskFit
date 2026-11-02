@@ -5,6 +5,7 @@ import BodyCard from '../components/BodyCard'
 import GoalChart from '../components/GoalChart'
 import GymVisitsCard from '../components/GymVisitsCard'
 import PinnedStats from '../components/PinnedStats'
+import MuscleWeekCard from '../components/MuscleWeekCard'
 import WeekCard from '../components/WeekCard'
 import PageHeader from '../components/PageHeader'
 
@@ -15,6 +16,7 @@ export default function Profile() {
       <PageHeader brand title={t('tabs.profile')}
         actions={<Link className="icon-link" to="/profile/settings" aria-label={t('profile.settings')} title={t('profile.settings')}><SettingsIcon /></Link>} />
       <WeekCard />
+      <MuscleWeekCard />
       <GoalChart />
       <BodyCard />
       <GymVisitsCard />

@@ -18,6 +18,7 @@
   /* set kinds: label text color, on a soft tint of it */
   --set-warmup: #ff9a3c; --set-drop: #b48cff; --set-failure: #f2555a;
   /* charts */
+  --heat-0: #24373a; --heat-1: #5a2a2d; --heat-2: #8a2f33; --heat-3: #b83a3f; --heat-4: #dc4b50; --heat-5: #ff6a6e;
   --chart-grid: #22332f; --chart-missed: #5f736f; --chart-goal: var(--silver); --chart-trend: var(--silver); --chart-push: var(--info);
   /* legacy alias */
   --card: var(--surface);
@@ -474,3 +475,10 @@ main:has(.wk-top) { scroll-padding-top: 150px; }
 .rt-start { width: 100%; margin-top: var(--space-3); }
 .rt-list .rt-menu { margin: var(--space-3) 0 0; }
 .edit-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); } .edit-bar-actions { display: flex; align-items: center; gap: var(--space-1); } .edit-bar .icon.danger-ico { color: var(--danger); }
+
+/* ---- Muscle heatmap ---- */
+.body-heatmap { margin: var(--space-3) 0; } .body-heatmap .figures { display: flex; justify-content: center; gap: var(--space-4); } .body-heatmap figure { margin: 0; text-align: center; flex: 1; max-width: 170px; } .body-heatmap figcaption { color: var(--muted); font-size: var(--text-xs); }
+.body-heatmap svg { width: 100%; height: auto; display: block; } .body-heatmap .shape { stroke: var(--bg); stroke-width: .6; cursor: pointer; transition: fill var(--dur) var(--ease); } .body-heatmap .shape:focus-visible, .body-heatmap .shape.sel { stroke: var(--fg); stroke-width: 1.2; outline: none; } .body-heatmap .base { fill: var(--surface-2); stroke: none; }
+.body-heatmap .h0 { fill: var(--heat-0); } .body-heatmap .h1 { fill: var(--heat-1); } .body-heatmap .h2 { fill: var(--heat-2); } .body-heatmap .h3 { fill: var(--heat-3); } .body-heatmap .h4 { fill: var(--heat-4); } .body-heatmap .h5 { fill: var(--heat-5); }
+.body-heatmap .readout { min-height: 1.4em; text-align: center; margin: var(--space-2) 0; font-size: var(--text-sm); } .body-heatmap .legend { display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--muted); font-size: var(--text-xs); } .body-heatmap .legend i { width: 18px; height: 10px; border-radius: 3px; display: inline-block; }
+.body-heatmap details { margin-top: var(--space-2); } .body-heatmap summary { color: var(--muted); font-size: var(--text-sm); cursor: pointer; } .body-heatmap details ul { list-style: none; padding: 0; margin: var(--space-2) 0 0; } .body-heatmap details li { display: flex; justify-content: space-between; padding: 3px 0; font-size: var(--text-sm); }

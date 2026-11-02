@@ -69,6 +69,21 @@
     "abdominals": "Abdominales",
     "neck": "Cuello"
   },
+  "heatmap": {
+    "title": "Músculos trabajados",
+    "week": "Semana",
+    "month": "Mes",
+    "front": "Frente",
+    "back": "Espalda",
+    "less": "Menos",
+    "more": "Más",
+    "none": "Sin trabajar",
+    "sets_one": "{{count}} serie",
+    "sets_other": "{{count}} series",
+    "aria": "Mapa corporal de músculos trabajados, más rojo oscuro significa más series",
+    "list": "Ver como lista",
+    "empty": "Aún no hay series"
+  },
   "equipment": {
     "none": "Ninguno",
     "barbell": "Barra",
