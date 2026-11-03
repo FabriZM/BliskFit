@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
@@ -62,10 +63,8 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
       <div className="overlay-body">
         <input type="search" placeholder={t('exercises.search')} value={query} onChange={(e) => { setQuery(e.target.value); setShown(PAGE) }} />
         <div className="filters">
-          <select value={shownMuscle} onChange={(e) => { setMuscle(e.target.value); setShown(PAGE) }} aria-label={t('exercises.muscle')}>
-            <option value="">{t('exercises.allMuscles')}</option>
-            {orderMuscles(muscles).map((m) => <option key={m.id} value={m.id}>{(m.parentId ? '  ' : '') + muscleLabel(m, t)}</option>)}
-          </select>
+          <Dropdown label={t('exercises.muscle')} value={shownMuscle} onChange={(v) => { setMuscle(v); setShown(PAGE) }}
+            options={[{ value: '', label: t('exercises.allMuscles') }, ...orderMuscles(muscles).map((m) => ({ value: m.id, label: muscleLabel(m, t), indent: !!m.parentId }))]} />
           <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => { setFavoritesOnly(!favoritesOnly); setShown(PAGE) }}>
             <StarIcon filled /> {t('exercises.favorites')}
           </button>

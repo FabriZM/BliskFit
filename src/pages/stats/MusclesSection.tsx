@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import PinButton from '../../components/stats/PinButton'
 import AsymmetryList from '../../components/stats/AsymmetryList'
@@ -87,9 +88,8 @@ export default function MusclesSection({ ctx }: { ctx: StatsCtx }) {
         <h3>{t('stats.underTrained')}</h3>
         <label className="row">
           {t('stats.target')}
-          <select value={setsTarget} onChange={(e) => void update({ setsTarget: Number(e.target.value) })}>
-            {[6, 8, 10, 12, 14, 16, 20].map((v) => <option key={v} value={v}>{t('stats.setsPerWeek', { count: v })}</option>)}
-          </select>
+          <Dropdown value={String(setsTarget)} onChange={(v) => void update({ setsTarget: Number(v) })}
+            options={[6, 8, 10, 12, 14, 16, 20].map((v) => ({ value: String(v), label: t('stats.setsPerWeek', { count: v }) }))} />
         </label>
         {under.length === 0 ? <p className="muted small">{t('stats.noneUnder', { target: setsTarget })}</p> : (
           <ul className="plain">{under.map((u) => <li key={u.muscleId}>{muscleLabel(byId.get(u.muscleId)!, t)} <span className="muted">{t('stats.setsPerWeek', { count: Math.round(u.perWeek * 10) / 10 })}</span></li>)}</ul>

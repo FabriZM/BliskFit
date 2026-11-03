@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -153,10 +154,8 @@ export default function ExerciseDetail() {
             <div className="form">
               <textarea rows={2} value={text} placeholder={t('exercises.notePlaceholder')} onChange={(e) => setText(e.target.value)} />
               {gyms.length > 0 && (
-                <select value={gymId} onChange={(e) => setGymId(e.target.value)} aria-label={t('gyms.gym')}>
-                  <option value="">{t('gyms.anyGym')}</option>
-                  {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
+                <Dropdown label={t('gyms.gym')} value={gymId} onChange={setGymId}
+                  options={[{ value: '', label: t('gyms.anyGym') }, ...gyms.map((g) => ({ value: g.id, label: g.name }))]} />
               )}
               <input type="file" accept="image/*" aria-label={t('exercises.photo')}
                 onChange={async (e) => { const f = e.target.files?.[0]; if (f) setNotePhoto(await compressImage(f)) }} />

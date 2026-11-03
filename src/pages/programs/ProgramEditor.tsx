@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -84,11 +85,9 @@ export default function ProgramEditor({ isNew = false }: { isNew?: boolean }) {
       {gyms.length > 0 && (
         <label className="row">
           {t('programs.defaultGym')}
-          <select value={program.gymId && gyms.some((g) => g.id === program.gymId) ? program.gymId : ''}
-            onChange={(e) => save({ ...program, gymId: e.target.value || undefined })}>
-            <option value="">{t('programs.noDefaultGym')}</option>
-            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-          </select>
+          <Dropdown value={program.gymId && gyms.some((g) => g.id === program.gymId) ? program.gymId : ''}
+            onChange={(v) => save({ ...program, gymId: v || undefined })}
+            options={[{ value: '', label: t('programs.noDefaultGym') }, ...gyms.map((g) => ({ value: g.id, label: g.name }))]} />
         </label>
       )}
 
@@ -116,14 +115,11 @@ export default function ProgramEditor({ isNew = false }: { isNew?: boolean }) {
               {orderedWeekdays(weekStartDay).map((wd) => (
                 <label className="row day" key={wd}>
                   {days[wd]}
-                  <select value={program.schedule?.[w]?.[wd] ?? ''} onChange={(e) => {
+                  <Dropdown value={program.schedule?.[w]?.[wd] ?? ''} onChange={(v) => {
                     const week = { ...(program.schedule?.[w] ?? {}) }
-                    if (e.target.value) week[wd] = e.target.value; else delete week[wd]
+                    if (v) week[wd] = v; else delete week[wd]
                     save({ ...program, schedule: { ...resizeSchedule(program.schedule, program.weeks), [w]: week } })
-                  }}>
-                    <option value="">{t('programs.restDay')}</option>
-                    {routines.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                  </select>
+                  }} options={[{ value: '', label: t('programs.restDay') }, ...routines.map((r) => ({ value: r.id, label: r.name }))]} />
                 </label>
               ))}
               {w === 0 && program.weeks > 1 && (
@@ -147,10 +143,8 @@ export default function ProgramEditor({ isNew = false }: { isNew?: boolean }) {
               </li>
             ))}
           </ol>
-          <select value="" aria-label={t('programs.addRoutine')} onChange={(e) => e.target.value && save({ ...program, rotation: [...rotation, e.target.value] })}>
-            <option value="">+ {t('programs.addRoutine')}</option>
-            {routines.filter((r) => !rotation.includes(r.id)).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
+          <Dropdown label={t('programs.addRoutine')} value="" onChange={(v) => v && save({ ...program, rotation: [...rotation, v] })}
+            options={[{ value: '', label: `+ ${t('programs.addRoutine')}` }, ...routines.filter((r) => !rotation.includes(r.id)).map((r) => ({ value: r.id, label: r.name }))]} />
         </>
       )}
     </section>

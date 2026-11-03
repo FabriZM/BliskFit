@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Dropdown } from '../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import NumInput from './NumInput'
 import { db } from '../db/db'
@@ -33,10 +34,8 @@ export default function GymPlanEditor({ gym }: { gym: Gym }) {
           <NumInput label={t('gymplan.visits')} value={visits} min={1} max={99} allowEmpty placeholder="12" onCommit={setVisits} />
         </label>
         <label>{t('gymplan.startDay')}
-          <select value={startDay} onChange={(e) => setStartDay(Number(e.target.value))}>
-            <option value={1}>{t('gymplan.calendarMonth')}</option>
-            {Array.from({ length: 30 }, (_, i) => i + 2).map((d) => <option key={d} value={d}>{t('gymplan.dayN', { day: d })}</option>)}
-          </select>
+          <Dropdown value={String(startDay)} onChange={(v) => setStartDay(Number(v))}
+            options={[{ value: '1', label: t('gymplan.calendarMonth') }, ...Array.from({ length: 30 }, (_, i) => i + 2).map((d) => ({ value: String(d), label: t('gymplan.dayN', { day: d }) }))]} />
         </label>
         <p className="muted small help">{t('gymplan.help')}</p>
         <div className="actions">

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../db/db'
@@ -45,17 +46,14 @@ export default function RoutineList() {
         <input type="search" placeholder={t('routines.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
       </div>
       <div className="filters">
-        <select value={muscle} onChange={(e) => setMuscle(e.target.value)} aria-label={t('exercises.muscle')}>
-          <option value="">{t('exercises.allMuscles')}</option>
-          {orderMuscles(data?.muscles ?? []).map((m) => (
-            <option key={m.id} value={m.id}>{(m.parentId ? '\u00a0\u00a0' : '') + muscleLabel(m, t)}</option>
-          ))}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value as RoutineStatus)} aria-label={t('routines.status')}>
-          <option value="active">{t('routines.statusActive')}</option>
-          <option value="archived">{t('routines.statusArchived')}</option>
-          <option value="all">{t('routines.statusAll')}</option>
-        </select>
+        <Dropdown label={t('exercises.muscle')} value={muscle} onChange={setMuscle}
+          options={[{ value: '', label: t('exercises.allMuscles') }, ...orderMuscles(data?.muscles ?? []).map((m) => ({ value: m.id, label: muscleLabel(m, t), indent: !!m.parentId }))]} />
+        <Dropdown label={t('routines.status')} value={status} onChange={(v) => setStatus(v as RoutineStatus)}
+          options={[
+            { value: 'active', label: t('routines.statusActive') },
+            { value: 'archived', label: t('routines.statusArchived') },
+            { value: 'all', label: t('routines.statusAll') },
+          ]} />
       </div>
       {!data ? <p className="muted">…</p> : (
         <>

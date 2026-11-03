@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -76,18 +77,16 @@ export default function ExerciseList() {
         </button>
       </div>
       <div className="filters">
-        <select value={muscles.length > 1 ? '*' : muscles[0] ?? ''} onChange={(e) => reset(() => setMuscles(e.target.value ? [e.target.value] : []))} aria-label={t('exercises.muscle')}>
-          <option value="">{t('exercises.allMuscles')}</option>
-          {muscles.length > 1 && <option value="*" disabled>{t('exercises.musclesCount', { count: muscles.length })}</option>}
-          {orderMuscles(allMuscles ?? []).map((m) => (
-            <option key={m.id} value={m.id}>{(m.parentId ? '\u00a0\u00a0' : '') + muscleName.get(m.id)}</option>
-          ))}
-        </select>
+        <Dropdown label={t('exercises.muscle')} value={muscles.length > 1 ? '*' : muscles[0] ?? ''}
+          onChange={(v) => reset(() => setMuscles(v ? [v] : []))}
+          options={[
+            { value: '', label: t('exercises.allMuscles') },
+            ...(muscles.length > 1 ? [{ value: '*', label: t('exercises.musclesCount', { count: muscles.length }), disabled: true }] : []),
+            ...orderMuscles(allMuscles ?? []).map((m) => ({ value: m.id, label: muscleName.get(m.id) ?? m.id, indent: !!m.parentId })),
+          ]} />
         <button className={`chip${muscles.length ? ' on' : ''}`} aria-haspopup="dialog" onClick={() => setPicking(true)}>{t('exercises.pickBody')}</button>
-        <select value={equipment} onChange={(e) => reset(() => setEquipment(e.target.value))} aria-label={t('exercises.equipment')}>
-          <option value="">{t('exercises.allEquipment')}</option>
-          {equipmentOptions.map((eq) => <option key={eq} value={eq}>{t(`equipment.${eq}`, { defaultValue: eq })}</option>)}
-        </select>
+        <Dropdown label={t('exercises.equipment')} value={equipment} onChange={(v) => reset(() => setEquipment(v))}
+          options={[{ value: '', label: t('exercises.allEquipment') }, ...equipmentOptions.map((eq) => ({ value: eq, label: t(`equipment.${eq}`, { defaultValue: eq }) }))]} />
       </div>
       {!exercises ? <p className="muted">…</p> : (
         <>

@@ -186,8 +186,8 @@ label.inline { display: flex; flex-direction: row; align-items: center; gap: 8px
 .rest-card.over .ring-fill { stroke: var(--warn); stroke-dashoffset: 0; }
 .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; } .ring-text strong { font-size: 2.6rem; font-variant-numeric: tabular-nums; } .ring-text span { color: var(--muted); }
 .rest-actions { display: flex; gap: 8px; width: 100%; } .rest-actions button { flex: 1; }
-.menu.icons { flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px; }
-.menu.icons button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 64px; padding: 6px 10px; background: var(--bg); }
+.menu.icons { flex-direction: row; justify-content: space-between; gap: 6px; padding: 6px; }
+.menu.icons button { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 6px 4px; background: var(--bg); } .menu.icons button small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .menu.icons button span { font-size: 1.3rem; line-height: 1; } .menu.icons button small { font-size: .65rem; color: var(--muted); }
 .set.swiping.dir-r .swipe-bg { justify-content: flex-start; padding-left: 18px; } .set.swiping.dir-l .swipe-bg { justify-content: flex-end; padding-right: 18px; }
 
@@ -489,3 +489,19 @@ main:has(.wk-top) { scroll-padding-top: 150px; }
 .row > input[type=date] { flex: none; width: auto; min-width: 0; }
 .bmi-card .bmi-now { margin: 0 0 var(--space-2); display: flex; align-items: baseline; gap: var(--space-2); } .bmi-card .bmi-now strong { font-size: var(--text-2xl); } .bmi-band { font-size: var(--text-sm); padding: 2px 10px; border-radius: var(--radius-pill); background: var(--surface-2); } .bmi-band.healthy { color: var(--accent); } .bmi-band.underweight, .bmi-band.overweight { color: var(--warn); } .bmi-band.obese { color: var(--danger); }
 .indicators dl { margin: 0; } .indicators dl > div { padding: var(--space-2) 0; border-bottom: 1px solid var(--border); } .indicators dl > div:last-child { border: 0; } .indicators dt { color: var(--muted); font-size: var(--text-sm); } .indicators dd { margin: 2px 0 0; } .indicators dd strong { font-size: var(--text-xl); } .bmi-band.whtr-healthy { color: var(--accent); } .bmi-band.whtr-lean, .bmi-band.whtr-raised { color: var(--warn); } .bmi-band.whtr-high { color: var(--danger); }
+
+/* Dropdown: app-styled select replacement (see components/Dropdown.tsx) */
+.dd { position: relative; flex: 1; min-width: 0; }
+.dd-btn { width: 100%; text-align: left; padding: 10px 26px 10px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background-color: var(--surface-2); font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238fa5a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; }
+.dd-btn:focus-visible, .dd-btn[aria-expanded=true] { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+.dd-list { position: fixed; z-index: 90; width: max-content; max-width: calc(100vw - 16px); overflow-y: auto; margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-2, 0 8px 24px rgba(0,0,0,.25)); }
+.dd-list li { padding: 9px 10px; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; }
+.dd-list li.indent { padding-left: 24px; }
+.dd-list li.act { background: var(--surface-2); }
+.dd-list li.sel { color: var(--accent); font-weight: 600; }
+.dd-list li[aria-disabled=true] { opacity: .5; cursor: default; }
+.filters .dd { flex: 1; }
+.row > .dd { flex: 0 1 55%; }
+.dd-btn { font-size: inherit; padding-left: 12px; padding-right: 32px; background-position: right 12px center; }
+.filters .dd-btn { font-size: var(--text-sm); padding-left: 10px; padding-right: 26px; background-position: right 9px center; }
+.form .dd, label > .dd { width: 100%; }

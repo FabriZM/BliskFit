@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import { formatSet } from '../../lib/format'
 import { exercisesAtSeveralGyms, gymComparison } from '../../lib/stats'
@@ -28,7 +29,7 @@ export default function GymsSection({ ctx }: { ctx: StatsCtx }) {
     <div className="card" id="card-gyms">
       <h3>{t('stats.gymCompare')}</h3>
       <label className="row">{t('stats.exercise')}
-        <select value={ex.id} onChange={(e) => setSel(e.target.value)}>{options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select>
+        <Dropdown value={ex.id} onChange={setSel} options={options.map((o) => ({ value: o.id, label: o.name }))} />
       </label>
       <table className="gym-table">
         <thead><tr><th>{t('gyms.gym')}</th><th>{t('stats.bestSet')}</th>{weighted && <th>{t('stats.metric_e1rm')}</th>}{weighted && <th>{t('stats.avgVolume')}</th>}<th>{t('stats.tile_sessions')}</th></tr></thead>

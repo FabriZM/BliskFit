@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -145,11 +146,9 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
       {gyms.length > 0 && (
         <label className="row">
           {t('routines.gym')}
-          <select value={routine.gymId && gyms.some((g) => g.id === routine.gymId) ? routine.gymId : ''}
-            onChange={(e) => save({ ...routine, gymId: e.target.value || undefined })}>
-            <option value="">{t('routines.noGym')}</option>
-            {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-          </select>
+          <Dropdown value={routine.gymId && gyms.some((g) => g.id === routine.gymId) ? routine.gymId : ''}
+            onChange={(v) => save({ ...routine, gymId: v || undefined })}
+            options={[{ value: '', label: t('routines.noGym') }, ...gyms.map((g) => ({ value: g.id, label: g.name }))]} />
         </label>
       )}
       {list.length === 0 && <EmptyState icon={<ExercisesIcon />}>{t('routines.emptyRoutine')}</EmptyState>}

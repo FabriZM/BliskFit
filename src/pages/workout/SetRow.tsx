@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import DecimalInput from '../../components/DecimalInput'
 import type { SetLog, SetType, TrackingType, Units } from '../../db/types'
@@ -204,27 +205,21 @@ export default function SetRow({ set, tracking, units: fallback, label, hint, pr
             </button>
           )}
           <label>{t('workout.setType')}
-            <select value={setKind(set)} onChange={(e) => onChange(kindPatch(e.target.value as SetKind))}>
-              {SET_KINDS.map((x) => <option key={x} value={x}>{t(`workout.type.${x}`)}</option>)}
-            </select>
+            <Dropdown value={setKind(set)} onChange={(v) => onChange(kindPatch(v as SetKind))}
+              options={SET_KINDS.map((x) => ({ value: x, label: t(`workout.type.${x}`) }))} />
           </label>
           {usesWeight(tracking) && (
             <label>{t('workout.unit')}
-              <select value={units} onChange={(e) => {
+              <Dropdown value={units} onChange={(v) => {
                 // Same number, other unit: the plates said lb, not kg.
-                const to = e.target.value as Units
+                const to = v as Units
                 onChange({ unit: to, weight: retypeKg(set.weight, units, to), extraWeight: retypeKg(set.extraWeight, units, to) })
-              }}>
-                <option value="kg">kg</option>
-                <option value="lb">lb</option>
-              </select>
+              }} options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
             </label>
           )}
           <label>{t('workout.rpe')}
-            <select value={set.rpe ?? ''} onChange={(e) => onChange({ rpe: e.target.value ? Number(e.target.value) : undefined })}>
-              <option value="">—</option>
-              {RPE.map((x) => <option key={x} value={x}>{x}</option>)}
-            </select>
+            <Dropdown value={set.rpe === undefined ? '' : String(set.rpe)} onChange={(v) => onChange({ rpe: v ? Number(v) : undefined })}
+              options={[{ value: '', label: '—' }, ...RPE.map((x) => ({ value: String(x), label: String(x) }))]} />
           </label>
           <div className="set-actions">
             <button className="danger" disabled={!onDelete} onClick={onDelete}>{t('workout.deleteSet')}</button>

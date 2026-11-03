@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Dropdown } from '../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import { setWeeklyGoal } from '../db/goals'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -33,44 +34,34 @@ export default function Settings() {
       <h1>{t('profile.settings')}</h1>
       <label className="row">
         {t('profile.weeklyGoal')}
-        <select value={settings.weeklyGoal} onChange={(e) => void setWeeklyGoal(Number(e.target.value))}>
-          {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{t('profile.goalDays', { count: n })}</option>)}
-        </select>
+        <Dropdown value={String(settings.weeklyGoal)} onChange={(v) => void setWeeklyGoal(Number(v))}
+          options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ value: String(n), label: t('profile.goalDays', { count: n }) }))} />
       </label>
       <label className="row">
         {t('profile.streakFreezes')}
-        <select value={settings.streakFreezes} onChange={(e) => void update({ streakFreezes: Number(e.target.value) })}>
-          <option value={0}>{t('profile.freezeOff')}</option>
-          {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
-        </select>
+        <Dropdown value={String(settings.streakFreezes)} onChange={(v) => void update({ streakFreezes: Number(v) })}
+          options={[{ value: '0', label: t('profile.freezeOff') }, ...[1, 2, 3].map((n) => ({ value: String(n), label: String(n) }))]} />
       </label>
       <p className="muted small help">{t('profile.freezeHelp')}</p>
       <label className="row">
         {t('profile.weekStart')}
-        <select value={settings.weekStartDay} onChange={(e) => void update({ weekStartDay: Number(e.target.value) })}>
-          {[1, 0, 6].map((d) => <option key={d} value={d}>{weekdayNames(i18n.language)[d]}</option>)}
-        </select>
+        <Dropdown value={String(settings.weekStartDay)} onChange={(v) => void update({ weekStartDay: Number(v) })}
+          options={[1, 0, 6].map((d) => ({ value: String(d), label: weekdayNames(i18n.language)[d] }))} />
       </label>
       <label className="row">
         {t('profile.language')}
-        <select value={settings.language} onChange={(e) => void update({ language: e.target.value as 'en' | 'es' })}>
-          <option value="en">English</option>
-          <option value="es">Español</option>
-        </select>
+        <Dropdown value={settings.language} onChange={(v) => void update({ language: v as 'en' | 'es' })}
+          options={[{ value: 'en', label: 'English' }, { value: 'es', label: 'Español' }]} />
       </label>
       <label className="row">
         {t('profile.units')}
-        <select value={settings.units} onChange={(e) => void update({ units: e.target.value as 'kg' | 'lb' })}>
-          <option value="kg">kg</option>
-          <option value="lb">lb</option>
-        </select>
+        <Dropdown value={settings.units} onChange={(v) => void update({ units: v as 'kg' | 'lb' })}
+          options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
       </label>
       <label className="row">
         {t('profile.bodyModel')}
-        <select value={settings.bodyModel ?? 'male'} onChange={(e) => void update({ bodyModel: e.target.value as 'male' | 'female' })}>
-          <option value="male">{t('profile.bodyMale')}</option>
-          <option value="female">{t('profile.bodyFemale')}</option>
-        </select>
+        <Dropdown value={settings.bodyModel ?? 'male'} onChange={(v) => void update({ bodyModel: v as 'male' | 'female' })}
+          options={[{ value: 'male', label: t('profile.bodyMale') }, { value: 'female', label: t('profile.bodyFemale') }]} />
       </label>
       <h2>{t('profile.aboutYou')}</h2>
       <label className="row">

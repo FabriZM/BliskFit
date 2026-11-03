@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -46,16 +47,18 @@ export default function ProgramList() {
             <input type="search" placeholder={t('programs.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
           <div className="filters">
-            <select value={mode} onChange={(e) => setMode(e.target.value as ProgramMode)} aria-label={t('programs.mode')}>
-              <option value="all">{t('programs.typeAll')}</option>
-              <option value="weekday">{t('programs.modeWeekday')}</option>
-              <option value="rotation">{t('programs.modeRotation')}</option>
-            </select>
-            <select value={status} onChange={(e) => setStatus(e.target.value as ProgramStatus)} aria-label={t('programs.status')}>
-              <option value="all">{t('programs.statusAll')}</option>
-              <option value="active">{t('programs.statusActive')}</option>
-              <option value="inactive">{t('programs.statusInactive')}</option>
-            </select>
+            <Dropdown label={t('programs.mode')} value={mode} onChange={(v) => setMode(v as ProgramMode)}
+              options={[
+                { value: 'all', label: t('programs.typeAll') },
+                { value: 'weekday', label: t('programs.modeWeekday') },
+                { value: 'rotation', label: t('programs.modeRotation') },
+              ]} />
+            <Dropdown label={t('programs.status')} value={status} onChange={(v) => setStatus(v as ProgramStatus)}
+              options={[
+                { value: 'all', label: t('programs.statusAll') },
+                { value: 'active', label: t('programs.statusActive') },
+                { value: 'inactive', label: t('programs.statusInactive') },
+              ]} />
           </div>
           {data && (
             <>

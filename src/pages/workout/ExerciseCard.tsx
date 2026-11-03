@@ -113,9 +113,9 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   }
 
   // Swipe either way to remove (confirmed). Only starts on non-interactive areas, and vertical scrolling wins.
-  const SWIPE_AT = 100
+  const SWIPE_AT = 60
   const onPointerDown = (e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest('input,button,select,textarea,label,a')) return
+    if ((e.target as HTMLElement).closest('input,button,select,textarea,label')) return
     drag.current = { x: e.clientX, y: e.clientY, active: false }
   }
   const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
@@ -124,7 +124,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
     const ddx = e.clientX - d.x, ddy = e.clientY - d.y
     if (!d.active) {
       if (Math.abs(ddy) > 10 && Math.abs(ddy) > Math.abs(ddx)) { drag.current = null; return }
-      if (Math.abs(ddx) > 10) {
+      if (Math.abs(ddx) > 8) {
         d.active = true
         try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* pointer already gone */ }
       }
@@ -174,6 +174,9 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
           <button role="menuitem" title={item.skipped ? t('workout.unskip') : t('workout.skip')} aria-label={item.skipped ? t('workout.unskip') : t('workout.skip')}
             onClick={() => { void toggleSkip(session.id, item.id); setMenu(false) }}>
             {item.skipped ? <UndoIcon /> : <SkipIcon />}<small>{item.skipped ? t('workout.unskip') : t('workout.skipShort')}</small>
+          </button>
+          <button role="menuitem" className="danger" title={t('workout.removeExercise')} aria-label={t('workout.removeExercise')} onClick={() => { setConfirmRemove(true); setMenu(false) }}>
+            <TrashIcon /><small>{t('workout.removeShort')}</small>
           </button>
         </div>
       )}

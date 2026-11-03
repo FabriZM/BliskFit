@@ -438,6 +438,7 @@
     },
     "swapShort": "Swap",
     "skipShort": "Skip",
+    "removeShort": "Remove",
     "routines": "Routines",
     "options": "Workout options",
     "sessionNotesPlaceholder": "Notes about this workout (optional)",

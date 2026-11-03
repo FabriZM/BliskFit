@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useTranslation } from 'react-i18next'
 import type { ProgressPhoto } from '../../db/types'
 import { compareDefaults, photoTags, photosWithTag } from '../../lib/body'
@@ -72,10 +73,10 @@ export default function PhotosPanel({ photos }: { photos: ProgressPhoto[] }) {
         <>
           <div className="row cmp-pick">
             <label className="inline">{t('stats.before')}
-              <select value={A.id} onChange={(e) => setPick((p) => ({ ...p, a: e.target.value }))}>{sameTag.map((p) => <option key={p.id} value={p.id}>{fmt.format(p.date)}</option>)}</select>
+              <Dropdown value={A.id} onChange={(v) => setPick((p) => ({ ...p, a: v }))} options={sameTag.map((p) => ({ value: p.id, label: fmt.format(p.date) }))} />
             </label>
             <label className="inline">{t('stats.after')}
-              <select value={B.id} onChange={(e) => setPick((p) => ({ ...p, b: e.target.value }))}>{sameTag.map((p) => <option key={p.id} value={p.id}>{fmt.format(p.date)}</option>)}</select>
+              <Dropdown value={B.id} onChange={(v) => setPick((p) => ({ ...p, b: v }))} options={sameTag.map((p) => ({ value: p.id, label: fmt.format(p.date) }))} />
             </label>
           </div>
           <div className="segmented small-seg" role="group" aria-label={t('stats.compare')}>

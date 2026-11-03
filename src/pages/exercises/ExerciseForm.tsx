@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -79,22 +80,16 @@ export default function ExerciseForm() {
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Calf raise (seated machine X)" />
         </label>
         <label>{t('exercises.trackingType')}
-          <select value={trackingType} onChange={(e) => setTrackingType(e.target.value as TrackingType)}>
-            {TRACKING_TYPES.map((x) => <option key={x} value={x}>{t(`tracking.${x}`)}</option>)}
-          </select>
+          <Dropdown value={trackingType} onChange={(v) => setTrackingType(v as TrackingType)}
+            options={TRACKING_TYPES.map((x) => ({ value: x, label: t(`tracking.${x}`) }))} />
         </label>
         <label>{t('exercises.equipment')}
-          <select value={equipment} onChange={(e) => setEquipment(e.target.value)}>
-            <option value="">{t('equipment.none')}</option>
-            {EQUIPMENT.map((x) => <option key={x} value={x}>{t(`equipment.${x}`, { defaultValue: x })}</option>)}
-          </select>
+          <Dropdown value={equipment} onChange={setEquipment}
+            options={[{ value: '', label: t('equipment.none') }, ...EQUIPMENT.map((x) => ({ value: x, label: t(`equipment.${x}`, { defaultValue: x }) }))]} />
         </label>
         <label>{t('exercises.mechanic')}
-          <select value={mechanic} onChange={(e) => setMechanic(e.target.value as '' | 'compound' | 'isolation')}>
-            <option value="">{t('exercises.mechanicNone')}</option>
-            <option value="compound">{t('exercises.compound')}</option>
-            <option value="isolation">{t('exercises.isolation')}</option>
-          </select>
+          <Dropdown value={mechanic} onChange={(v) => setMechanic(v as '' | 'compound' | 'isolation')}
+            options={[{ value: '', label: t('exercises.mechanicNone') }, { value: 'compound', label: t('exercises.compound') }, { value: 'isolation', label: t('exercises.isolation') }]} />
         </label>
         <fieldset><legend>{t('exercises.primary')}</legend>
           <MuscleChips muscles={muscles} value={primary} onChange={setPrimary} />

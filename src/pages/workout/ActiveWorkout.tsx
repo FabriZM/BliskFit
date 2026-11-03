@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Dropdown } from '../../components/Dropdown'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
@@ -114,10 +115,8 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
             <h2>{t('workout.options')}</h2>
             {gyms.length > 0 && (
               <label>{t('gyms.gym')}
-                <select value={session.gymId ?? ''} onChange={(e) => void setGym(session.id, e.target.value || undefined)}>
-                  <option value="">{t('workout.noGym')}</option>
-                  {gyms.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
+                <Dropdown value={session.gymId ?? ''} onChange={(v) => void setGym(session.id, v || undefined)}
+                  options={[{ value: '', label: t('workout.noGym') }, ...gyms.map((g) => ({ value: g.id, label: g.name }))]} />
               </label>
             )}
             {notif.permission === 'denied' && <p className="muted small">{t('workout.remindersDenied')}</p>}

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Dropdown } from '../components/Dropdown'
 import { db } from '../db/db'
 import { setExerciseUnit } from '../db/equipment'
 import type { Exercise, Units } from '../db/types'
@@ -25,11 +26,8 @@ export default function EquipmentSettings({ exercise }: { exercise: Exercise }) 
   return (
     <div className="form equipment">
       <label>{t('equipmentSettings.unit')}
-        <select value={exercise.weightUnit ?? ''} onChange={(e) => void setExerciseUnit(exercise.id, (e.target.value || undefined) as Units | undefined, appUnits)}>
-          <option value="">{t('equipmentSettings.unitDefault', { units: appUnits })}</option>
-          <option value="kg">kg</option>
-          <option value="lb">lb</option>
-        </select>
+        <Dropdown value={exercise.weightUnit ?? ''} onChange={(v) => void setExerciseUnit(exercise.id, (v || undefined) as Units | undefined, appUnits)}
+          options={[{ value: '', label: t('equipmentSettings.unitDefault', { units: appUnits }) }, { value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
       </label>
       {exercise.trackingType === 'weight_reps' && (
         <label className="inline">
