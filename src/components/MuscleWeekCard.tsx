@@ -4,19 +4,16 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import type { Exercise } from '../db/types'
 import { heatFromSets } from '../lib/muscleHeat'
-import { weekStart } from '../lib/programs'
 import { useNow } from '../lib/useNow'
-import { useSettings } from '../stores/settings'
 import BodyHeatmap from './BodyHeatmap'
 
-/** Muscles worked this week or this month as a body map. Profile only. */
+/** Muscles worked in the last 7 or 30 days (today included) as a body map. Profile only. */
 export default function MuscleWeekCard() {
   const { t } = useTranslation()
-  const weekStartDay = useSettings((s) => s.settings.weekStartDay)
   const [period, setPeriod] = useState<'week' | 'month'>('week')
   const now = useNow(60_000)
   const today = new Date(now)
-  const from = (period === 'week' ? weekStart(today, weekStartDay) : new Date(today.getFullYear(), today.getMonth(), 1)).getTime()
+  const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (period === 'week' ? 6 : 29)).getTime()
 
   const heat = useLiveQuery(async () => {
     const ids = (await db.sessions.where('status').equals('finished').filter((s) => s.startedAt >= from).toArray()).map((s) => s.id)

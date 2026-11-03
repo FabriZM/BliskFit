@@ -135,8 +135,8 @@
   },
   "heatmap": {
     "title": "Músculos trabajados",
-    "week": "Semana",
-    "month": "Mes",
+    "week": "7 días",
+    "month": "30 días",
     "view": "Vista del cuerpo",
     "front": "Frente",
     "back": "Espalda",

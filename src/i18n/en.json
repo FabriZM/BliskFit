@@ -135,8 +135,8 @@
   },
   "heatmap": {
     "title": "Muscles worked",
-    "week": "Week",
-    "month": "Month",
+    "week": "7 days",
+    "month": "30 days",
     "view": "Body view",
     "front": "Front",
     "back": "Back",
