@@ -11,7 +11,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { db, newId } from '../../db/db'
 import type { Exercise, Routine, RoutineExercise } from '../../db/types'
 import {
-  addExercises, groupPositions, linkWithNext, moveExercise, removeExercise, setRepRange, setRest, unlinkFromNext,
+  addExercises, groupPositions, linkWithNext, moveExercise, removeExercise, replaceExercise, setRepRange, setRest, unlinkFromNext,
 } from '../../lib/routines'
 import { useSettings } from '../../stores/settings'
 import NumInput from '../../components/NumInput'
@@ -35,10 +35,11 @@ interface RowProps {
   onChange: (next: RoutineExercise) => void
   onRest: (v: number | undefined) => void
   onRemove: () => void
+  onSwap: () => void
   onToggleLink: () => void
 }
 
-function Row({ backTo, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onToggleLink }: RowProps) {
+function Row({ backTo, item, exercise, pos, canLink, defaultRest, onChange, onRest, onRemove, onSwap, onToggleLink }: RowProps) {
   const { t } = useTranslation()
   const exName = useExerciseName()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
@@ -53,6 +54,7 @@ function Row({ backTo, item, exercise, pos, canLink, defaultRest, onChange, onRe
         <button className="handle" aria-label={t('routines.drag')} {...attributes} {...listeners}><GripIcon /></button>
         {/* The exercise page's back button returns here (see ExerciseDetail). */}
         <Link className="rx-name" to={`/exercises/${encodeURIComponent(item.exerciseId)}`} state={{ back: backTo }}>{exName(exercise)}</Link>
+        <button aria-label={t('workout.swap')} onClick={onSwap}>{t('workout.swapShort')}</button>
         <button className="icon" aria-label={t('common.delete')} onClick={onRemove}><CloseIcon /></button>
       </div>
       <div className="rx-fields">
@@ -91,6 +93,7 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
   const defaultRest = useSettings((s) => s.settings.defaultRestSec)
   const [routine, setRoutine] = useState<Routine | null | undefined>(() => (isNew ? (resume ? useRoutineDraft.getState().draft : undefined) ?? { id: newId(), name: '', exercises: [], archived: false } : undefined))
   const [picking, setPicking] = useState(false)
+  const [swapping, setSwapping] = useState<number | null>(null)
 
   useEffect(() => { if (!isNew) void db.routines.get(id).then((r) => setRoutine(r ?? null)) }, [id, isNew])
   const dirty = isNew && !!routine && (routine.name.trim() !== '' || routine.exercises.length > 0)
@@ -138,7 +141,9 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
     <section>
       <div className="edit-bar">
         <BackLink to="/workout" label={t('tabs.workout')} />
-        {isNew && <button className="primary" onClick={() => void commit()}>{t('common.save')}</button>}
+        {isNew
+          ? <button className="primary" onClick={() => void commit()}>{t('common.save')}</button>
+          : <button className="primary" onClick={() => nav('/workout')}>{t('common.done')}</button>}
       </div>
       <input className="title-input" aria-label={t('routines.name')} value={routine.name} placeholder={t('routines.name')}
         onChange={(e) => save({ ...routine, name: e.target.value })}
@@ -161,6 +166,7 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
                 onChange={(next) => setExercises(list.map((e, k) => (k === i ? next : e)))}
                 onRest={(v) => setExercises(setRest(list, i, v))}
                 onRemove={() => setExercises(removeExercise(list, i))}
+                onSwap={() => setSwapping(i)}
                 onToggleLink={() => setExercises(positions[i].pos === 'start' || positions[i].pos === 'middle' ? unlinkFromNext(list, i) : linkWithNext(list, i))} />
             ))}
           </ul>
@@ -168,6 +174,16 @@ export default function RoutineEditor({ isNew = false }: { isNew?: boolean }) {
       </DndContext>
       <button className="primary wide" onClick={() => setPicking(true)}>+ {t('routines.addExercises')}</button>
       {picking && <ExercisePicker onClose={() => setPicking(false)} onAdd={(exs) => { save(addExercises(routine, exs)); setPicking(false) }} />}
+      {swapping !== null && list[swapping] && (
+        <ExercisePicker single title={t('workout.swap')} replacing={names.get(list[swapping].exerciseId)} onClose={() => setSwapping(null)}
+          onAdd={([next]) => {
+            // Only this row, even if the routine lists the exercise twice.
+            const item = list[swapping]
+            const swapped = replaceExercise({ ...routine, exercises: [item] }, item.exerciseId, next).exercises[0]
+            setExercises(list.map((e, k) => (k === swapping ? swapped : e)))
+            setSwapping(null)
+          }} />
+      )}
     </section>
   )
 }

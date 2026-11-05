@@ -28,11 +28,13 @@ function NotePhoto({ blob }: { blob: Blob }) {
   return url ? <img className="photo" src={url} alt="" /> : null
 }
 
-export default function ExerciseDetail() {
+/** `embedded`: shown inside another screen (the exercise picker) instead of as a page; back closes it and the tab is local state. */
+export default function ExerciseDetail({ embedded }: { embedded?: { exerciseId: string; onClose: () => void } } = {}) {
   const { t, i18n } = useTranslation()
   const exName = useExerciseName()
   const nav = useNavigate()
-  const id = decodeURIComponent(useParams().id ?? '')
+  const routeId = decodeURIComponent(useParams().id ?? '')
+  const id = embedded?.exerciseId ?? routeId
   const ex = useLiveQuery(() => db.exercises.get(id), [id])
   // Opened from a running workout or a routine: back goes there, not to the exercise list.
   const location = useLocation()
@@ -40,8 +42,9 @@ export default function ExerciseDetail() {
   const backTo = back === '/workout' || back?.startsWith('/routines/') ? back : '/exercises'
   // The tab lives in the URL so going back to this page reopens it.
   const [params, setParams] = useSearchParams()
-  const tab: Tab = TABS.find((x) => x === params.get('tab')) ?? 'about'
-  const setTab = (next: Tab) => setParams(next === 'about' ? {} : { tab: next }, { replace: true, state: location.state })
+  const [localTab, setLocalTab] = useState<Tab>('about')
+  const tab: Tab = embedded ? localTab : TABS.find((x) => x === params.get('tab')) ?? 'about'
+  const setTab = (next: Tab) => embedded ? setLocalTab(next) : setParams(next === 'about' ? {} : { tab: next }, { replace: true, state: location.state })
   const muscles = useLiveQuery(() => db.muscleGroups.toArray(), []) ?? []
   const gyms = useLiveQuery(() => db.gyms.toArray(), []) ?? []
   const notes = useLiveQuery(() => db.exerciseGymNotes.where('exerciseId').equals(id).toArray(), [id]) ?? []
@@ -81,7 +84,9 @@ export default function ExerciseDetail() {
 
   return (
     <section>
-      <BackLink to={backTo} label={backTo === '/workout' ? t('tabs.workout') : backTo === '/exercises' ? t('tabs.exercises') : t('routines.routine')} />
+      {embedded
+        ? <button onClick={embedded.onClose}>← {t('common.back')}</button>
+        : <BackLink to={backTo} label={backTo === '/workout' ? t('tabs.workout') : backTo === '/exercises' ? t('tabs.exercises') : t('routines.routine')} />}
       <div className="row head">
         <h1>{exName(ex)}</h1>
         <button className={`star${favorites.has(id) ? ' on' : ''}`} aria-pressed={favorites.has(id)}

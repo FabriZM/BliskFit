@@ -4,4 +4,6 @@
     <string name="title_activity_main">BliskFit</string>
     <string name="package_name">com.fabrizm.bliskfit</string>
     <string name="custom_url_scheme">com.fabrizm.bliskfit</string>
+    <string name="widget_week_description">Days trained this week against your goal</string>
+    <string name="widget_muscles_description">Muscles worked this week</string>
 </resources>

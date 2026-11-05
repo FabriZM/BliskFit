@@ -54,6 +54,16 @@
                 android:value="Rest timer countdown shown in a notification during a workout" />
         </service>
 
+        <!-- Home-screen widgets (fed by WidgetsPlugin / WidgetStore) -->
+        <receiver android:name=".WeekWidgetProvider" android:exported="false" android:label="@string/widget_week_description">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_week_info" />
+        </receiver>
+        <receiver android:name=".MusclesWidgetProvider" android:exported="false" android:label="@string/widget_muscles_description">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_muscles_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -68,6 +78,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- In-app camera for progress photos (with the last photo as a ghost overlay) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Rest-over and forgotten-workout notifications (Android 13+ asks at runtime) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets those notifications fire on time with the screen locked; the user grants it in system settings -->

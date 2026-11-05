@@ -153,10 +153,13 @@ export interface RoutineChanges {
   exercises: RoutineExercise[]
   added: ID[]
   removed: ID[]
+  /** Routine-exercise ids behind `added` (new rows in `exercises`) and `removed` (rows of the routine), same order. */
+  addedIds: ID[]
+  removedIds: ID[]
   /** Exercises reordered, or supersets linked or split. */
   reordered: boolean
   /** Exercises whose number of sets changed. */
-  sets: { exerciseId: ID; from: number; to: number }[]
+  sets: { itemId: ID; exerciseId: ID; from: number; to: number }[]
 }
 
 /** Each exercise with the index of the first member of its superset (or its own), to compare grouping. */
@@ -185,15 +188,48 @@ export function routineUpdate(routine: Routine, items: SessionExercise[], sets: 
     return e
   }))
   const added = items.filter((_, i) => !matched[i]).map((it) => it.exerciseId)
+  const addedIds = exercises.filter((_, i) => !matched[i]).map((e) => e.id)
   const removed = unused.map((r) => r.exerciseId)
+  const removedIds = unused.map((r) => r.id)
   const kept = routine.exercises.filter((r) => !unused.includes(r))
   const reordered = layout(kept) !== layout(exercises.filter((_, i) => matched[i]))
   const setChanges = items.flatMap((it, i) => {
     const r = matched[i]
-    return r && r.targetSets !== count(it) ? [{ exerciseId: it.exerciseId, from: r.targetSets, to: count(it) }] : []
+    return r && r.targetSets !== count(it) ? [{ itemId: r.id, exerciseId: it.exerciseId, from: r.targetSets, to: count(it) }] : []
   })
   if (!added.length && !removed.length && !reordered && !setChanges.length) return null
-  return { exercises, added, removed, reordered, sets: setChanges }
+  return { exercises, added, removed, addedIds, removedIds, reordered, sets: setChanges }
+}
+
+/** Which of a workout's routine changes to keep; arrays line up with `RoutineChanges.added`, `removed` and `sets`. */
+export interface ChangeSelection { order: boolean; added: boolean[]; removed: boolean[]; sets: boolean[] }
+
+export const selectAllChanges = (c: RoutineChanges): ChangeSelection => ({
+  order: true, added: c.added.map(() => true), removed: c.removed.map(() => true), sets: c.sets.map(() => true),
+})
+
+export const anyChangeSelected = (s: ChangeSelection) => s.order || [...s.added, ...s.removed, ...s.sets].some(Boolean)
+
+/** The routine's exercises with only the selected changes applied; unselected ones stay as the routine had them. */
+export function applyRoutineChanges(routine: Routine, c: RoutineChanges, sel: ChangeSelection): RoutineExercise[] {
+  const dropped = new Set(c.addedIds.filter((_, i) => !sel.added[i]))
+  const original = new Map(routine.exercises.map((e, i) => [e.id, { e, i }]))
+  const keepSets = new Map(c.sets.filter((_, i) => !sel.sets[i]).map((s) => [s.itemId, s.from]))
+  let out = c.exercises.filter((e) => !dropped.has(e.id)).map((e) => (keepSets.has(e.id) ? { ...e, targetSets: keepSets.get(e.id)! } : e))
+  if (c.reordered && !sel.order) {
+    const matched = out.filter((e) => original.has(e.id)).sort((a, b) => original.get(a.id)!.i - original.get(b.id)!.i).map((e) => {
+      const next = { ...e, supersetGroup: original.get(e.id)!.e.supersetGroup }
+      if (next.supersetGroup === undefined) delete next.supersetGroup
+      return next
+    })
+    out = [...matched, ...out.filter((e) => !original.has(e.id))]
+  }
+  // Exercises the workout dropped but the user wants kept go back where the routine had them.
+  c.removedIds.filter((_, i) => !sel.removed[i])
+    .map((id) => original.get(id)!)
+    .sort((a, b) => a.i - b.i)
+    .forEach(({ e, i }) => out.splice(Math.min(i, out.length), 0, e))
+  return normalizeGroups(out)
 }
 
 /** Most recently used first (by when a workout of it last started); routines never used follow, A to Z. */

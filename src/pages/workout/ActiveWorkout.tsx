@@ -6,11 +6,13 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { db } from '../../db/db'
-import type { Exercise, SetLog, WorkoutSession } from '../../db/types'
+import type { Exercise, Routine, SetLog, WorkoutSession } from '../../db/types'
 import {
   addExercisesToSession, discardSession, finishSession, moveItem, pause, resume, setGym, swapExercise, type SwapScope,
 } from '../../db/workout'
-import { groupPositions, routineUpdate, type RoutineChanges } from '../../lib/routines'
+import {
+  anyChangeSelected, applyRoutineChanges, groupPositions, routineUpdate, selectAllChanges, type ChangeSelection, type RoutineChanges,
+} from '../../lib/routines'
 import { formatClock } from '../../lib/units'
 import { useNotificationState } from '../../lib/platform/hooks'
 import { useNow } from '../../lib/useNow'
@@ -44,6 +46,8 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const [menu, setMenu] = useState(false)
   const [confirmFinish, setConfirmFinish] = useState(false)
   const [routineChanges, setRoutineChanges] = useState<RoutineChanges | null>(null)
+  const [routineBase, setRoutineBase] = useState<Routine | null>(null)
+  const [selection, setSelection] = useState<ChangeSelection | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -68,8 +72,8 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const paused = session.status === 'paused'
   const doneCount = sets.filter((s) => s.doneAt !== undefined).length
 
-  const end = async (updateRoutine?: RoutineChanges) => {
-    if (updateRoutine && session.routineId) await db.routines.update(session.routineId, { exercises: updateRoutine.exercises })
+  const end = async (apply?: { routine: Routine; changes: RoutineChanges; selection: ChangeSelection }) => {
+    if (apply && session.routineId) await db.routines.update(session.routineId, { exercises: applyRoutineChanges(apply.routine, apply.changes, apply.selection) })
     await finishSession(session.id)
     nav(`/workout/summary/${session.id}`, { replace: true })
   }
@@ -77,7 +81,7 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const finish = async () => {
     const routine = session.routineId ? await db.routines.get(session.routineId) : undefined
     const changes = routine ? routineUpdate(routine, session.exercises, sets) : null
-    if (changes) setRoutineChanges(changes)
+    if (routine && changes) { setRoutineBase(routine); setRoutineChanges(changes); setSelection(selectAllChanges(changes)) }
     else await end()
   }
   const onDragEnd = ({ active, over }: DragEndEvent) => {
@@ -170,13 +174,24 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
           <div className="modal-card">
             <h2>{t('workout.updateRoutineTitle', { name: routineName ?? '' })}</h2>
             <p className="muted">{t('workout.updateRoutineBody')}</p>
-            <ul className="change-list">
-              {routineChanges.reordered && <li>{t('workout.changeOrder')}</li>}
-              {routineChanges.added.map((x, i) => <li key={`a${i}`}>{t('workout.changeAdded', { name: nameOf(x) })}</li>)}
-              {routineChanges.removed.map((x, i) => <li key={`r${i}`}>{t('workout.changeRemoved', { name: nameOf(x) })}</li>)}
-              {routineChanges.sets.map((c, i) => <li key={`s${i}`}>{t('workout.changeSets', { name: nameOf(c.exerciseId), from: c.from, to: c.to })}</li>)}
-            </ul>
-            <button className="primary" onClick={() => void end(routineChanges)}>{t('workout.updateRoutine')}</button>
+            {selection && (
+              <ul className="change-list">
+                {routineChanges.reordered && (
+                  <li><label className="pick"><input type="checkbox" checked={selection.order} onChange={(e) => setSelection({ ...selection, order: e.target.checked })} /> {t('workout.changeOrder')}</label></li>
+                )}
+                {routineChanges.added.map((x, i) => (
+                  <li key={`a${i}`}><label className="pick"><input type="checkbox" checked={selection.added[i]} onChange={(e) => setSelection({ ...selection, added: selection.added.map((v, k) => (k === i ? e.target.checked : v)) })} /> {t('workout.changeAdded', { name: nameOf(x) })}</label></li>
+                ))}
+                {routineChanges.removed.map((x, i) => (
+                  <li key={`r${i}`}><label className="pick"><input type="checkbox" checked={selection.removed[i]} onChange={(e) => setSelection({ ...selection, removed: selection.removed.map((v, k) => (k === i ? e.target.checked : v)) })} /> {t('workout.changeRemoved', { name: nameOf(x) })}</label></li>
+                ))}
+                {routineChanges.sets.map((c, i) => (
+                  <li key={`s${i}`}><label className="pick"><input type="checkbox" checked={selection.sets[i]} onChange={(e) => setSelection({ ...selection, sets: selection.sets.map((v, k) => (k === i ? e.target.checked : v)) })} /> {t('workout.changeSets', { name: nameOf(c.exerciseId), from: c.from, to: c.to })}</label></li>
+                ))}
+              </ul>
+            )}
+            <button className="primary" disabled={!selection || !anyChangeSelected(selection)}
+              onClick={() => routineBase && selection && void end({ routine: routineBase, changes: routineChanges, selection })}>{t('workout.updateRoutine')}</button>
             <button onClick={() => void end()}>{t('workout.keepRoutine')}</button>
             <button className="link plain" onClick={() => setRoutineChanges(null)}>{t('workout.keepGoing')}</button>
           </div>

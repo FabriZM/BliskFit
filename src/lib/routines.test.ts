@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Routine, RoutineExercise, SessionExercise, SetLog } from '../db/types'
 import {
-  addExercises, duplicateRoutine, groupPositions, linkWithNext, moveExercise, replaceExercise,
-  normalizeGroups, removeExercise, routineUpdate, setRepRange, setRest, unlinkFromNext,
+  addExercises, applyRoutineChanges, duplicateRoutine, groupPositions, linkWithNext, moveExercise, replaceExercise,
+  normalizeGroups, removeExercise, routineUpdate, selectAllChanges, setRepRange, setRest, unlinkFromNext,
 } from './routines'
 
 const ex = (id: string, extra: Partial<RoutineExercise> = {}): RoutineExercise => ({ id, exerciseId: 'x' + id, targetSets: 3, ...extra })
@@ -132,5 +132,26 @@ describe('routineUpdate', () => {
     const u = routineUpdate(routine, items, setsFor({ a: 3, b: 3, c: 3 }))!
     expect(u.reordered).toBe(true)
     expect(u.exercises.map((e) => e.supersetGroup)).toEqual(['g', 'g', undefined])
+  })
+
+  describe('applyRoutineChanges', () => {
+    const items = [it_('b', 'press'), it_('a', 'bench'), it_('x', 'flyes')]
+    const c = routineUpdate(routine, items, setsFor({ b: 4, a: 3, x: 2 }))!
+    const sel = () => selectAllChanges(c)
+    const shape = (l: RoutineExercise[]) => l.map((e) => `${e.exerciseId}:${e.targetSets}`)
+
+    it('applies everything when all is selected', () => {
+      expect(shape(applyRoutineChanges(routine, c, sel()))).toEqual(['press:4', 'bench:3', 'flyes:2'])
+    })
+    it('keeps only the selected changes', () => {
+      expect(shape(applyRoutineChanges(routine, c, { ...sel(), added: [false], removed: [false], order: false }))).toEqual(['bench:3', 'press:4', 'dips:3'])
+    })
+    it('reverts unselected set counts', () => {
+      expect(shape(applyRoutineChanges(routine, c, { ...sel(), sets: [false] }))).toEqual(['press:3', 'bench:3', 'flyes:2'])
+    })
+    it('changes nothing when nothing is selected', () => {
+      const none = { order: false, added: [false], removed: [false], sets: [false] }
+      expect(applyRoutineChanges(routine, c, none)).toEqual(routine.exercises)
+    })
   })
 })

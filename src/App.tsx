@@ -9,6 +9,7 @@ import History from './pages/workout/History'
 import ForgottenGuard from './components/ForgottenGuard'
 import InProgressBar from './components/InProgressBar'
 import TimerNotifications from './components/TimerNotifications'
+import HomeWidgets from './components/HomeWidgets'
 import TrainingReminders from './components/TrainingReminders'
 import UpdateBanner from './components/UpdateBanner'
 import AndroidAppOffer from './components/AndroidAppOffer'
@@ -116,6 +117,7 @@ export default function App() {
       </main>
       <ForgottenGuard />
       <TimerNotifications />
+      <HomeWidgets />
       <TrainingReminders />
       <InProgressBar />
       <TabBar />

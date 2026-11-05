@@ -2,6 +2,7 @@ import type { ID, SessionExercise, SetLog, TrackingType, Units } from '../db/typ
 import type { PRKind } from './prs'
 import { formatSet } from './format'
 import { EYE_PATH, SLOGAN } from './brand'
+import { HEAT_COLORS, drawBodyMap, type CardBody } from './bodyCanvas'
 
 /**
  * The shareable workout summary image: what goes on it (pure, tested) and how it's drawn (canvas). Only the
@@ -29,7 +30,10 @@ export interface SummaryCardInput {
   /** PR kinds per set id; empty when PR badges are turned off. */
   prs: Map<ID, PRKind[]>
   units: Units
+  /** Sets per muscle id (lib/muscleHeat) to draw the body map; left off, the image has none. */
+  heat?: Map<ID, number>
 }
+
 
 /** Exercises in workout order with their working and drop sets (warm-ups left out), done sets only. */
 export function buildSummaryCard(i: SummaryCardInput): SummaryCard {
@@ -56,6 +60,7 @@ export function buildSummaryCard(i: SummaryCardInput): SummaryCard {
 const W = 1080
 const PAD = 72
 const C = { bg: '#0b1514', card: '#13211f', stone: '#252f2d', fg: '#e8f0ee', muted: '#8fa5a1', silver: '#c3cfcc', accent: '#45d0a0', onAccent: '#06261f' }
+const BODY_H = 440
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 /** Display face for the title and stat numbers, as in the app (index.css); falls back to FONT if not loaded. */
 const DISPLAY = `"Barlow Condensed", ${FONT}`
@@ -137,7 +142,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.fill()
 }
 
-export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: string }): HTMLCanvasElement {
+export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: string }, body?: CardBody): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   const measure = canvas.getContext('2d')!
   const inner = W - PAD * 2
@@ -147,7 +152,7 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
 
   // Height follows content: header, stats, one block per exercise, footer.
   const rowH = (lines: number) => 64 + lines * 44 + 28
-  const height = PAD + 190 + 200 + 40 + rows.reduce((h, r) => h + rowH(r.lines.length) + 20, 0) + (card.more ? 60 : 0) + 110
+  const height = PAD + 190 + 200 + 40 + (body ? BODY_H + 60 : 0) + rows.reduce((h, r) => h + rowH(r.lines.length) + 20, 0) + (card.more ? 60 : 0) + 110
   canvas.width = W
   canvas.height = Math.max(height, 1080)
   const ctx = canvas.getContext('2d')!
@@ -184,6 +189,7 @@ export function drawSummaryCard(card: SummaryCard, labels: { pr: string; more: s
     ctx.fillText(fit(ctx, s.label, tileW - 40), x + 20, y + 136)
   })
   y += 170 + 60
+  if (body) { drawBodyMap(ctx, body, { x: PAD, y, w: W - PAD * 2, h: BODY_H }, { base: C.card, heat: HEAT_COLORS, gap: C.bg }); y += BODY_H + 60 }
 
   for (const r of rows) {
     const h = rowH(r.lines.length)

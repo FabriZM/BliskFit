@@ -50,7 +50,7 @@ export async function addPhoto(input: { day: string; photo: Blob; tag?: string; 
 }
 
 /** Edits a photo's day, tag or note; moving it onto a full day is refused. */
-export async function updatePhoto(id: ID, patch: { day?: string; tag?: string; note?: string }, now = Date.now()): Promise<void> {
+export async function updatePhoto(id: ID, patch: { day?: string; tag?: string; note?: string; photo?: Blob }, now = Date.now()): Promise<void> {
   await db.transaction('rw', db.progressPhotos, async () => {
     const all = await db.progressPhotos.toArray()
     const cur = all.find((p) => p.id === id)
@@ -63,6 +63,7 @@ export async function updatePhoto(id: ID, patch: { day?: string; tag?: string; n
     }
     if (patch.tag !== undefined) next.tag = normalizeTag(patch.tag, photoTags(all.filter((p) => p.id !== id)))
     if (patch.note !== undefined) next.note = patch.note.trim() || undefined
+    if (patch.photo) next.photo = patch.photo
     await db.progressPhotos.update(id, next)
   })
 }

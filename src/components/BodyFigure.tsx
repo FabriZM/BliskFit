@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useSettings } from '../stores/settings'
 
 /** Traced body diagrams from MuscleMap (MIT, see src/data/musclemap/LICENSE): an outline and one path per muscle surface. */
-interface Diagram { viewBox: string; outline: string; muscles: [part: string, d: string][] }
-type Sex = 'male' | 'female'
-type View = 'front' | 'back'
+export interface Diagram { viewBox: string; outline: string; muscles: [part: string, d: string][] }
+export type Sex = 'male' | 'female'
+export type View = 'front' | 'back'
 
 const loaders = import.meta.glob<{ default: Diagram }>('../data/musclemap/*.json')
 
@@ -16,7 +16,10 @@ const PART_MUSCLE: Record<string, string> = {
   QUADRICEPS: 'quadriceps', ADDUCTOR: 'adductors', ABDUCTOR: 'abductors', CALVES: 'calves', HAMSTRINGS: 'hamstrings',
   GLUTEUS: 'glutes', LATISSIMUS: 'lats', RHOMBOID: 'middle-back', LOWER_BACK: 'lower-back', TRAPEZIUS: 'traps',
 }
-const muscleOf = (part: string): string | undefined => PART_MUSCLE[part.replace(/_(LEFT|RIGHT)$/, '')]
+export const muscleOf = (part: string): string | undefined => PART_MUSCLE[part.replace(/_(LEFT|RIGHT)$/, '')]
+
+/** One body diagram, loaded on demand (also used to draw the shareable summary image). */
+export const loadDiagram = async (sex: Sex, view: View): Promise<Diagram> => (await loaders[`../data/musclemap/${sex}-${view}.json`]()).default
 
 function useDiagram(sex: Sex, view: View): Diagram | undefined {
   const [d, setD] = useState<Diagram>()
@@ -34,10 +37,13 @@ function useDiagram(sex: Sex, view: View): Diagram | undefined {
  * heat step 0..5 (0 = grey), `selected` marks muscles to highlight, and `onSelect` receives the tapped muscle slug.
  * Shows the body chosen in settings.
  */
-export default function BodyFigure({ level, selected, onSelect, switchable = false }: {
+export default function BodyFigure({ level, selected, onSelect, switchable = false, compact = false }: {
   level?: (slug: string) => number
   selected?: ReadonlySet<string>
-  onSelect: (slug: string) => void
+  /** Without it (or with `compact`) the shapes aren't tappable. */
+  onSelect?: (slug: string) => void
+  /** A small read-only picture: no captions, not interactive, hidden from screen readers. */
+  compact?: boolean
   /** One view at a time with a Front/Back switch (bigger shapes to tap); otherwise both side by side. */
   switchable?: boolean
 }) {
@@ -55,16 +61,16 @@ export default function BodyFigure({ level, selected, onSelect, switchable = fal
           {d.muscles.map(([part, path], i) => {
             const slug = muscleOf(part)
             const on = !!slug && !!selected?.has(slug)
-            return <path key={i} className={`shape h${slug ? level?.(slug) ?? 0 : 0}${on ? ' sel' : ''}`} d={path} onClick={slug ? () => onSelect(slug) : undefined} />
+            return <path key={i} className={`shape h${slug ? level?.(slug) ?? 0 : 0}${on ? ' sel' : ''}`} d={path} onClick={slug && onSelect && !compact ? () => onSelect(slug) : undefined} />
           })}
         </svg>
       ) : <div className="figure-loading" />}
-      {!switchable && <figcaption>{label}</figcaption>}
+      {!switchable && !compact && <figcaption>{label}</figcaption>}
     </figure>
   )
 
   return (
-    <div className={`body-fig${switchable ? ' single' : ''}`}>
+    <div className={`body-fig${switchable ? ' single' : ''}${compact ? ' compact' : ''}`} aria-hidden={compact || undefined}>
       {switchable && (
         <div className="segmented" role="group" aria-label={t('heatmap.view')}>
           {(['front', 'back'] as const).map((v) => (

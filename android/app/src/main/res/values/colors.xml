@@ -3,4 +3,11 @@
     <color name="colorPrimary">#0B1514</color>
     <color name="colorPrimaryDark">#0B1514</color>
     <color name="colorAccent">#45D0A0</color>
+    <!-- Home-screen widgets (the app's dark palette) -->
+    <color name="widget_bg">#13211f</color>
+    <color name="widget_fg">#e8f0ee</color>
+    <color name="widget_muted">#8fa5a1</color>
+    <color name="widget_accent">#45d0a0</color>
+    <color name="widget_on_accent">#06261f</color>
+    <color name="widget_track">#252f2d</color>
 </resources>

@@ -64,6 +64,10 @@ interface RestTimerPlugin {
 }
 const RestTimer = registerPlugin<RestTimerPlugin>('RestTimer')
 
+/** Our own plugin (android/.../WidgetsPlugin.java): the home-screen widgets. */
+interface WidgetsPlugin { update(o: { snapshot: string; muscles?: string }): Promise<void> }
+const Widgets = registerPlugin<WidgetsPlugin>('Widgets')
+
 const BACKUP_DIR = 'backups'
 const fs = () => import('@capacitor/filesystem')
 
@@ -120,6 +124,9 @@ export const nativePlatform: Platform = {
       void RestTimer.takePending().then(({ actions }) => { if (!stopped) actions.forEach(cb) })
       return () => { stopped = true; void handle?.remove() }
     },
+  },
+  widgets: {
+    update: (snapshot, musclesPng) => Widgets.update({ snapshot: JSON.stringify(snapshot), muscles: musclesPng }),
   },
   vibrate(pattern = [250, 120, 250]) {
     const duration = Math.min(600, pattern.reduce((a, b) => a + b, 0))

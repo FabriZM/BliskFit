@@ -8,6 +8,8 @@ import { packRoutineById } from '../../db/share'
 import { startSession } from '../../db/workout'
 import { duplicateRoutine } from '../../lib/routines'
 import { muscleLabel, routineMuscles } from '../../lib/muscles'
+import { effectiveHeat, heatFromRoutine, heatLevel } from '../../lib/muscleHeat'
+import BodyFigure from '../../components/BodyFigure'
 import type { Routine } from '../../db/types'
 import { shareAsLink } from '../../components/ShareButtons'
 import { ArchiveIcon, CopyIcon, MoreIcon, ShareIcon, TrashIcon } from '../../components/Icons'
@@ -25,8 +27,10 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
   const [note, setNote] = useState<string>()
   const targets = useLiveQuery(async () => {
     const [exercises, muscles] = await Promise.all([db.exercises.bulkGet(r.exercises.map((e) => e.exerciseId)), db.muscleGroups.toArray()])
-    return routineMuscles(r.exercises, exercises, muscles).map((m) => muscleLabel(m, t)).join(', ')
+    const heat = heatFromRoutine(r.exercises, new Map(exercises.flatMap((e) => (e ? [[e.id, e] as const] : []))))
+    return { names: routineMuscles(r.exercises, exercises, muscles).map((m) => muscleLabel(m, t)).join(', '), heat }
   }, [r.exercises, t])
+  const heatMax = Math.max(0, ...(targets?.heat.values() ?? []))
   const drag = useRef<{ x: number; y: number; active: boolean } | null>(null)
 
   const toggleArchive = () => { setMenu(false); void db.routines.update(r.id, { archived: !r.archived }) }
@@ -80,8 +84,11 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
         <div className="rt-head">
           <Link to={`/routines/${r.id}`}>
             <strong>{r.name}</strong>
-            <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}{targets ? ` · ${targets}` : ''}</span>
+            <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}{targets?.names ? ` · ${targets.names}` : ''}</span>
           </Link>
+          {targets && heatMax > 0 && (
+            <div className="rt-mini"><BodyFigure compact level={(slug) => heatLevel(effectiveHeat(targets.heat, `m:${slug}`), heatMax)} /></div>
+          )}
           <button className="icon" aria-expanded={menu} aria-label={t('routines.menu')} onClick={() => setMenu(!menu)}><MoreIcon /></button>
         </div>
         {menu && (

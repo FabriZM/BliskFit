@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
         // App-local plugins must be registered before the bridge starts.
         registerPlugin(GoogleDrivePlugin.class);
         registerPlugin(RestTimerPlugin.class);
+        registerPlugin(WidgetsPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

@@ -8,6 +8,8 @@ import type { Exercise } from '../../db/types'
 import { filterExercises } from '../../lib/exerciseFilter'
 import { muscleLabel, muscleSearchText, orderMuscles, withDescendants } from '../../lib/muscles'
 import { StarIcon } from '../../components/Icons'
+import BodyPicker from '../exercises/BodyPicker'
+import ExerciseDetail from '../exercises/ExerciseDetail'
 import { useExerciseName } from '../../lib/exerciseName'
 
 const PAGE = 50
@@ -20,6 +22,10 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
   const exName = useExerciseName()
   const [query, setQuery] = useState('')
   const [muscle, setMuscle] = useState<string | null>(null)
+  const [bodyMuscles, setBodyMuscles] = useState<string[]>([])
+  const [bodyPicking, setBodyPicking] = useState(false)
+  const [equipment, setEquipment] = useState('')
+  const [viewing, setViewing] = useState<string | null>(null)
   const [picked, setPicked] = useState<string[]>([])
   const [shown, setShown] = useState(PAGE)
   const [favoritesOnly, setFavoritesOnly] = useState(false)
@@ -34,11 +40,18 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
   }, [replacing, muscles])
   const shownMuscle = muscle ?? group
 
-  const results = useMemo(() => {
+  const equipmentOptions = useMemo(() => [...new Set((exercises ?? []).map((e) => e.equipment ?? 'none'))].sort(), [exercises])
+
+  /** Exercises for the current search and filters; `body` is the muscles picked on the figure (they win over the dropdown). */
+  const find = (body: string[]) => {
     if (!exercises) return []
-    const ids = shownMuscle ? withDescendants(muscles, shownMuscle) : new Set<string>()
+    const ids = body.length ? new Set(body.flatMap((m) => [...withDescendants(muscles, m)]))
+      : shownMuscle ? withDescendants(muscles, shownMuscle) : new Set<string>()
     const equipmentLabel = (eq: string) => t(`equipment.${eq}`, { defaultValue: eq })
-    const list = filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(muscles, t), muscleIds: ids, equipment: '', favorites, favoritesOnly, primaryOnly: !!replacing })
+    return filterExercises(exercises, { query, equipmentLabel, displayName: exName, muscleText: muscleSearchText(muscles, t), muscleIds: ids, equipment, favorites, favoritesOnly, primaryOnly: !!replacing && !body.length })
+  }
+  const results = useMemo(() => {
+    const list = find(bodyMuscles)
     if (!replacing) return list
     // Real alternatives first: the same kind of exercise (lifting vs timed/stretching vs cardio), then the same exact
     // main muscle (lats before the rest of the back). The sort is stable, so favorites and names keep their order.
@@ -46,7 +59,7 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
     const target = replacing.primaryMuscleIds[0]
     const rank = (e: Exercise) => (kind(e) === kind(replacing) ? 0 : 2) + (e.primaryMuscleIds.includes(target) ? 0 : 1)
     return list.filter((e) => e.id !== replacing.id).sort((a, b) => rank(a) - rank(b))
-  }, [exercises, muscles, query, shownMuscle, favorites, favoritesOnly, replacing, t])
+  }, [exercises, muscles, query, shownMuscle, bodyMuscles, equipment, favorites, favoritesOnly, replacing, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : single ? [id] : [...p, id]))
 
@@ -63,8 +76,12 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
       <div className="overlay-body">
         <input type="search" placeholder={t('exercises.search')} value={query} onChange={(e) => { setQuery(e.target.value); setShown(PAGE) }} />
         <div className="filters">
-          <Dropdown label={t('exercises.muscle')} value={shownMuscle} onChange={(v) => { setMuscle(v); setShown(PAGE) }}
-            options={[{ value: '', label: t('exercises.allMuscles') }, ...orderMuscles(muscles).map((m) => ({ value: m.id, label: muscleLabel(m, t), indent: !!m.parentId }))]} />
+          <Dropdown label={t('exercises.muscle')} value={bodyMuscles.length > 1 ? '*' : bodyMuscles[0] ?? shownMuscle}
+            onChange={(v) => { setMuscle(v); setBodyMuscles([]); setShown(PAGE) }}
+            options={[{ value: '', label: t('exercises.allMuscles') }, ...(bodyMuscles.length > 1 ? [{ value: '*', label: t('exercises.musclesCount', { count: bodyMuscles.length }), disabled: true }] : []), ...orderMuscles(muscles).map((m) => ({ value: m.id, label: muscleLabel(m, t), indent: !!m.parentId }))]} />
+          <button className={`chip${bodyMuscles.length ? ' on' : ''}`} aria-haspopup="dialog" onClick={() => setBodyPicking(true)}>{t('exercises.pickBody')}</button>
+          <Dropdown label={t('exercises.equipment')} value={equipment} onChange={(v) => { setEquipment(v); setShown(PAGE) }}
+            options={[{ value: '', label: t('exercises.allEquipment') }, ...equipmentOptions.map((eq) => ({ value: eq, label: t(`equipment.${eq}`, { defaultValue: eq }) }))]} />
           <button className={`chip${favoritesOnly ? ' on' : ''}`} aria-pressed={favoritesOnly} onClick={() => { setFavoritesOnly(!favoritesOnly); setShown(PAGE) }}>
             <StarIcon filled /> {t('exercises.favorites')}
           </button>
@@ -76,11 +93,22 @@ export default function ExercisePicker({ onAdd, onClose, single = false, title, 
                 <input type="checkbox" checked={picked.includes(e.id)} onChange={() => toggle(e.id)} />
                 <span>{favorites.has(e.id) && <><StarIcon filled className="fav-mark" label={t('exercises.favorites')} /> </>}{exName(e)}</span>
               </label>
+              <button className="icon" aria-label={t('routines.viewExercise')} onClick={() => setViewing(e.id)}>ⓘ</button>
             </li>
           ))}
         </ul>
         {shown < results.length && <button onClick={() => setShown(shown + PAGE)}>{t('exercises.more')}</button>}
       </div>
+      {bodyPicking && (
+        <BodyPicker muscles={muscles} value={bodyMuscles} count={(ids) => find(ids).length}
+          onApply={(ids) => { setBodyMuscles(ids); setMuscle(ids.length ? '' : null); setShown(PAGE); setBodyPicking(false) }} onClose={() => setBodyPicking(false)} />
+      )}
+      {/* Stacked over the picker so the search and the picked exercises are kept. */}
+      {viewing && (
+        <div className="overlay" role="dialog" aria-modal="true" style={{ zIndex: 60 }}>
+          <div className="overlay-body"><ExerciseDetail embedded={{ exerciseId: viewing, onClose: () => setViewing(null) }} /></div>
+        </div>
+      )}
     </div>
   )
 }

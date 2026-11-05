@@ -214,7 +214,7 @@ export default function SessionDetail({ justFinished = false }: { justFinished?:
             { value: `${formatNum(kgToDisplay(stats.volume, units))} ${units}`, label: t('summary.volume') },
             showPR ? { value: String(prCount), label: t('summary.prs') } : { value: String(stats.exercises), label: t('summary.exercises') },
           ],
-          items, sets, units, trackingOf,
+          items, sets, units, trackingOf, heat: heatFromSets(sets, exercises),
           names: new Map([...exercises].map(([k, e]) => [k, exName(e)])),
           prs: showPR ? prs : new Map(),
         }} />

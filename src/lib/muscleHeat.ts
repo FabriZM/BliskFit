@@ -40,3 +40,17 @@ export function effectiveHeat(heat: Map<ID, number>, id: ID): number {
   }
   return best
 }
+
+/** Planned sets per muscle for a routine (primary 1, secondary 0.5 per set), keyed by muscle id. */
+export function heatFromRoutine(
+  items: { exerciseId: ID; targetSets: number }[],
+  exById: Map<ID, Pick<ExerciseLite, 'primaryMuscleIds' | 'secondaryMuscleIds'>>,
+): Map<ID, number> {
+  const out = new Map<ID, number>()
+  for (const it of items) {
+    const ex = exById.get(it.exerciseId)
+    if (!ex) continue
+    for (const [m, share] of muscleCredit(ex)) out.set(m, (out.get(m) ?? 0) + share * it.targetSets)
+  }
+  return out
+}

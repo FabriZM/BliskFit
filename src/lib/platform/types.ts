@@ -1,3 +1,5 @@
+import type { WidgetSnapshot } from '../widgetSnapshot'
+
 export type PermissionState = 'granted' | 'denied' | 'prompt' | 'unsupported'
 
 /** Fixed ids so rescheduling replaces the previous notification instead of piling up. */
@@ -91,6 +93,10 @@ export interface Platform {
     hide(): Promise<void>
     /** Taps on the notification, including ones made while the app wasn't running. Returns an unsubscribe function. */
     onAction(cb: (a: RestAction) => void): () => void
+  }
+  /** Only in the Android app: pushes what the home-screen widgets show (a snapshot and the muscle map as a PNG). */
+  widgets?: {
+    update(snapshot: WidgetSnapshot, musclesPng?: string): Promise<void>
   }
   notifications: {
     permission(): Promise<PermissionState>
