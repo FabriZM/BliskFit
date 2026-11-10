@@ -1,13 +1,18 @@
-// Generates the web icons (favicon + PWA) from Logo/BliskFit-Logo.png. Run: pnpm icons
+// Generates the web icons (favicon + PWA) from Logo/Basilisk-Logo.png. Run: pnpm icons
 import sharp from 'sharp'
 
-export const LOGO = 'Logo/BliskFit-Logo.png'
-// The teal logo has see-through cutouts, so it sits on a white tile; teal on the app's dark grey is too faint.
+export const LOGO = 'Logo/Basilisk-Logo.png'
+// The source is a black silhouette; icons draw it in the brand teal.
+export const BRAND = '#124f4e'
+// The logo has see-through cutouts (the eye, the handle), so it sits on a white tile; teal on the app's dark grey is too faint.
 export const TILE = '#ffffff'
 
-// The logo scaled to fit a size x size square (transparent padding keeps it centred).
-export const logo = (size) =>
-  sharp(LOGO).trim().resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer()
+// The logo in brand teal, scaled to fit a size x size square (transparent padding keeps it centred).
+export const logo = async (size) => {
+  const shape = await sharp(LOGO).trim().resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer()
+  return sharp({ create: { width: size, height: size, channels: 4, background: BRAND } })
+    .composite([{ input: shape, blend: 'dest-in' }]).png().toBuffer()
+}
 
 // Logo at `ratio` of a size x size canvas filled with `background`.
 export const tile = async (size, ratio, background = TILE) =>

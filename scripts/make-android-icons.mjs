@@ -1,4 +1,4 @@
-// Generates the Android launcher and notification icons from Logo/BliskFit-Logo.png. Run: pnpm icons:android
+// Generates the Android launcher and notification icons from Logo/Basilisk-Logo.png. Run: pnpm icons:android
 import sharp from 'sharp'
 import { mkdirSync, rmSync } from 'node:fs'
 import { logo, tile } from './make-icons.mjs'
