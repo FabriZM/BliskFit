@@ -62,7 +62,7 @@ export default function RoutineList() {
             ? <EmptyState icon={filtered ? <SearchIcon /> : <WorkoutIcon />} action={filtered && <button onClick={clear}>{t('exercises.clearFilters')}</button>}>
               {filtered ? t('routines.noResults') : t('routines.none')}
             </EmptyState>
-            : <ul className="list rt-list">{results.map((r) => <RoutineItem key={r.id} routine={r} canStart={!data.running} />)}</ul>}
+            : <ul className="list rt-list">{results.map((r) => <RoutineItem key={r.id} routine={r} canStart={!data.running} lastUsed={data.lastUsed.get(r.id)} />)}</ul>}
         </>
       )}
     </section>

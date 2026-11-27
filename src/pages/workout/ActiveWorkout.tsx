@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Dropdown } from '../../components/Dropdown'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, KeyboardSensor, MeasuringStrategy, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type DragStartEvent, type Modifier } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { db } from '../../db/db'
 import type { Exercise, Routine, SetLog, WorkoutSession } from '../../db/types'
@@ -48,6 +48,21 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
   const [routineChanges, setRoutineChanges] = useState<RoutineChanges | null>(null)
   const [routineBase, setRoutineBase] = useState<Routine | null>(null)
   const [selection, setSelection] = useState<ChangeSelection | null>(null)
+  // While an exercise is being dragged every card shrinks to its header, so the whole order fits on screen.
+  const [reordering, setReordering] = useState(false)
+  // The cards above the dragged one shrink too, which would leave it far from the finger: the drag is shifted by how far
+  // the collapse moved it (dnd-kit measures it after the collapse).
+  const [dragShift, setDragShift] = useState(0)
+  const dragStart = useRef<{ id: string; top: number } | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const topOf = (id: string) => {
+    const ul = listRef.current, li = ul?.querySelector<HTMLElement>(`[data-item="${CSS.escape(id)}"]`)
+    return ul && li ? ul.getBoundingClientRect().top + li.offsetTop - ul.offsetTop : 0
+  }
+  useLayoutEffect(() => {
+    setDragShift(reordering && dragStart.current ? dragStart.current.top - topOf(dragStart.current.id) : 0)
+  }, [reordering])
+  const shiftDrag: Modifier = ({ transform }) => ({ ...transform, y: transform.y + dragShift })
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -84,7 +99,12 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
     if (routine && changes) { setRoutineBase(routine); setRoutineChanges(changes); setSelection(selectAllChanges(changes)) }
     else await end()
   }
+  const onDragStart = ({ active }: DragStartEvent) => {
+    dragStart.current = { id: String(active.id), top: topOf(String(active.id)) }
+    setReordering(true)
+  }
   const onDragEnd = ({ active, over }: DragEndEvent) => {
+    setReordering(false)
     if (over && active.id !== over.id) void moveItem(session.id, String(active.id), String(over.id))
   }
   const removedNames = useLiveQuery(async () => new Map((await db.exercises.bulkGet(routineChanges?.removed ?? [])).filter((e): e is Exercise => !!e).map((e) => [e.id, e.name])), [routineChanges])
@@ -133,13 +153,14 @@ export default function ActiveWorkout({ session }: { session: WorkoutSession }) 
       <MuscleCounter sets={sets} exercises={exMap} />
 
       {session.exercises.length === 0 && <EmptyState icon={<WorkoutIcon />}>{t('workout.emptyHint')}</EmptyState>}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} measuring={{ droppable: { strategy: MeasuringStrategy.Always } }} modifiers={[shiftDrag]}
+        onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setReordering(false)}>
         <SortableContext items={session.exercises.map((e) => e.id)} strategy={verticalListSortingStrategy}>
-          <ul className="rx-list">
+          <ul className="rx-list" ref={listRef}>
             {session.exercises.map((item, i) => (
               <ExerciseCard key={item.id} session={session} item={item} exercise={exMap.get(item.exerciseId)}
                 sets={byItem.get(item.id) ?? []} pos={positions[i]}
-                units={units} rests={rests} onSwap={() => setSwapping(item.id)} />
+                units={units} rests={rests} compact={reordering} onSwap={() => setSwapping(item.id)} />
             ))}
           </ul>
         </SortableContext>

@@ -312,6 +312,39 @@ Done when: the lines are in both languages and read naturally on the phone.
 
 **Order:** 1 → 2 → 3 → 4 → 5. Each phase is shippable on its own; check each on the phone, not just the desktop browser (texture visibility on an OLED screen).
 
+### Polish (2026-11-27, web-checked)
+- Text boxes can't be resized (`textarea { resize: none }`, global).
+- Reordering a workout: while an exercise is dragged, every card shrinks to its header (sets, notes and menu hidden), so the whole order fits on screen. The drag is shifted by how far the collapse moved the card, so it stays under the finger.
+- Routine cards say when each was last started ("Last done 3 days ago", "Not done yet"; calendar days, then weeks, months, years). On by default; Settings → "Show when each routine was last done".
+- Tapping the streak line on the week card opens History on the calendar; its back link returns to Profile.
+
+### M11: Online progress dashboard (planned)
+A page to check progress from a computer or any browser, kept in sync with the phone. **Approach: the Drive backup is the sync channel; no server of our own.**
+- **Why this way:** the app already writes a full backup to the user's own Drive after every finished workout (M7), with a web OAuth client for `fabrizm.github.io`. A dashboard that reads it keeps the app's rules: data stays the user's, no backend, no cost, no account system. A real backend (Supabase/Firebase with per-row sync) would add auth, hosting, a privacy policy change and conflict handling for one reader; not worth it unless editing from the web is ever wanted.
+- **Sync file:** next to each Drive backup, write `bliskfit-dashboard.json`, overwritten in place (one file, stable id): sessions, set logs, exercises (no photos), routines, programs, body weight and measurements, goals and settings, plus `exportedAt` and `schemaVersion`. No blobs, so it stays small (a few hundred KB after years) and loads fast. Same moments as the backup: after each finished workout, and on launch if a day old. Progress photos stay out unless asked for later.
+- **The page:** a `#/dashboard` route in the same web app (same Pages site, same code), with a wide desktop layout. "Connect Google Drive" → finds the sync file → loads it into a separate, read-only in-memory Dexie (never the browser's own data) → reuses the existing stats code (`lib/stats`, `lib/prs`, `lib/goals`, `lib/muscleHeat`) and the stats/body components. Shows "Synced from phone: <time>"; a Refresh button re-reads the file. Editing stays on the phone.
+- **Sections:** week streak and calendar, volume and sets per muscle over time, e1RM/PR charts per exercise with a picker, body weight and measurements against goal, session list with details, gym visits. Larger charts than the phone and side-by-side comparisons.
+- **To check first:** that a file written by the Android client is readable by the web client with `drive.file` (both clients are in the same Cloud project, which should be enough; confirm with a test). If not, fall back to the Drive `appDataFolder` scope, or have the dashboard ask to open the file once through the Google Picker.
+- **Steps:** (1) `exportDashboard()` + tests (shape, no blobs, size); (2) write/overwrite it in `backupToDrive`; (3) the read-only loader and `#/dashboard` route with "last synced"; (4) the dashboard layout from existing components; (5) check end to end: finish a workout on the phone, refresh the dashboard, see it.
+- **Later, if wanted:** a share-link for a coach (a separate, read-only copy with `anyone with the link` access), or a scheduled export to Google Sheets.
+Done when: a workout finished on the phone shows up on the dashboard in a desktop browser after Refresh, with no server involved.
+
+### M12: Blood glucose around workouts (xDrip+ / Nightscout, planned)
+Show CGM readings before, during and after a session. Optional and hidden until set up. **Not a medical device:** values are shown for information, never used to decide anything, and the app says so once at setup.
+- **Sources:**
+  - **Nightscout (main path, works on web and Android):** the user's site URL plus a read-only access token (Nightscout Admin tools → a subject with the `readable` role; never the API secret). Read `GET /api/v1/entries/sgv.json?find[date][$gte]=<ms>&find[date][$lte]=<ms>&count=…&token=…` (fields `date`, `sgv` mg/dL, `direction`, `delta`). xDrip+ already uploads to Nightscout, so this covers xDrip+ users too.
+  - **xDrip+ local web service (Android only, no internet needed):** xDrip+ → Settings → Inter-app settings → xDrip Web Service serves Nightscout-style `http://127.0.0.1:17580/sgv.json` on the phone. Needs a cleartext exception for `127.0.0.1` in the APK's network security config. Only the last ~24 h, so readings are cached as they come in.
+  - Check at build time: Nightscout CORS from `fabrizm.github.io` (fallback: Android-only via Capacitor's native HTTP), current endpoint names, and the xDrip+ web service's auth header when not called from localhost.
+- **Settings → Glucose:** source (Nightscout / xDrip+ on this phone), URL and token (stored in `db.meta` like the AI key, excluded from backups and the dashboard file), units (mg/dL or mmol/L, ÷18), window before and after (default 60 min before, 120 min after), low/high lines (default 70 / 180 mg/dL), "Test connection" showing the latest reading.
+- **Data:** a new `glucose` table (schema v5: `id, date`), readings cached per session window so History works offline and the backup carries them. Tests: upgrade test for v5 per the M7 rule, parsing (mg/dL, mmol/L, missing `direction`), window math, merging repeated fetches.
+- **Before the workout:** on the Workout tab, the latest value with trend arrow and age ("142 ↘ · 3 min ago"); a gentle note if it's under the low line or falling fast. Never blocks Start.
+- **During:** in the workout header next to the timer, the current value, arrow and delta, refreshed every 5 min (CGM cadence) while the workout is on screen; greyed when the latest reading is over 15 min old. Optional low alert through the existing notification channel (off by default).
+- **After:** on the summary and session detail, a chart from the window before to the window after, the workout shaded, set times as ticks, low/high bands; numbers: at start, lowest, at end, change. If the after-window hasn't passed yet, the chart fills in on later opens.
+- **Stats (later):** average change per routine or per session type, and lows during or after workouts. Optionally, with a token that can write, post a Nightscout `Exercise` treatment (start, duration, routine name) at finish, so it appears on the Nightscout graph; opt-in.
+- **Privacy:** health data. Never sent anywhere except the user's own Nightscout; `public/privacy.html` says so; the share image never includes it unless asked for.
+- **Steps:** (1) Nightscout client + settings + test connection; (2) table, cache and session chart; (3) live value in the workout; (4) pre-workout reading; (5) xDrip+ local source on Android; (6) stats and the treatment upload.
+Done when: with Nightscout set up, a finished workout's detail shows glucose from an hour before to two hours after, and the live value updates in the workout header.
+
 ## Updates and distribution
 Two layers, so most updates need no new APK:
 1. **Web bundle updates (most releases):** the APK ships with the app's web code bundled (works offline). On launch it checks a small `version.json` on the static host and downloads a newer web bundle in the background, applying it on next start. Options: a Capacitor live-update plugin (self-hostable ones exist, e.g. Capgo; verify current status/licensing at M7) or a small custom updater. The PWA version updates itself through its service worker ("update available" prompt).

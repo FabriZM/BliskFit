@@ -44,7 +44,7 @@ export default function RoutinesSection({ running = false }: { running?: boolean
         ? <p className="muted">{t('routines.noArchived')}</p>
         : <EmptyState icon={<WorkoutIcon />} action={<><button className="primary" onClick={() => nav('/routines/templates?show=routines')}>{t('templates.browseRoutines')}</button><button onClick={() => create()}>+ {t('routines.new')}</button></>}>{t('templates.routinesHint')}</EmptyState>)}
       {visible.length > 0 && <ul className="list rt-list">
-        {visible.map((r) => <RoutineItem key={r.id} routine={r} canStart={!running} />)}
+        {visible.map((r) => <RoutineItem key={r.id} routine={r} canStart={!running} lastUsed={lastUsed?.get(r.id)} />)}
       </ul>}
       {!showArchived && matching.length > SHOWN && (
         <button className="archived-toggle" onClick={() => nav('/routines/all')}>{t('routines.showAll', { count: matching.length })}</button>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import CalendarMonth from '../../components/CalendarMonth'
@@ -20,8 +20,12 @@ export default function History() {
   const { t, i18n } = useTranslation()
   const { units, weekStartDay, prBadges } = useSettings((s) => s.settings)
   // ?day=YYYY-MM-DD (from a tapped day in the week strip) opens the calendar on that day.
-  const dayParam = useSearchParams()[0].get('day')
-  const [view, setView] = useState<'list' | 'calendar'>(dayParam ? 'calendar' : 'list')
+  // ?view=calendar (from the streak on Profile) opens straight on the calendar.
+  const params = useSearchParams()[0]
+  const dayParam = params.get('day')
+  const [view, setView] = useState<'list' | 'calendar'>(dayParam || params.get('view') === 'calendar' ? 'calendar' : 'list')
+  // Opened from Profile, the back link returns there.
+  const back = (useLocation().state as { back?: string } | null)?.back
   const [month, setMonth] = useState(() => {
     const d = dayParam ? new Date(`${dayParam}T12:00:00`) : new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
@@ -50,7 +54,7 @@ export default function History() {
 
   return (
     <section>
-      <BackLink to="/workout" label={t('tabs.workout')} />
+      {back === '/profile' ? <BackLink to="/profile" label={t('tabs.profile')} /> : <BackLink to="/workout" label={t('tabs.workout')} />}
       <h1>{t('history.title')}</h1>
       <div className="segmented" role="group" aria-label={t('history.view')}>
         <button className={view === 'list' ? 'on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('history.list')}</button>

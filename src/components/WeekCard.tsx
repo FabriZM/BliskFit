@@ -8,11 +8,11 @@ import { weekdayNames } from '../lib/dates'
 import { weekStart } from '../lib/programs'
 import { useNow } from '../lib/useNow'
 import { useSettings } from '../stores/settings'
-import { CheckIcon, FlameIcon, SnowflakeIcon } from './Icons'
+import { CheckIcon, ChevronRightIcon, FlameIcon, SnowflakeIcon } from './Icons'
 
 /**
  * This week's training days against the goal, plus the weekly streak. Days with a workout are tappable: one
- * workout opens its detail, several open that day in the History calendar. Profile only (not on the Workout tab).
+ * workout opens its detail, several open that day in the History calendar; the streak line opens the calendar. Profile only (not on the Workout tab).
  */
 export default function WeekCard() {
   const { t, i18n } = useTranslation()
@@ -34,17 +34,20 @@ export default function WeekCard() {
   const open = (key: string) => {
     const onDay = sessions.filter((s) => dateKey(new Date(s.startedAt)) === key)
     if (onDay.length === 1) nav(`/workout/history/${onDay[0].id}`)
-    else if (onDay.length > 1) nav(`/workout/history?day=${key}`)
+    else if (onDay.length > 1) nav(`/workout/history?day=${key}`, { state: { back: '/profile' } })
   }
 
+  // The streak opens the History calendar, where every training day is marked.
   const streakLine = (
-    <p className="streak">
+    <button className="streak streak-btn" aria-label={`${streak > 0 ? t('profile.streakWeeks', { count: streak }) : t('profile.noStreak', { count: goal })} · ${t('profile.openCalendar')}`}
+      onClick={() => nav('/workout/history?view=calendar', { state: { back: '/profile' } })}>
       {streak > 0
         ? <><FlameIcon className="streak-flame" /> <strong>{t('profile.streakWeeks', { count: streak })}</strong></>
         : <span className="muted">{t('profile.noStreak', { count: goal })}</span>}
       {streak > 0 && !week.met && <span className="muted small"> · {t('profile.streakKeep', { count: goal - week.count })}</span>}
       {frozen.length > 0 && <span className="muted small"> · <SnowflakeIcon className="freeze" /> {t('profile.freezesUsed', { count: frozen.length })}</span>}
-    </p>
+      <ChevronRightIcon className="streak-cal" />
+    </button>
   )
 
   return (

@@ -96,6 +96,10 @@ export default function Settings() {
         {t('profile.restPopup')}
         <input type="checkbox" className="toggle" checked={settings.restPopup} onChange={(e) => void update({ restPopup: e.target.checked })} />
       </label>
+      <label className="row">
+        {t('profile.showLastDone')}
+        <input type="checkbox" className="toggle" checked={settings.showLastDone} onChange={(e) => void update({ showLastDone: e.target.checked })} />
+      </label>
       <h2>{t('profile.restTimers')}</h2>
       <p className="muted small help">{t('profile.restTimersHelp')}</p>
       {([['defaultRestSec', 'working'], ['dropRestSec', 'drop'], ['warmupRestSec', 'warmup']] as const).map(([key, kind]) => (

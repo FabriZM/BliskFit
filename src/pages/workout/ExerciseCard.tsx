@@ -31,7 +31,7 @@ const askForNotifications = () => {
   void platform.notifications.permission().then((p) => { if (p === 'prompt') void platform.notifications.request() })
 }
 
-export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, rests, onSwap }: {
+export default function ExerciseCard({ session, item, exercise, sets, pos, units: appUnits, rests, compact = false, onSwap }: {
   session: WorkoutSession
   item: SessionExercise
   exercise?: Exercise
@@ -41,6 +41,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   units: Units
   /** The app's rest timers. */
   rests: RestTimes
+  /** Header and plan line only (sets, notes and menu hidden): used while the workout is being reordered. */
+  compact?: boolean
   onSwap: () => void
 }) {
   const { t } = useTranslation()
@@ -139,8 +141,8 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
   const cancelSwipe = () => { drag.current = null; setDx(0) }
 
   return (
-    <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}${isDragging ? ' dragging' : ''}`}>
+    <li ref={setNodeRef} data-item={item.id} style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={`rx ex-card${dx ? ' swiping' : ''} ${pos.pos !== 'single' ? 'grouped ' + pos.pos : ''}${item.skipped ? ' skipped' : ''}${isDragging ? ' dragging' : ''}${compact ? ' compact' : ''}`}>
       <div className="swipe-bg" aria-hidden><TrashIcon /> {t('workout.removeExercise')}</div>
       <div className="swipe-body" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: dx ? 'none' : 'transform .2s' }}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endSwipe} onPointerCancel={cancelSwipe}>
@@ -158,7 +160,7 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         {item.skipped ? ` · ${t('workout.skipped')}` : ''}
       </p>
 
-      {menu && (
+      {menu && !compact && (
         <div className="menu icons" role="menu">
           <button role="menuitem" title={t('workout.swap')} aria-label={t('workout.swap')} onClick={() => { onSwap(); setMenu(false) }}>
             <SwapIcon /><small>{t('workout.swapShort')}</small>
@@ -181,9 +183,9 @@ export default function ExerciseCard({ session, item, exercise, sets, pos, units
         </div>
       )}
 
-      <ExerciseNotes exerciseId={item.exerciseId} gymId={session.gymId} adding={addingNote} onDoneAdding={() => setAddingNote(false)} />
+      {!compact && <ExerciseNotes exerciseId={item.exerciseId} gymId={session.gymId} adding={addingNote} onDoneAdding={() => setAddingNote(false)} />}
 
-      {!item.skipped && (
+      {!item.skipped && !compact && (
         <>
           {!last && suggestion && suggestedSet && (
             <div className="last-hint suggest">

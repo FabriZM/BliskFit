@@ -7,6 +7,8 @@ import { deleteRoutine } from '../../db/routines'
 import { packRoutineById } from '../../db/share'
 import { startSession } from '../../db/workout'
 import { duplicateRoutine } from '../../lib/routines'
+import { timeSince } from '../../lib/dates'
+import { useSettings } from '../../stores/settings'
 import { muscleLabel, routineMuscles } from '../../lib/muscles'
 import { effectiveHeat, heatFromRoutine, heatLevel } from '../../lib/muscleHeat'
 import BodyFigure from '../../components/BodyFigure'
@@ -20,8 +22,9 @@ const SWIPE_AT = 100
  * One routine in the Workout list. Swipe right to archive (or restore, when archived), swipe left to delete (asks
  * first). The ... button opens the routine's options: duplicate, archive / restore, share, delete.
  */
-export default function RoutineItem({ routine: r, canStart = true }: { routine: Routine; canStart?: boolean }) {
-  const { t } = useTranslation()
+export default function RoutineItem({ routine: r, canStart = true, lastUsed }: { routine: Routine; canStart?: boolean; lastUsed?: number }) {
+  const { t, i18n } = useTranslation()
+  const showLastDone = useSettings((s) => s.settings.showLastDone)
   const [menu, setMenu] = useState(false)
   const [dx, setDx] = useState(0)
   const [note, setNote] = useState<string>()
@@ -85,6 +88,7 @@ export default function RoutineItem({ routine: r, canStart = true }: { routine: 
           <Link to={`/routines/${r.id}`}>
             <strong>{r.name}</strong>
             <span className="muted">{t('routines.exerciseCount', { count: r.exercises.length })}{targets?.names ? ` · ${targets.names}` : ''}</span>
+            {showLastDone && <span className="muted small rt-last">{lastUsed === undefined ? t('routines.neverDone') : t('routines.lastDone', { when: timeSince(lastUsed, Date.now(), i18n.language) })}</span>}
           </Link>
           {targets && heatMax > 0 && (
             <div className="rt-mini"><BodyFigure compact level={(slug) => heatLevel(effectiveHeat(targets.heat, `m:${slug}`), heatMax)} /></div>

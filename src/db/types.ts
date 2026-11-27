@@ -271,6 +271,8 @@ export interface Settings {
   streakFreezes: number
   /** Show the full-screen rest countdown whenever a set is finished. */
   restPopup: boolean
+  /** Show on each routine how long ago it was last done. */
+  showLastDone: boolean
   /** Stats pinned to Profile, in display order (max 6). */
   pinnedStats: PinSpec[]
   /** The suggested default pins were dismissed. */
@@ -303,6 +305,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reminderTime: '18:00',
   streakFreezes: 1,
   restPopup: true,
+  showLastDone: true,
   pinnedStats: [],
   pinsDismissed: false,
   setsTarget: 10,
